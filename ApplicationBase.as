@@ -15,9 +15,11 @@
  */
 package {
   import flash.data.EncryptedLocalStore;
+  import flash.display.InteractiveObject;
   import flash.events.Event;
   import flash.utils.ByteArray;
 
+  import mx.controls.TextArea;
   import mx.core.Container;
   import mx.core.ScrollPolicy;
   import mx.core.WindowedApplication;
@@ -50,6 +52,11 @@ package {
         for (var i:int = 0; i < container.numChildren; i++)
           clean(container.getChildAt(i));
       }
+      
+      // We don't want tab enabled for anything but text
+      if (container is InteractiveObject &&
+          !(container is TextArea))
+        container.tabEnabled = false;
     }
 
     // We manage locally stored preferences with these functions
