@@ -33,7 +33,7 @@
     import flash.events.Event;
     import flash.events.MouseEvent;
 
-    [Bindable] public var hovering:Boolean = false;
+    [Bindable] private var hovering:Boolean = false;
 
     private function creationComplete(event:Event):void {
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
