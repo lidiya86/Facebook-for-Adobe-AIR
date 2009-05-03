@@ -34,7 +34,8 @@
                      width="16"
                      height="16"
                      offsetX="16"
-                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}" />
+                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}"
+                     toolTip="{tabLabel.visible ? null : data.name}" />
 
   <mx:Label id="tabLabel"
             text="{data.name}"
