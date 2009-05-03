@@ -297,8 +297,10 @@
     // Called when user has created their own status update
     public function addStatusMessage(storyData:Object):void {
       Output.assert(nile != null, "Adding status message with no nile?");
-      // Into the dataCache and the newsfeed filter...
+      // Into the newsfeed dataCache and currentfilter...
       dataCache["nf"].addItem(storyData);
+      if (CurrentFilter != "nf")
+        dataCache[CurrentFilter].addItem(storyData);
 
       // Mark immune, then give to NewsFeed and CurrentFilter
       // NileRenderers own their data with logic so each
