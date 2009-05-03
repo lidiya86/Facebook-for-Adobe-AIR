@@ -33,7 +33,7 @@ package fb.net {
   // it's own COMPLETE in a JSON.decode then dispatch a
   // FBEvent.SUCCESS with the JSON data.
   public class JSONLoader extends URLLoader {
-    private static const MaxAttempts:int = 2;
+    private static const MaxAttempts:int = 3;
     private var attempts:int = 0;
 
     private var request:URLRequest;
@@ -49,10 +49,8 @@ package fb.net {
     private function error(event:Event):void {
       Output.put("JSON Error: " + urlMonitor.available);
       dispatchEvent(new FBEvent(FBEvent.RETRY));
-      if (urlMonitor.available) {
-        if (attempts++ < MaxAttempts) reload();
-      }
-      else {
+      if (attempts++ < MaxAttempts) reload();
+      else if (!urlMonitor.available) {
         attempts = 0;
         urlMonitor.start();
       }

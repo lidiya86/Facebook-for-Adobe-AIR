@@ -398,6 +398,9 @@
         Animate = false;
         if (!nileCanvas.contains(nile))
           nileCanvas.addChild(nile);
+        
+        // Mark this as an update in case new data hits fast
+        updateTime = (new Date()).time;
       }
     }
 

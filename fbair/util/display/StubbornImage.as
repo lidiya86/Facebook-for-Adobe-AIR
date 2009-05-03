@@ -29,7 +29,7 @@ package fbair.util.display {
   import flash.net.URLRequest;
 
   public class StubbornImage extends SmoothImage {
-    private static const MaxAttempts:int = 2;
+    private static const MaxAttempts:int = 3;
     private var attempts:int = 0;
 
     private var origSource:Object;
@@ -43,10 +43,8 @@ package fbair.util.display {
 
     private function error(event:Event):void {
       Output.put("Image Error : " + urlMonitor.available + ",  " + source);
-      if (urlMonitor.available) {
-        if (attempts++ < MaxAttempts) reload();
-      }
-      else {
+      if (attempts++ < MaxAttempts) reload();
+      else if (!urlMonitor.available) {
         attempts = 0;
         urlMonitor.start();
       }
