@@ -83,6 +83,7 @@
       // our app global loading indicator!
       loadingIndicator = loader;
 
+      // Don't enable our composer until we're authorized
       composer.enabled = false;
 
       // If we have stored session data, let's pull it in
