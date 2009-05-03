@@ -1,0 +1,274 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This contains our filters tab bar at top of window -->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+           xmlns:filters="fbair.gui.filters.*"
+           xmlns:display="fbair.util.display.*"
+           height="26"
+           creationComplete="creationComplete(event)" >
+  <mx:Metadata>
+    [Event(name="tabAdded", type="fb.FBEvent")]
+    [Event(name="tabRemoved", type="fb.FBEvent")]
+    [Event(name="tabFocused", type="fb.FBEvent")]
+  </mx:Metadata>
+
+  <!-- We use these fades when hiding the logo -->
+  <mx:Fade id="fadeOut"
+           duration="300"
+           alphaTo="0" />
+  <mx:Fade id="fadeIn"
+           duration="300"
+           alphaTo="1"
+           alphaFrom="0" />
+
+  <mx:Image id="fbLogo"
+            styleName="fbLogo"
+            source="@Embed('../../assets/fblogo.png')"
+            hideEffect="fadeOut"
+            showEffect="fadeIn" />
+
+  <mx:HBox id="filterTabs"
+           styleName="filterTabs"
+           width="100%"
+           updateComplete="filterTabChanged(event)" />
+
+  <display:FBButton id="filterMenuButton"
+                    styleName="filterMenuButton"
+                    height="26"
+                    alpha="{filterMenuButton.state == FBButton.OVER ?
+                            1.0 : 0.7}"
+                    icon="@Embed('../../assets/plus.png')"
+                    mouseDown="menuButtonClicked(event)" />
+
+  <mx:Script><![CDATA[
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
+
+    import fbair.util.Output;
+
+    import fbair.gui.filters.FilterTab;
+    import mx.binding.utils.BindingUtils;
+    import mx.collections.ArrayCollection;
+    import mx.events.FlexEvent;
+    import mx.managers.PopUpManager;
+    import mx.utils.ObjectProxy;
+
+    [Bindable] public static var TabCount:int = 0;
+    
+    public static const MaxTabs:int = 7;
+
+    private var menu:FiltersMenu;
+
+    [Bindable] public var focusHistory:Array = new Array();
+    private var _tabData:ArrayCollection = new ArrayCollection();
+    private var _currentTab:String;
+    private var tabsByID:Object = new Object();
+    private var dataByID:Object = new Object();
+
+    private function creationComplete(event:FlexEvent):void {
+      addEventListener("deleteClick", deleteTabClicked);
+      addEventListener("tabClick", tabClicked);
+    }
+
+    private function filterTabChanged(event:FlexEvent):void {
+      fbLogo.visible = (width - 98) > filterTabs.measuredWidth;
+    }
+
+    override protected function createChildren():void {
+      super.createChildren();
+
+      menu = new FiltersMenu();
+      BindingUtils.bindSetter(function(new_y:int):void {
+        menu.y = new_y + 2;
+      }, this, "y");
+      menu.addEventListener(FlexEvent.UPDATE_COMPLETE,
+        function(event:FlexEvent):void {
+          menu.x = width - menu.width - 2;
+        });
+      menu.visible = false;
+      menu.addEventListener("itemClick", menuItemClicked);
+      PopUpManager.addPopUp(menu, this);
+    }
+
+    private function menuItemClicked(event:FBEvent):void {
+      addTab(event.data);
+      hideMenu();
+    }
+
+    private function menuButtonClicked(event:MouseEvent):void {
+      showMenu();
+    }
+
+    public function showMenu():void {
+      menu.visible = true;
+      stage.addEventListener(MouseEvent.CLICK, stageClicked, true);
+    }
+
+    public function hideMenu():void {
+      menu.visible = false;
+      stage.removeEventListener(MouseEvent.CLICK, stageClicked, true);
+    }
+
+    private function stageClicked(event:MouseEvent):void {
+      hideMenu();
+    }
+
+    public function fetchFilters():void {
+      FBAPI.callMethod("fql.query", {
+        query:"select filter_key, name, rank, icon_url, is_visible, " +
+          "type, value from stream_filter where uid = " +
+          FBConnect.session.uid + " order by rank"
+      }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
+        data = event.data;
+      });
+    }
+
+    [Bindable]
+    public function get tabData():ArrayCollection { return _tabData; }
+    public function set tabData(new_tabData:ArrayCollection):void {
+      _tabData = new_tabData;
+
+      // Clear out any old tab cruft
+      tabsByID = new Object();
+      while (filterTabs.numChildren > 0)
+        filterTabs.removeChildAt(0);
+
+      // Update tabcount
+      TabCount = tabData.length;
+      
+      // Add everything
+      for each (var tab:Object in tabData) {
+        tabsByID[tab.filter_key] = new FilterTab();
+        tabsByID[tab.filter_key].data = tab;
+        filterTabs.addChild(tabsByID[tab.filter_key]);
+      }
+    }
+
+    override public function set data(new_data:Object):void {
+      // Build menu data
+      var menuData:ArrayCollection = new ArrayCollection();
+      var stream_filters:Array = new_data as Array;
+      for each (var stream_filter:Object in stream_filters)
+        menuData.addItem(new ObjectProxy(stream_filter));
+
+      // Pass on data
+      super.data = menuData;
+      menu.data = data;
+
+      // Build data by id
+      dataByID = new Object();
+      for each (var item:Object in menuData)
+        dataByID[item.filter_key] = item;
+
+      // if this is your first launch, we'll give you default feed
+      if (tabData.length == 0)
+        addTab(data[0].filter_key);
+    }
+
+    private function deleteTabClicked(event:FBEvent):void {
+      removeTab(event.target.data.filter_key);
+    }
+
+    private function tabClicked(event:FBEvent):void {
+      currentTab = event.target.data.filter_key;
+    }
+
+    public function addTab(key:String):void {
+      // if a tab already exists for this filter, focus it.
+      if (tabsByID[key]) {
+        currentTab = key;
+        return;
+      }
+
+      // Add tab data
+      tabData.addItem(dataByID[key]);
+
+      // Remove staleness
+      while (tabData.length >= MaxTabs)
+        removeTab(focusHistory[0]);
+        
+      // Update tabCount
+      TabCount = tabData.length;
+
+      // Create new tab
+      tabsByID[key] = new FilterTab();
+      tabsByID[key].data = dataByID[key];
+      filterTabs.addChild(tabsByID[key]);
+
+      // Dispatch event of add
+      dispatchEvent(new FBEvent("tabAdded", key));
+
+      // Select current tab
+      currentTab = key;
+    }
+
+    public function removeTab(key:String):void {
+      Output.assert(tabData.getItemIndex(tabsByID[key].data) != -1,
+        "Trying to remove key not in list?: " + key);
+      Output.assert(focusHistory.indexOf(key) != -1,
+        "Trying to remove key without history?");
+
+      // Remove from history
+      removeFromHistory(key);
+
+      // Remove tab data
+      tabData.removeItemAt(tabData.getItemIndex(tabsByID[key].data));
+      TabCount = tabData.length;
+
+      // Remove tab
+      filterTabs.removeChild(tabsByID[key]);
+      delete tabsByID[key];
+
+      // Focus new tab if this was the current
+      if (currentTab == key)
+        currentTab = focusHistory[focusHistory.length-1];
+
+      // Removed event
+      dispatchEvent(new FBEvent("tabRemoved", key));
+    }
+
+    [Bindable]
+    public function get currentTab():String {
+      return _currentTab;
+    }
+    public function set currentTab(key:String):void {
+      if (currentTab == key) return;
+
+      // Disable old tab
+      if (currentTab && tabsByID[currentTab])
+        tabsByID[currentTab].data.active = false;
+
+      // Set new tab, and add to history
+      _currentTab = key;
+      addToHistory(key);
+      tabsByID[currentTab].data.active = true;
+
+      // Focused event
+      dispatchEvent(new FBEvent("tabFocused", key));
+    }
+
+    private function removeFromHistory(key:String):void {
+      var historyIndex:int = focusHistory.indexOf(key);
+      if (historyIndex != -1) focusHistory.splice(historyIndex, 1);
+    }
+
+    private function addToHistory(key:String):void {
+      removeFromHistory(key);
+      focusHistory.push(key);
+    }
+  ]]></mx:Script>
+</mx:Canvas>

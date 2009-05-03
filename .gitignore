@@ -1,0 +1,5 @@
+*.swf
+*.air
+*.cache
+certs
+build

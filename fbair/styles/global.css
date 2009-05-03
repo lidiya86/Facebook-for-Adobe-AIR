@@ -1,0 +1,100 @@
+.commentButtonDisabled, .fbButtonDisabled {
+  color: #999;
+}
+
+.dialogLoadingIndicator {
+  horizontalCenter:0;
+  verticalCenter:0;
+}
+
+.errorIndicator {
+  backgroundColor: #ffebe8;
+  borderColor: #dd3c10;
+  borderSides: "bottom";
+  borderStyle: solid;
+}
+
+.loadingBox {
+  font-weight: bold;
+  horizontalGap: 2;
+  paddingBottom: 3;
+  paddingLeft: 6;
+  paddingTop: 3;
+}
+
+.loadingIndicator {
+  backgroundColor: #fff9d7;
+  borderColor: #e2c822;
+  borderSides: "bottom";
+  borderStyle: solid;
+}
+
+.scrollBarContainer {
+  backgroundAngle: 90;
+  backgroundColors: #eaeaea, #dbdbdb;
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  leftBorderColor: #d4d4d4;
+  paddingBottom: 15;
+  paddingTop: 3;
+}
+
+ApplicationBase {
+  backgroundColor: #ffffff;
+  paddingBottom: 0;
+  paddingLeft: 0;
+  paddingRight: 0;
+  paddingTop: 0;
+}
+
+Box, Container, LayoutContainer {
+  horizontalGap: 0;
+  verticalGap: 0;
+}
+
+FBButton {
+  color: #fff;
+  disabledSkin: Embed(source='../assets/blue_button_disabled.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  downSkin: Embed(source='../assets/blue_button_down.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  font-weight: bold;
+  overSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  textRollOverColor: #fff;
+  textSelectedColor: #fff;
+  upSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+}
+
+GrowableTextArea {
+  borderSkin: Embed(source='../assets/composer_textarea.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  focusAlpha: 0;
+  focusSkin: ClassReference('mx.skins.ProgrammaticSkin');
+}
+
+Label, Text, TextArea {
+  color: #333;
+}
+
+Label, Text, TextArea, Button {
+  font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
+}
+
+RoundedProfileImage {
+  backgroundColor: #c4cde0;
+}
+
+ScrollBar {
+  down-arrow-skin: ClassReference(null);
+  thumb-skin: Embed(source='../assets/scroll_handle.png',scaleGridTop='9',scaleGridLeft='5',scaleGridBottom='10',scaleGridRight='6');
+  track-skin: Embed(source='../assets/scroll_well.png',scaleGridTop='9',scaleGridLeft='5',scaleGridBottom='10',scaleGridRight='6');
+  up-arrow-skin: ClassReference(null);
+}
+
+TextArea {
+  borderThickness: 0;
+  paddingBottom: 3;
+  paddingLeft: 3;
+  paddingRight: 3;
+  paddingTop: 3;
+}
+
+TitleBar {
+  backgroundAlpha: 0;
+}

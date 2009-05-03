@@ -1,0 +1,149 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- There's one of these at the top-level.
+     Major container for letting the user share stuff! -->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:util="fbair.util.display.*" >
+
+  <mx:Metadata>
+    [Event(name="statusUpdated", type="fb.FBEvent")]
+  </mx:Metadata>
+
+  <!-- Text area for entering your status update -->
+  <util:GrowableTextArea id="composerInput"
+                         styleName="composerInput"
+                         width="100%"
+                         text="{FocusOutText}"
+                         height="{
+                           StylePrefs.prefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                                  (active ? FocusInHeightL : FocusOutHeightL) :
+                                  (active ? FocusInHeightS : FocusOutHeightS)}"
+                         color="{active ? EnabledColor : DisabledColor}"
+                         focusIn="focusIn(event)"
+                         focusOut="focusOut(event)"
+                         minTextHeight="{
+                           StylePrefs.prefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                                         FocusInHeightL :
+                                         FocusInHeightS}" />
+
+  <util:FBButton id="shareButton"
+                 autoStyle="true"
+                 label="Share"
+                 click="shareStatus(event)" />
+
+  <mx:Script><![CDATA[
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
+
+    import fbair.gui.StylePrefs;
+    import fbair.nile.NileContainer;
+    import fbair.util.Output;
+
+    import flash.events.FocusEvent;
+    import flash.events.MouseEvent;
+
+    import mx.core.Application;
+
+    public static const FocusOutHeightS:int = 25;
+    public static const FocusInHeightS:int = 40;
+
+    public static const FocusOutHeightL:int = 29;
+    public static const FocusInHeightL:int = 48;
+
+    public static const FocusOutText:String = "What's on your mind?";
+    public static const EnabledColor:uint = 0x333333;
+    public static const DisabledColor:uint = 0x808080;
+
+    [Bindable] public var active:Boolean = false;
+
+    private var submittedMessage:String;
+
+    // We want to let clicks anywhere else in the app for a loss of focus
+    private function releaseFocus(event:MouseEvent):void {
+      if (!hitTestPoint(event.stageX, event.stageY))
+        Application.application.setFocus();
+    }
+
+    // Called when our input gains focus, and we want to expand
+    private function focusIn(event:FocusEvent):void {
+      stage.addEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+      active = true;
+      if (composerInput.text == FocusOutText)
+        composerInput.text = "";
+    }
+
+    // Called when our input loses focus, and we want to contract
+    private function focusOut(event:FocusEvent):void {
+      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+      if (composerInput.text == "") {
+        active = false;
+        composerInput.text = FocusOutText;
+      }
+    }
+
+    // Called when the Share button has been clicked
+    private function shareStatus(event:MouseEvent):void {
+      if (event.shiftKey) {
+        Output.logDump();
+        return;
+      }
+
+      if (!active) {
+        Application.application.focusManager.setFocus(composerInput);
+        return;
+      }
+
+      // Don't share a blank string!
+      if (composerInput.text.length == 0) return;
+
+      // Disenable
+      submittedMessage = composerInput.text;
+      active = false;
+      composerInput.editable = false;
+      shareButton.enabled = false;
+      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+
+      // Call the server with status.set to set our new status
+      FBAPI.callMethod("stream.publish", {message:submittedMessage}
+        ).addEventListener(FBEvent.SUCCESS, statusUpdated);
+    }
+
+    // Called when the server has verified status.set
+    private function statusUpdated(event:FBEvent):void {
+      if (!submittedMessage) return;
+
+      // Dispatch event that we've updated our status
+      dispatchEvent(new FBEvent("statusUpdated", {
+        post_id:event.data,
+        actor_id:FBConnect.session.uid,
+        app_id:ApplicationBase.AppID,
+        message:submittedMessage,
+        likes:{count:0, user_likes:false, can_like:true},
+        comments:{count:0, posts:[], can_post:true, can_remove:true},
+        created_time:(new Date().time / 1000),
+        filter_key:NileContainer.CurrentFilter,
+        attachment:{}
+      }));
+
+      // Enable
+      submittedMessage = null;
+      composerInput.text = "";
+      composerInput.editable = true;
+      shareButton.enabled = true;
+    }
+  ]]></mx:Script>
+</mx:HBox>

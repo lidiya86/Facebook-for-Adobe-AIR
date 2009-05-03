@@ -1,0 +1,111 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- Represents one Comment within the CommentsRenderer -->
+<util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
+                     xmlns:gui="fbair.gui.*"
+                     xmlns:util="fbair.util.display.*"
+                     width="100%"
+                     creationComplete="creationComplete(event)"
+                     animateOut="true"
+                     animateOnce="true" >
+  <mx:HBox width="100%"
+           styleName="commentRenderer">
+
+    <!-- The profile image of the user that made this comment -->
+    <gui:RoundedProfileImage id="profilePic"
+                             profileID="{data.fromid}"
+                             size="{PicSize}"
+                             cornerRadius="5" />
+
+    <!-- The users name followed by their comment -->
+    <mx:VBox styleName="commentVBox"
+             width="100%" >
+      <mx:HBox styleName="commentHeader">
+        <mx:Text htmlText="{StringUtil.linkify(data.name, data.url)}" />
+        <mx:Text text="{TimeUtil.describeWhenShort(data.time)}"
+                 styleName="commentTimeStamp" />
+      </mx:HBox>
+
+      <mx:Text styleName="commentText"
+               htmlText="{StringUtil.htmlize(data.text)}"
+               width="100%" />
+    </mx:VBox>
+
+    <mx:Button id="commentDeleteButton"
+               styleName="commentDeleteButton"
+               buttonMode="true"
+               includeInLayout="{data.fromid == FBConnect.session.uid
+                                 || data.can_remove}"
+               visible="{commentDeleteButton.includeInLayout}"
+               click="deleteComment(event)" />
+  </mx:HBox>
+  <mx:Script><![CDATA[
+    import fbair.util.Output;
+    import fbair.util.ProfileCache;
+    import fbair.util.StringUtil;
+    import fbair.util.TimeUtil;
+
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
+
+    import flash.events.MouseEvent;
+
+    import mx.utils.ObjectProxy;
+
+    public static const COMMENT_REMOVED:String = "commentRemoved";
+    public static const PicSize:int = 28;
+
+    // "data" in this context is actually an item in stream.comments.posts
+    override public function set data(new_data:Object):void {
+      if (data || !new_data) return;
+
+      super.data = new ObjectProxy(new_data);
+      if (!data) return;
+
+      // Fetch the profile data for this user.
+      ProfileCache.getProfile(data.fromid).addEventListener(
+        ProfileCache.PROFILE_FETCHED,
+        function(event:FBEvent):void {
+          data.name = event.data.name;
+          data.url = event.data.url;
+        });
+    }
+
+    // Called when user has clicked delete button
+    private function deleteComment(event:MouseEvent):void {
+      // We don't want the user clicking it twice
+      commentDeleteButton.enabled = false;
+
+      // Call the server and delete our comment
+      FBAPI.callMethod("stream.removeComment", {comment_id:data.id})
+        .addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
+          dispatchEvent(new Event(COMMENT_REMOVED, true));
+        });
+    }
+
+    private function creationComplete(evt:Event):void {
+      // debug trace
+      profilePic.addEventListener(MouseEvent.CLICK, clickedProfilePic, true);
+    }
+
+    private function clickedProfilePic(event:MouseEvent):void {
+      if (!event.shiftKey) return;
+      Output.alert(data);
+      event.stopImmediatePropagation();
+    }
+  ]]></mx:Script>
+</util:AnimatedCanvas>

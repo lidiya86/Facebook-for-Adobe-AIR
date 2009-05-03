@@ -1,0 +1,122 @@
+.fbLogo {
+  top: 5;
+  left: 5;
+}
+
+.filterTabs {
+  right: 25;
+  left: 1;
+  horizontalGap: -1;
+  horizontalAlign: right;
+}
+
+.filterMenuButton {
+  right: 1;
+  paddingTop: 6;
+  paddingLeft: 9;
+  paddingRight: 9;
+}
+
+.filterMenuButton {
+  upSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+  overSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+  disabledSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+  downSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+}
+
+.filterItemLabelOut {
+  font-size: 11;
+  color: #333333;
+  paddingTop: -1;
+}
+
+.filterItemLabelOver {
+  font-size: 11;
+  color: #FFFFFF;
+  paddingTop: -1;
+}
+
+.filterItemOver {
+  backgroundColor: #3b5998;
+}
+
+.filterMenuButtonDown {
+  right: 0;
+}
+
+.filterMenuItems {
+  top: 23;
+  borderStyle: solid;
+  borderColor: #333333;
+  backgroundColor: #FFFFFF;
+  paddingTop: 4;
+  paddingBottom: 4;
+}
+
+.filterTabOut, .filterTabOver, .filterTabActive {
+  font-size: 11;
+  color: #333333;
+}
+
+.filterTabActive {
+  paddingTop: 6;
+  borderSkin: Embed(source='../assets/tab_active.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='5');
+}
+
+.filterTabOut {
+  borderSkin: Embed(source='../assets/tab_out.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+}
+
+.filterTabOver {
+  borderSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
+}
+
+.tabDeleteButton {
+  upSkin: Embed(source='../assets/delete_dark.png');
+  disabledSkin: Embed(source='../assets/delete_dark_over.png');
+  downSkin: Embed(source='../assets/delete_dark_over.png');
+  overSkin: Embed(source='../assets/delete_dark_over.png');
+}
+
+.tabLabelOver, .tabLabelOff {
+  paddingTop: -1;
+}
+
+.tabLabelOff {
+  color: #36425b;
+}
+
+.tabDeleteButton {
+  top: 2;
+  left: -3;
+  right: -3;
+}
+
+FiltersBar {
+  backgroundColor: #3b5998;
+  horizontalGap: 6;
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  bottomBorderColor: #f9f9f9;
+  topBorderColor: #355089;
+  insetRightBorder: -1;
+}
+
+FiltersMenu {
+  right: 4;
+  top: 30;
+}
+
+FiltersMenuItem {
+  paddingLeft: 3;
+  paddingRight: 3;
+  horizontalGap: 3;
+  paddingTop: 3;
+  paddingBottom: 1;
+}
+
+FilterTab {
+  paddingTop: 7;
+  paddingLeft: 8;
+  paddingRight: 8;
+  horizontalGap: 3;
+}

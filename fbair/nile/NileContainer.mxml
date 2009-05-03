@@ -1,0 +1,447 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This container holds the nile as well as the scrollbar next to it
+     It also manages fetching data from the various active filters -->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:nile="fbair.nile.*"
+         creationComplete="creationComplete(event)" >
+  <mx:Canvas id="nileCanvas"
+             width="100%"
+             height="100%"
+             added="nileAdded(event)"
+             removed="nileRemoved(event)" />
+
+  <mx:Box height="100%"
+          styleName="scrollBarContainer" >
+    <mx:VScrollBar id="scrollBar"
+                   height="100%"
+                   pageScrollSize="{PageScrollSize}"
+                   pageSize="{nileCanvas.height}"
+                   scrollPosition="{-nile.y}"
+                   maxScrollPosition="{nile.height - nileCanvas.height}"
+                   scroll="scrollNile(event)" />
+  </mx:Box>
+
+  <mx:Script><![CDATA[
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
+    import fb.net.JSONLoader;
+
+    import fbair.nile.Nile;
+    import fbair.nile.renderers.NileRenderer;
+    import fbair.util.Output;
+
+    import flash.display.DisplayObjectContainer;
+    import flash.events.MouseEvent;
+
+    import mx.collections.ArrayCollection;
+    import mx.collections.Sort;
+    import mx.collections.SortField;
+    import mx.core.Application;
+    import mx.events.FlexEvent
+    import mx.events.FlexNativeWindowBoundsEvent;
+    import mx.events.ScrollEvent;
+    import mx.utils.ObjectUtil;
+
+    private static const PollingDelay:int = 10000;
+    private static const MinAnimationDelay:int = 5000;
+    private static const PageScrollSize:int = 512;
+    private static const MouseWheelSize:int = 16;
+    private static const MaxEntries:int = 50;
+    private static const MaxAnimations:int = 3;
+
+    // Our current filter
+    [Bindable] public static var CurrentFilter:String = "nf";
+
+    // All our niles, keyed by filter_key
+    private var niles:Object = {"nf":(new Nile())};
+
+    // Our current nile
+    [Bindable] private var nile:Nile = niles["nf"];
+
+    // This timer determines how often to poll for new data
+    private var pollingTimer:Timer = new Timer(PollingDelay);
+
+    // List of story-ids we have absolutely deleted
+    //   We hold on to make sure a quick refresh doesn't revive them.
+    private var zombies:Object = new Object();
+
+    // List of story-ids we just created
+    //   We hold on once to make sure a quick refresh doesn't delete.
+    private var immunes:Object = new Object();
+
+    // One per filter.  Key => FilterName, Value => latestUpdate
+    private var latestUpdates:Object = new Object();
+    private function getLatestUpdate(filter_key:String):int {
+      return 0;
+      if (latestUpdates[filter_key]) return latestUpdates[filter_key];
+      else return 0;
+    }
+
+    // Cache of all nile renderer data
+    public var dataCache:Object = {"nf":(new ArrayCollection())};
+
+    // Our active filters, by filter_key
+    public var streamFilters:Array = ["nf"];
+
+    // Sorter for anything based on created_time
+    private var sort:Sort = new Sort();
+
+    // Time since our last update
+    private var updateTime:Number = 0;
+
+    // Whether on not to animate yo shit this time.
+    [Bindable] public static var Animate:Boolean = false;
+
+    // Initializing..
+    private function creationComplete(event:FlexEvent):void {
+      // Pay attention to window resizing for the scrollbar
+      Application.application.addEventListener(
+        FlexNativeWindowBoundsEvent.WINDOW_RESIZE, boundNile);
+
+      // Listen to bubbling story_deleted messages
+      addEventListener(NileRenderer.STORY_REMOVED, storyRemoved);
+
+      // Initialize created_time sorter
+      sort.fields = [new SortField("created_time", false, true)];
+
+      // Add our initial nile to the canvas
+      nile.visible = false;
+      nile.addEventListener(Event.RESIZE, boundNile);
+    }
+
+    // We call this on launch to set up our initial set of filters, if cached
+    public function loadInitialFilters(stream_filters:Array):void {
+      // Blow away any defaults since we have cache
+      CurrentFilter = null;
+      niles = new Object();
+      nile.removeEventListener(Event.RESIZE, boundNile);
+      nile = null;
+
+      // Populate our filters and their niles
+      streamFilters = stream_filters;
+      for each (var streamFilter:String in streamFilters) {
+        niles[streamFilter] = new Nile();
+        niles[streamFilter].visible = false;
+        niles[streamFilter].addEventListener(Event.RESIZE, boundNile);
+      }
+    }
+
+    // When we remove old items from the nile,
+    //   we have to be sure to remove any event listeners from any persistent
+    //   objects or it won't get garbage collected
+    private function nileRemoved(event:Event):void {
+      removeMouseWheel(event.target);
+    }
+    private function removeMouseWheel(displayObject:*):void {
+      displayObject.removeEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelNile);
+      if (displayObject is DisplayObjectContainer)
+        for (var i:int = 0; i < displayObject.numChildren; i++)
+          removeMouseWheel(displayObject.getChildAt(i));
+    }
+
+    // Called when something is added to the nile.
+    // We need to catch mousewheels inside textareas
+    // So we'll just subscribe to every child and then only listen to the
+    //   original dispatcher to avoid duplicate work with bubbling events
+    private function nileAdded(event:Event):void {
+      addMouseWheel(event.target);
+    }
+    private function addMouseWheel(displayObject:*):void {
+      displayObject.addEventListener(MouseEvent.MOUSE_WHEEL, mouseWheelNile);
+      if (displayObject is DisplayObjectContainer)
+        for (var i:int = 0; i < displayObject.numChildren; i++)
+          addMouseWheel(displayObject.getChildAt(i));
+    }
+
+    // Called only once when initialization is complete.
+    public function beginPolling():void {
+      if (FBConnect.status != FBConnect.Connected) return;
+
+      pollingTimer.addEventListener(TimerEvent.TIMER, poll);
+      poll();
+
+      nile.visible = true;
+    }
+
+    // Called on a loop to fetch new entries from the stream
+    private function poll(event:TimerEvent = null):void {
+      pollingTimer.reset();
+
+      // Build our filter-key or statement
+      var requested_filters:Array = new Array();
+      for each (var streamFilter:String in streamFilters)
+        requested_filters.push("(filter_key = '" + streamFilter + "' and " +
+        "created_time >= " + getLatestUpdate(streamFilter) + ")");
+
+      // We build our fql query here to call restserver.php.
+      // {"order by time desc"} allows us to ensure we get the newest, in order.
+      // {"and time > " + latestUpdate} allows us to just get deltas.
+      var query:JSONLoader = FBAPI.callMethod("fql.query", {
+        query:"select post_id, source_id, created_time, actor_id, " +
+          "target_id, app_id, message, attachment, comments, likes, " +
+          "permalink, attribution, type, filter_key " +
+          "from stream where " +
+          requested_filters.join(" or ") + " " +
+          "order by created_time desc"
+      });
+      query.addEventListener(FBEvent.SUCCESS, updatesReturned);
+      query.addEventListener(FBEvent.RETRY, queryRetried);
+    }
+
+    // Called when a net connection was flaky and the query is reattempted
+    private function queryRetried(event:FBEvent):void {
+      fbair.loadingIndicator.loadStatus("Connecting to Facebook");
+    }
+
+    // Called every time we have new updates from the server
+    private function updatesReturned(event:FBEvent):void {
+      fbair.loadingIndicator.close();
+      data = event.data;
+    }
+
+    // Setting our massive container data (massive, baby, that's what she said)
+    override public function set data(new_data:Object):void {
+      // Reset polling
+      pollingTimer.reset();
+
+      // Set LongDelay
+      var currentTime:Number = (new Date()).time;
+      var longDelay:Boolean = currentTime - updateTime > MinAnimationDelay;
+      updateTime = currentTime;
+
+      // All our updates, wrapped in an array collection
+      var updates:ArrayCollection = new ArrayCollection(new_data as Array);
+      var filterSet:ArrayCollection;
+      var update:Object;
+
+      // If we have any zombies, they need to be counted out right away
+      for (var z:int = 0; z < updates.length; z++)
+        if (zombies[updates[z].post_id])
+          updates.removeItemAt(z--);
+
+      // Remove everything from dataCache, except immunes, then done w/ immunes
+      for each (filterSet in dataCache)
+        for (var f:int = 0; f < filterSet.length; f++)
+          if (!immunes[filterSet[f].post_id]) filterSet.removeItemAt(f--);
+      immunes = new Object();
+
+      // Push into dataCache, and build global list of ids
+      for each (update in updates) {
+        if (!dataCache[update.filter_key]) {
+          dataCache[update.filter_key] = new ArrayCollection();
+          dataCache[update.filter_key].sort = sort;
+        }
+        dataCache[update.filter_key].addItem(update);
+      }
+
+      // Delete any over the max in each filter list
+      for each (filterSet in dataCache)
+        while (filterSet.length > MaxEntries)
+          filterSet.removeItemAt(filterSet.length-1);
+
+      // Update our metadata
+      updateMetadata();
+
+      // Determine BigUpdate
+      var totalAdditions:int = 0;
+      for each (update in dataCache[CurrentFilter])
+        if (!nile.itemsByID[update.post_id])
+          totalAdditions++;
+      var bigUpdate:Boolean = (totalAdditions > MaxAnimations);
+
+      // Determine whether to animate
+      Animate = !bigUpdate && longDelay;
+
+      // Set nile data every fucking where
+      for (var filterKey:String in dataCache)
+        if (niles[filterKey])
+          niles[filterKey].data = dataCache[filterKey];
+
+      // If there's nothing in our current filter, then we need to clear it
+      if (!dataCache[CurrentFilter])
+        nile.data = new Array();
+
+      // If the nile's not on display then make it so
+      if (!nileCanvas.contains(nile))
+        nileCanvas.addChild(nile);
+
+      // Begin timer for next run
+      pollingTimer.start();
+    }
+
+    // Called to update data built off dataCache
+    public function updateMetadata():void {
+      // Get latestUpdates on these jonx filters
+      for (var filterKey:String in dataCache) {
+        var filterList:ArrayCollection = dataCache[filterKey];
+        latestUpdates[filterKey] = filterList.length > 0 ?
+          filterList[filterList.length-1].created_time : 0;
+      }
+    }
+
+    // Called when user has created their own status update
+    public function addStatusMessage(storyData:Object):void {
+      Output.assert(nile != null, "Adding status message with no nile?");
+      // Into the dataCache and the newsfeed filter...
+      dataCache["nf"].addItem(storyData);
+
+      // Mark immune, then give to NewsFeed and CurrentFilter
+      // NileRenderers own their data with logic so each
+      //   has to get it's own deep copy via ObjectUtil.copy
+      Animate = true;
+      immunes[storyData.post_id] = true;
+      nile.addStory(ObjectUtil.copy(storyData));
+      if (niles["nf"] && niles["nf"] != nile)
+        niles["nf"].addStory(ObjectUtil.copy(storyData));
+    }
+
+    // Bubbling event listener  informs us that a story wants to be deleted
+    private function storyRemoved(event:Event):void {
+      var deadRenderer:NileRenderer = event.target as NileRenderer;
+
+      // Sweep out of filters
+      for each (var filterSet:ArrayCollection in dataCache)
+        for (var i:int = 0; i < filterSet.length; i++)
+          if (filterSet[i].post_id == deadRenderer.data.post_id)
+            filterSet.removeItemAt(i--);
+
+      // Zombie
+      zombies[deadRenderer.data.post_id] = true;
+
+      // Remove from all niles
+      Animate = true;
+      for each (var cur_nile:Nile in niles)
+        cur_nile.removeStoryByID(deadRenderer.data.post_id);
+    }
+
+    // Called when new filter has added to tab bar
+    public function filterAdded(filter_key:String):void {
+      Output.assert(streamFilters.indexOf(filter_key) == -1,
+        "Adding filter_key that we already had?: " + filter_key);
+      Output.assert(niles[filter_key] == null,
+        "Adding filter_key with nile we had?:" + filter_key);
+
+      // So truly add it
+      if (streamFilters.indexOf(filter_key) == -1) {
+        Output.assert(niles[filter_key] == null,
+          "We have no streamfilter but a nile?: " + filter_key);
+
+        streamFilters.push(filter_key);
+        CurrentFilter = filter_key;
+
+        // If there's a nile in the canvas, remove it
+        if (nile) nile.visible = false;
+
+        // Create a new nile, and add it
+        niles[filter_key] = new Nile();
+        nile = niles[filter_key];
+        nile.addEventListener(Event.RESIZE, boundNile);
+
+        // poll baby!
+        poll();
+      }
+      // Or maybe just point shit
+      else filterSelected(filter_key);
+    }
+
+    // Called when a filter has been removed
+    public function filterRemoved(filter_key:String):void {
+      var filter_index:int = streamFilters.indexOf(filter_key);
+      Output.assert(filter_index != -1, "Removing filter with index -1?: " +
+        filter_key);
+      Output.assert(niles[filter_key] != null,
+        "Removing filter that had no nile?: " + filter_key);
+
+      // Remove nile itself
+      niles[filter_key].removeEventListener(Event.RESIZE, boundNile);
+      if (nile == niles[filter_key]) nile = null;
+      if (nileCanvas.contains(niles[filter_key]))
+        nileCanvas.removeChild(niles[filter_key]);
+      delete niles[filter_key];
+
+      // Remove from filters
+      streamFilters.splice(filter_index, 1);
+    }
+
+    // Called whena new filter is selected!
+    public function filterSelected(filter_key:String):void {
+      Output.assert(streamFilters.indexOf(filter_key) != -1,
+        "Selecting filter we don't have?: " + filter_key);
+      Output.assert(niles[filter_key] != null,
+        "Selecting filter with no nile?: " + filter_key);
+
+      // Select this filter only if not active, and show what we have
+      if (CurrentFilter != filter_key) {
+        CurrentFilter = filter_key;
+
+        // Remove old nile
+        if (nile) nile.visible = false;
+
+        // Add new nile
+        nile = niles[filter_key];
+        nile.visible = true;
+        Animate = false;
+        if (!nileCanvas.contains(nile))
+          nileCanvas.addChild(nile);
+      }
+    }
+
+    // Called when the nile scrollbar has moved, and we need to move
+    //   the nile itself to keep pace.
+    private function scrollNile(event:ScrollEvent = null):void {
+      // Move the nile position
+      nile.y = -scrollBar.scrollPosition;
+
+      // Find the renderer on top, and cache it
+      nile.markTopRenderer();
+    }
+
+    // Called when we move the mouse wheel over the nile, so
+    //   we want to scroll
+    private function mouseWheelNile(event:MouseEvent):void {
+      // If not the original dispatcher, then nevermind.
+      //   because we don't want to duplicate scrolling efforts
+      if (event.target != event.currentTarget) return;
+
+      // Move scrollPosition
+      scrollBar.scrollPosition -= event.delta * MouseWheelSize;
+      scrollBar.scrollPosition = Math.min(scrollBar.scrollPosition,
+        scrollBar.maxScrollPosition);
+      scrollBar.scrollPosition = Math.max(scrollBar.scrollPosition,
+        scrollBar.minScrollPosition);
+
+      // Update the position of the nile based on scrollposition
+      scrollNile();
+    }
+
+    // Ensures that our nile is not being displayed beyond the scrollable edges
+    // If we move, we also recache what the topRenderer is
+    private function boundNile(event:Event = null):void {
+      if (nile.height < nileCanvas.height) {
+        nile.y = 0;
+        scrollBar.scrollPosition = 0;
+        nile.markTopRenderer();
+      }
+      else if (nile.y < nileCanvas.height - nile.height) {
+        nile.y = nileCanvas.height - nile.height;
+        scrollBar.scrollPosition = scrollBar.maxScrollPosition;
+        nile.markTopRenderer();
+      }
+    }
+  ]]></mx:Script>
+</mx:HBox>

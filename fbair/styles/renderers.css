@@ -1,0 +1,211 @@
+.actorAndMessage {
+  paddingLeft: -2;
+  paddingRight: -2;
+  paddingTop: -2;
+}
+
+.allComments {
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  bottomBorderColor: #ffffff;
+  horizontalGap: 2;
+  paddingBottom: 2;
+  paddingLeft: 4;
+  paddingRight: 3;
+  paddingTop: 3;
+}
+
+.commentDeleteButton, .storyDeleteButton {
+  disabledSkin: Embed(source='../assets/delete_over.png');
+  downSkin: Embed(source='../assets/delete_over.png');
+  overSkin: Embed(source='../assets/delete_over.png');
+}
+
+.commentDeleteButton, .storyDeleteButton {
+  upSkin: Embed(source='../assets/delete.png');
+}
+
+.commentHeader {
+  verticalAlign: bottom;
+}
+
+.commentInputBox {
+  verticalGap: 3;
+}
+
+.commentRenderer {
+  horizontalGap: 5;
+  paddingBottom: 3;
+  paddingLeft: 3;
+  paddingRight: 3;
+  paddingTop: 6;
+}
+
+.commentText {
+  paddingTop: -2;
+}
+
+.commentTimeStamp {
+  color: #AAA;
+}
+
+.commentVBox {
+  paddingTop: -3;
+  verticalGap: 0;
+}
+
+.commentsPreview {
+  horizontalGap: 2;
+}
+
+.itemDescription, .itemSource {
+  color: #808080;
+}
+
+.itemDescription, .itemSource, .itemLink {
+  paddingLeft: -2;
+}
+
+.itemLink {
+  font-weight: bold;
+  paddingBottom: 2;
+}
+
+.likesPreview {
+  horizontalGap: 2;
+}
+
+.likesRenderer {
+  horizontalGap: 2;
+  paddingBottom: 2;
+  paddingLeft: 4;
+  paddingRight: 3;
+  paddingTop: 3;
+}
+
+.mediaImage {
+  bottom: 1;
+  top: 1;
+}
+
+.mediaItems {
+  horizontalGap: 6;
+  verticalAlign: top;
+}
+
+.multiItemDetail {
+  verticalGap: -2;
+}
+
+.nileRenderer {
+  horizontalGap: 6;
+  paddingBottom: 7;
+  paddingLeft: 6;
+  paddingRight: 6;
+  paddingTop: 6;
+}
+
+.noItemDetail {
+  borderColor: #dddddd;
+  borderSides: "left";
+  borderStyle: solid;
+  borderThickness: 2;
+  paddingLeft: 6;
+  verticalGap: -2;
+}
+
+.photoFrame {
+  disabledSkin: Embed(source='../assets/photo_frame_over.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='6',scaleGridRight='6');
+  downSkin: Embed(source='../assets/photo_frame_over.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='6',scaleGridRight='6');
+  overSkin: Embed(source='../assets/photo_frame_over.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='6',scaleGridRight='6');
+  upSkin: Embed(source='../assets/photo_frame.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='6',scaleGridRight='6');
+}
+
+.shrinkUFIButton {
+  disabledSkin: Embed(source='../assets/shrink_ufi_over.png');
+  downSkin: Embed(source='../assets/shrink_ufi_over.png');
+  overSkin: Embed(source='../assets/shrink_ufi_over.png');
+  right: 3;
+  top: 6;
+  upSkin: Embed(source='../assets/shrink_ufi.png');
+}
+
+.storyContent {
+  verticalGap: 3;
+}
+
+.timePhrase {
+  color: #808080;
+}
+
+.ufiPreview {
+  horizontalGap: 6;
+  paddingBottom: 2;
+  paddingLeft: 6;
+  paddingRight: 1;
+  paddingTop: 7;
+}
+
+.ufiRenderers {
+  paddingBottom: 3;
+  paddingLeft: 2;
+  paddingRight: 1;
+  paddingTop: 4;
+}
+
+.ufiUpperLip {
+  borderSkin: Embed(source='../assets/ufi-high.png',scaleGridTop='9',scaleGridLeft='23',scaleGridBottom='12',scaleGridRight='24');
+}
+
+.videoBadge {
+  bottom: 0;
+  left: 0;
+}
+
+ActionRow {
+  paddingBottom: -3;
+  paddingLeft: -2;
+  paddingTop: -6;
+}
+
+AttachmentRenderer {
+  horizontalGap: 6;
+  paddingBottom: 6;
+}
+
+CommentBox {
+  horizontalGap: 5;
+  paddingBottom: 2;
+  paddingLeft: 3;
+  paddingRight: 3;
+  paddingTop: 6;
+}
+
+CommentRenderer {
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  bottomBorderColor: #ffffff;
+}
+
+LikesRenderer {
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  bottomBorderColor: #ffffff;
+}
+
+LinkLabel, LinkText {
+  color: #3b5998;
+}
+
+NileRenderer {
+  backgroundAngle: 180;
+  backgroundColor: #fff;
+  backgroundColors: #fafafa, #ffffff;
+  backgroundPositions: 0, 15;
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  insetRightBorder: -1;
+  insetTopBorder: -1;
+  topBorderColor: #ddd;
+  topBorderColor: #dddddd;
+}
+
+UFI {
+  borderSkin: Embed(source='../assets/ufi-low.png',scaleGridTop='10',scaleGridLeft='23',scaleGridBottom='11',scaleGridRight='24');
+}

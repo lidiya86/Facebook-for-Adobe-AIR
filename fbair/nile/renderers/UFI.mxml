@@ -1,0 +1,189 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- The UFI stands for Unified Feedback Interface, and is the UI we
+     use on facebook for getting and displaying likes and comments about
+     stories, photos, and other content -->
+<util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
+                     xmlns:renderer="fbair.nile.renderers.*"
+                     xmlns:util="fbair.util.display.*"
+                     animate="false"
+                     animateIn="false"
+                     animateOnce="true"
+                     visible="{data.likes.count > 0 ||
+                               data.comments.count > 0 ||
+                               data.commentBoxActive}" >
+
+  <!-- We use these fades when replacing the preview with the renderer -->
+  <mx:Fade id="fadeOut"
+           duration="500"
+           alphaTo="0" />
+  <mx:Fade id="fadeIn"
+           duration="500"
+           alphaTo="1"
+           alphaFrom="0" />
+
+  <!-- The UFI Preview displays if there is any feedback to a stream
+       story. Clicking the preview replaces it with the UFI renderer -->
+  <mx:HBox width="100%"
+           id="ufiPreview"
+           styleName="ufiPreview"
+           buttonMode="true"
+           useHandCursor="true"
+           mouseChildren="false"
+           click="{ufiMode = UFI_DETAIL}"
+           hideEffect="fadeOut"
+           showEffect="fadeIn" >
+
+    <!-- Show how many people like this in the preview -->
+    <mx:HBox id="likesPreview"
+             styleName="likesPreview"
+             visible="{data.likes.count > 0}"
+             includeInLayout="{data.likes.count > 0}"
+             showEffect="fadeIn">
+      <mx:Image source="@Embed('../../assets/like.png')" />
+      <mx:Label text="{MathUtil.and(data.likes.count == 1,
+                       data.likes.user_likes) ?
+                       'You like this' :
+                       StringUtil.pluralize('like', data.likes.count)}" />
+    </mx:HBox>
+
+    <!-- Show how many comments in the preview -->
+    <mx:HBox id="commentsPreview"
+             styleName="commentsPreview"
+             visible="{data.comments.count > 0}"
+             includeInLayout="{data.comments.count > 0}"
+             showEffect="fadeIn">
+      <mx:Image source="@Embed('../../assets/comment.png')" />
+      <mx:Label text="{StringUtil.pluralize('comment', data.comments.count)}" />
+    </mx:HBox>
+  </mx:HBox>
+
+  <!-- The UFI renderer displays the actual likes and comments -->
+  <util:AnimatedCanvas id="ufiDetail"
+                       width="100%"
+                       visible="false"
+                       animateOnce="true"
+                       animateOut="true" >
+    <mx:VBox width="100%"
+             id="ufiRenderers"
+             styleName="ufiRenderers" >
+      <!-- These renderers show the Likes and Comments for this entry -->
+      <renderer:LikesRenderer id="likesRenderer"
+                              width="100%"
+                              data="{data}" />
+
+      <renderer:CommentsRenderer id="commentsRenderer"
+                                 width="100%"
+                                 data="{data}" />
+
+      <mx:HBox width="100%" >
+        <renderer:CommentBox id="commentBox"
+                             width="100%"
+                             commented="commented(event)"
+                             data="{data}" />
+        <mx:Canvas>
+          <mx:Button id="shrinkUFIButton"
+                     styleName="shrinkUFIButton"
+                     buttonMode="true"
+                     visible="{!data.commentBoxActive}"
+                     includeInLayout="{!data.commentBoxActive}"
+                     click="{ufiMode = UFI_PREVIEW}" />
+        </mx:Canvas>
+      </mx:HBox>
+    </mx:VBox>
+  </util:AnimatedCanvas>
+
+  <!-- This provides the UFI's Upper Lip -->
+  <mx:Canvas width="100%"
+             height="10"
+             styleName="ufiUpperLip" />
+
+  <mx:Script><![CDATA[
+    import fb.FBEvent;
+
+    import fbair.nile.Nile;
+    import fbair.nile.NileContainer;
+    import fbair.nile.renderers.UFI;
+    import fbair.util.MathUtil;
+    import fbair.util.StringUtil;
+
+    public static const UFI_PREVIEW:int = 1;
+    public static const UFI_DETAIL:int = 2;
+
+    private var _ufiMode:int = UFI_PREVIEW;
+
+    // Given a data object, returns the ufi_count
+    public static function count(data:Object):int {
+      return data.comments.count
+             + data.likes.count
+             + (data.commentBoxActive ? 1 : 0);
+    }
+
+    [Bindable]
+    public function get ufiMode():int { return _ufiMode; }
+    public function set ufiMode(to:int):void {
+      if (_ufiMode == to) return;
+      _ufiMode = to;
+
+      switch (_ufiMode) {
+        case UFI_PREVIEW :
+          fadeOut.play([ufiDetail]);
+          ufiPreview.visible = true;
+          ufiDetail.visible = false;
+          break;
+
+        case UFI_DETAIL :
+          commentsRenderer.reveal();
+          ufiDetail.animateIn = !(data.commentBoxActive &&
+                                  UFI.count(data) == 1);
+          if (ufiDetail.animateIn) {
+            fadeIn.play([ufiDetail]);
+          } else {
+            ufiDetail.alpha = 1;
+          }
+          ufiPreview.visible = false;
+          ufiDetail.visible = true;
+          break;
+      }
+    }
+
+    // this override determines if the animation should occur first
+    override public function set visible(to:Boolean):void {
+      animateIn = !data.commentBoxActive && NileContainer.Animate &&
+        data.filter_key == NileContainer.CurrentFilter;
+      animateOut = UFI.count(data) == 0 &&
+                   (likesRenderer.visible || data.comments.count > 0);
+      super.visible = to;
+    }
+
+    // Our data setter
+    override public function set data(new_data:Object):void {
+      // Pass along commentBoxActive if we have it
+      if (data) new_data.commentBoxActive = data.commentBoxActive;
+      else new_data.commentBoxActive = false;
+
+      super.data = new_data;
+    }
+
+    // Called when we just successfully commented
+    private function commented(event:FBEvent):void {
+      data.comments.count++;
+
+      // Add this comment to our CommentsRenderer
+      commentsRenderer.addComment(event.data, true);
+    }
+  ]]></mx:Script>
+</util:AnimatedCanvas>

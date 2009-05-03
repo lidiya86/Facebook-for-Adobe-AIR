@@ -1,0 +1,148 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- There's one of these in every UFI
+     We hide and show this box to create new comments -->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:gui="fbair.gui.*"
+         xmlns:util="fbair.util.display.*"
+         removedFromStage="removedFromStage(event)"
+         isPopUp="{data.commentBoxActive}" >
+
+  <mx:Metadata>
+    [Event(name="commented", type="fb.FBEvent")]
+  </mx:Metadata>
+
+  <!-- Picture of you, buddy! -->
+  <gui:RoundedProfileImage profileID="{FBConnect.session.uid}"
+                           linkEnabled="false"
+                           size="{CommentRenderer.PicSize}"
+                           visible="{data.commentBoxActive}"
+                           includeInLayout="{data.commentBoxActive}" />
+
+  <mx:VBox styleName="commentInputBox"
+           width="100%" >
+    <!-- This is where you put your comment! -->
+    <util:GrowableTextArea id="commentInput"
+                           styleName="commentInput"
+                           width="100%"
+                           height="{data.commentBoxActive ?
+                             FocusInHeight : FocusOutHeight}"
+                           text="{FocusOutText}"
+                           color="{data.commentBoxActive ?
+                             EnabledColor : DisabledColor}"
+                           focusIn="focusIn(event)"
+                           focusOut="focusOut(event)"
+                           minTextHeight="{FocusInHeight}" />
+
+    <util:FBButton id="commentButton"
+                   autoStyle="true"
+                   styleNamePrefix="commentButton"
+                   label="Comment"
+                   click="submitComment(event)"
+                   visible="{data.commentBoxActive}"
+                   includeInLayout="{data.commentBoxActive}" />
+  </mx:VBox>
+
+
+  <mx:Script><![CDATA[
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
+
+    import flash.events.Event;
+
+    import mx.core.Application;
+
+    private static const FocusOutHeight:int = 25;
+    private static const FocusInHeight:int = 40;
+    private static const FocusOutText:String = "Write a comment...";
+
+    private static const EnabledColor:uint = 0x333333;
+    private static const DisabledColor:uint = 0x808080;
+
+    private var _isPopUp:Boolean = false;
+
+    // This just gives us a bindable variable to use for doing something
+    //   when data.commentBoxActive is flipped
+    override public function get isPopUp():Boolean { return _isPopUp; }
+    override public function set isPopUp(to:Boolean):void {
+      _isPopUp = to;
+
+      if (to)
+        stage.addEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+      else
+        stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+    }
+
+    private function removedFromStage(event:Event):void {
+      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+    }
+
+    private function releaseFocus(event:MouseEvent):void {
+      if (!hitTestPoint(event.stageX, event.stageY))
+        Application.application.setFocus();
+    }
+
+    // Called when our input gains focus, and we want to expand
+    private function focusIn(event:FocusEvent):void {
+      data.commentBoxActive = true;
+      if (commentInput.text == FocusOutText)
+        commentInput.text = "";
+    }
+
+    // Called when our input loses focus, and we want to contract
+    private function focusOut(event:FocusEvent):void {
+      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
+      if (commentInput.text == "") {
+        data.commentBoxActive = false;
+        commentInput.text = FocusOutText;
+      }
+    }
+
+    // Called when we actually click the Submit button and want to submit
+    //   a comment.
+    private function submitComment(event:MouseEvent):void {
+      if (!data.comments.can_post || commentInput.text == "") return;
+
+      // Disable input for now
+      commentInput.editable = false;
+      commentButton.enabled = false;
+
+      // Call the server to add our comment to this stream entry
+      FBAPI.callMethod("stream.addComment",
+                       {post_id:data.post_id,
+                        comment:commentInput.text})
+        .addEventListener(FBEvent.SUCCESS, commentSubmitted);
+    }
+
+    // Called when our comment has been submitted to server
+    private function commentSubmitted(event:FBEvent):void {
+      // Dispatch our event
+      dispatchEvent(new FBEvent("commented", {
+        fromid:FBConnect.session.uid,
+        id:event.data,
+        text:commentInput.text,
+        time:(new Date().time / 1000)
+      }));
+
+      // Re-enable input, but deactivate
+      data.commentBoxActive = false;
+      commentButton.enabled = true;
+      commentInput.editable = true;
+      commentInput.text = "";
+    }
+  ]]></mx:Script>
+</mx:HBox>

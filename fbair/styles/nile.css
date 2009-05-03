@@ -1,0 +1,9 @@
+Nile {
+  backgroundColor: #ffffff;
+  horizontalAlign: left;
+  verticalGap: 0;
+}
+
+NileContainer {
+  horizontalGap: 0;
+}

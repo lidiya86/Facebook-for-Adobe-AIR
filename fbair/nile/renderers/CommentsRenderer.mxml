@@ -1,0 +1,306 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This VBox acts as a simple "List" of CommentRenderers
+     There's exactly one of these in every UFI
+     Unfortunately this class is fairly complex, because we manage
+       whether or not we're "revealed" and then we mark our
+       count on every new data set to determine whether we go
+       to CommentCache to get more comments.  -->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:util="fbair.util.display.*"
+         xmlns:fb="fb.display.*"
+         xmlns:gui="fbair.gui.*"
+         creationComplete="creationComplete(event)" >
+
+  <!-- Link to show when we have TONS of comments -->
+  <util:AnimatedCanvas width="100%"
+                       id="allCommentsContainer"
+                       visible="false"
+                       animateOut="true"
+                       animateOnce="true">
+    <mx:HBox width="100%"
+             styleName="allComments" >
+      <mx:Image source="@Embed('../../assets/comment.png')" />
+
+      <!-- Sentence of how many people have commented on this -->
+      <mx:Text id="allCommentsText"
+               htmlText="{StringUtil.linkify('View All ' + data.comments.count
+                          + ' comments', data.permalink, false)}"
+               width="100%" />
+    </mx:HBox>
+  </util:AnimatedCanvas>
+
+  <!-- When we first expand we show this while fetching all comments -->
+  <gui:LoadingIndicator width="100%"
+                        id="loadingIndicator"
+                        visible="false"
+                        text="Loading Comments" />
+
+  <!-- This holds the CommentRenderers themselves -->
+  <util:AnimatedCanvas id="commentsBoxContainer"
+                       width="100%"
+                       animateIn="false"
+                       animateOnce="true" >
+    <mx:VBox id="commentsBox"
+             width="100%" />
+  </util:AnimatedCanvas>
+
+  <mx:Script><![CDATA[
+    import fb.FBEvent;
+
+    import fbair.nile.Nile;
+    import fbair.nile.NileContainer;
+    import fbair.nile.renderers.CommentRenderer;
+    import fbair.nile.renderers.UFI;
+    import fbair.util.CommentCache;
+    import fbair.util.StringUtil;
+
+    import mx.events.FlexEvent;
+
+    // Max number we want to show before we permalink
+    public static const MaxComments:int = 6;
+
+    // Tracks whether we've been revealed and are getting ALL comments
+    private var revealed:Boolean = false;
+
+    // Tracks if this renderer is getting it's very first data or not
+    private var firstPull:Boolean = true;
+
+    // Flag on whether we're currently requesting comments
+    private var fetchingComments:Boolean = false;
+
+    // We iterate this variable to have the timestamp of
+    //    the latest comments thus far made on this story
+    // This allows us to only fetch "new" comments each time.
+    private var latestUpdate:int = 0;
+
+    // comments[0] => Newest
+    // comments[comments.length-1] = Oldest
+    private var comments:Vector.<CommentRenderer> =
+      new Vector.<CommentRenderer>();
+
+    // All the CommentRenderers, keyed by id
+    private var commentsByID:Object = new Object();
+
+    // List of comment-ids we have absolutely deleted
+    //   We hold on to make sure a quick refresh doesn't revive them.
+    private var zombies:Object = new Object();
+
+    // List of comment-ids we just created
+    //   We hold on once to make sure a quick refresh doesn't delete.
+    private var immunes:Object = new Object();
+
+    // On creation, we subscribe to comment remove events
+    private function creationComplete(event:FlexEvent):void {
+      addEventListener(CommentRenderer.COMMENT_REMOVED, commentRemoved);
+    }
+
+    // "data" in this context is stream.comments
+    override public function set data(new_data:Object):void {
+      // Mark our current count
+      var oldCount:int = -1;
+      if (data) oldCount = data.comments.count;
+
+      // Update data
+      super.data = new_data;
+      if (!data) return;
+
+      // If the comments renderer is visible, then we should update
+      //   the comments or collapse to preview mode
+      if (revealed) {
+        // If we have more than max, then display link and remove
+        allCommentsContainer.visible = (data.comments.count > MaxComments);
+
+        // if we're setting data to a revealed state, then this isn't the
+        //   first time we've tried to load in data.
+        firstPull = false;
+        if (data.comments.count != oldCount)
+          fetchComments();
+      }
+    }
+
+    // Creates new CommentRenderer and adds to display
+    // commentData => {fromid:int, text:String}
+    public function addComment(commentData:Object,
+                               immune:Boolean = false,
+                               firstBatch:Boolean = false):void {
+      // Pass on our can_remove var
+      commentData.can_remove = data.comments.can_remove;
+
+      // Mark in immunity if immune
+      if (immune) immunes[commentData.id] = true;
+
+      // Create our new CommentRenderer, if we don't have one
+      if (!commentsByID[commentData.id])
+        commentsByID[commentData.id] = new CommentRenderer();
+
+      // Update the data of our comment renderer
+      var renderer:CommentRenderer =
+        commentsByID[commentData.id] as CommentRenderer;
+      renderer.animateIn = (!firstBatch && NileContainer.Animate);
+
+      renderer.data = commentData;
+
+      if (comments.indexOf(renderer) == -1) {
+        // Add to display if not already, and put in line
+        var entry_position:int = 0;
+        while(entry_position < comments.length &&
+              comments[entry_position].data.time < renderer.data.time)
+          entry_position++;
+
+        if (entry_position == comments.length) {
+          commentsBox.addChild(renderer);
+        } else {
+          var commentIndex:int = commentsBox.getChildIndex(
+                                   comments[entry_position]);
+          commentsBox.addChildAt(renderer, commentIndex);
+        }
+
+        commentsBoxContainer.visible = true;
+
+        // Put entry into comments list
+        comments.splice(entry_position, 0, renderer);
+      }
+    }
+
+    // Called when we're revealing the commentsrenderer
+    public function reveal():void {
+      if (revealed) return;
+      revealed = true;
+
+      // If we have more than max, then display link
+      allCommentsContainer.visible = (data.comments.count > MaxComments);
+
+      // Ok we need to check how many stories we have, and if we need more
+      if (data.comments.count <= 3) {
+        loadingIndicator.visible = false;
+        commentsBoxContainer.animateIn = false;
+
+        populateComments(data.comments.posts);
+      } else {
+        commentsBoxContainer.visible = false;
+        commentsBoxContainer.animateIn = true;
+
+        if (data.comments.count > 0) {
+          // If data is already in the cache, then just show it
+          if (CommentCache.hasFreshComments(data.post_id))
+            commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
+              CommentCache.commentCache[data.post_id]));
+          // Fetch data, and show loader
+          else {
+            loadingIndicator.immediateVisible = true;
+            commentsBoxContainer.addEventListener(AnimatedCanvas.TWEEN_COMPLETE,
+                                                  hideLoadingIndicator);
+            fetchComments(); 
+          }
+        }
+      }
+    }
+
+    // Called when a comment has been deleted by the user
+    private function commentRemoved(event:Event):void {
+      var comment:CommentRenderer = event.target as CommentRenderer;
+      removeCommentAtIndex(comments.indexOf(comment), true);
+      data.comments.count--;
+    }
+
+    // Called when we want to get some comments, yo
+    private function fetchComments():void {
+      if (!revealed || fetchingComments) return;
+      fetchingComments = true;
+
+      CommentCache.getComments(data.post_id,
+                               latestUpdate)
+        .addEventListener(CommentCache.COMMENTS_FETCHED, commentsFetched);
+    }
+
+    // Comments incoming from fql!
+    private function commentsFetched(event:FBEvent):void {
+      fetchingComments = false;
+      if (!revealed) return;
+
+      populateComments(event.data);
+    }
+
+    private function populateComments(newComments:*):void {
+      // If comments isn't an Array, then there are no comments
+      if (!(newComments is Array)) newComments = new Array();
+      var commentsArray:Array = newComments.slice(0, MaxComments);
+
+      // If we have any zombies, they need to be counted out
+      removeZombies(commentsArray);
+
+      // Add our comments
+      for each (var newComment:Object in commentsArray)
+        addComment(newComment, false, firstPull);
+
+      // Remove extraneous comments
+      removeAllCommentsExcept(commentsArray);
+
+      // Remove overflow, if any.
+      while (comments.length > MaxComments)
+        removeCommentAtIndex(0);
+
+      // Mark latest update
+      latestUpdate = (comments.length == 0 ? 0 : comments[0].data.time);
+    }
+
+    // We call this to narrow our comment view down to the group
+    //   provided by server.  A way to find deletes. basically.
+    private function removeAllCommentsExcept(theseComments:Array):void {
+      // Order posts by id to easily discover any deletions
+      var postsByID:Object = new Object();
+      for each (var newComment:Object in theseComments)
+        postsByID[newComment.id] = newComment;
+
+      // Now if we have any comments that don't exist
+      //   in this update, we're gonna remove them
+      for (var i:int = 0; i < comments.length; i++)
+        if (!postsByID[comments[i].data.id]) {
+          if (immunes[comments[i].data.id])
+            immunes[comments[i].data.id] = false;
+          else
+            removeCommentAtIndex(i--);
+        }
+    }
+
+    // Function to remove a comment, by index
+    private function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
+      var deadComment:CommentRenderer = comments.splice(i, 1)[0];
+      commentsByID[deadComment.data.id] = false;
+      if (zombie) zombies[deadComment.data.id] = true;
+      deadComment.remove();
+    }
+
+    // We call this to remove any zombies from an array
+    private function removeZombies(newComments:Array):int {
+      var removed:int = 0;
+      for (var i:int = 0; i < newComments.length; i++)
+        if (zombies[newComments[i].id]) {
+          newComments.splice(i--, 1);
+          removed++;
+        }
+      return removed;
+    }
+
+    // Hide loading indicator when done revealing
+    private function hideLoadingIndicator(event:Event):void {
+      commentsBoxContainer.removeEventListener(AnimatedCanvas.TWEEN_COMPLETE,
+                                               hideLoadingIndicator);
+      loadingIndicator.visible = false;
+    }
+  ]]></mx:Script>
+</mx:VBox>

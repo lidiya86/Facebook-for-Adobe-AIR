@@ -1,0 +1,95 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This contains our filters tab bar at top of window -->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:util="fbair.util.display.*"
+         styleName="{data.active ? 'filterTabActive' :
+                    (hovering ? 'filterTabOver' : 'filterTabOut')}"
+         height="26"
+         width="100%"
+         minWidth="46"
+         creationComplete="creationComplete(event)"
+         buttonMode="{!data.active}"
+         rollOver="{rollOver(event)}"
+         click="tabClicked(event)" >
+  <mx:Metadata>
+    [Event(name="deleteClick", type="fb.FBEvent")]
+    [Event(name="tabClick", type="fb.FBEvent")]
+  </mx:Metadata>
+
+  <util:SpritedImage source="{data.icon_url}"
+                     width="16"
+                     height="16"
+                     offsetX="16"
+                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}" />
+
+  <mx:Label id="tabLabel"
+            text="{data.name}"
+            truncateToFit="true"
+            maxWidth="{width - 45}"
+            visible="{tabLabel.width > 20}"
+            mouseEnabled="false"
+            mouseChildren="false"
+            useHandCursor="true"
+            styleName="{MathUtil.or(data.active, hovering) ?
+                       'tabLabelOver' : 'tabLabelOff'}" />
+
+  <mx:Canvas visible="{MathUtil.and(hovering, FiltersBar.TabCount > 1)}"
+             includeInLayout="{FiltersBar.TabCount > 1}">
+    <mx:Button id="tabDeleteButton"
+               styleName="tabDeleteButton"
+               buttonMode="true"
+               click="deleteClicked(event)" />
+  </mx:Canvas>
+
+  <mx:Script><![CDATA[
+    import fb.FBEvent;
+
+    import fbair.gui.filters.FiltersBar;
+    import fbair.util.MathUtil;
+
+    import flash.events.MouseEvent;
+
+    import mx.events.FlexEvent;
+
+    [Bindable] public var hovering:Boolean = false;
+
+    private function creationComplete(event:FlexEvent):void {
+      maxWidth = tabLabel.measureText(data.name).width + 50;
+
+      addEventListener(MouseEvent.ROLL_OUT, rollOut);
+      addEventListener(MouseEvent.ROLL_OVER, rollOver);
+    }
+
+    private function tabClicked(event:Event):void {
+      if (event.target == tabDeleteButton) return;
+      dispatchEvent(new FBEvent('tabClick'));
+    }
+
+    private function deleteClicked(event:Event):void {
+      rollOut(null);
+      dispatchEvent(new FBEvent('deleteClick'));
+    }
+
+    private function rollOver(event:MouseEvent):void {
+      hovering = true;
+    }
+
+    private function rollOut(event:Event = null):void {
+      hovering = false;
+    }
+  ]]></mx:Script>
+</mx:HBox>

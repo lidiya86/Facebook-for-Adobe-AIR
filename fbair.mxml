@@ -1,0 +1,251 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<app:ApplicationBase xmlns:app="*"
+                     xmlns:mx="http://www.adobe.com/2006/mxml"
+                     xmlns:nile="fbair.nile.*"
+                     xmlns:composer="fbair.composer.*"
+                     xmlns:gui="fbair.gui.*"
+                     xmlns:filters="fbair.gui.filters.*"
+                     applicationComplete="applicationComplete(event)"
+                     closing="closing(event)" >
+
+  <mx:Style source="fbair/styles/global.css" />
+  <mx:Style source="fbair/styles/composer.css" />
+  <mx:Style source="fbair/styles/nile.css" />
+  <mx:Style source="fbair/styles/renderers.css" />
+  <mx:Style source="fbair/styles/filters.css" />
+
+  <!-- We arrange elements in this fashion so that the appHeader is always
+       on top. Because Flex's layout order is directly linked to its depth.
+       the NileContainer binds its top offset to the appHeader's height
+       to simulate being part of the VBox while still be 'under' it's depth -->
+  <nile:NileContainer id="nileContainer"
+                      width="100%"
+                      height="100%"
+                      top="{appHeader.height}" />
+
+  <!-- The appHeader contains elements that are always on top of the app -->
+  <mx:VBox id="appHeader"
+           width="100%" >
+    <gui:LoadingIndicator id="loader"
+                          width="100%"
+                          animateIn="false" />
+
+    <filters:FiltersBar id="filtersBar"
+                        width="100%"
+                        tabAdded="filterTabAdded(event)"
+                        tabRemoved="filterTabRemoved(event)"
+                        tabFocused="filterTabFocused(event)" />
+
+    <composer:Composer id="composer"
+                       width="100%"
+                       statusUpdated="statusUpdated(event)" />
+  </mx:VBox>
+
+  <mx:Script><![CDATA[
+    import fb.FBConnect;
+    import fb.FBEvent;
+
+    import fbair.gui.StylePrefs;
+    import fbair.util.FBUpdater;
+    import fbair.util.Output;
+    import fbair.util.ProfileCache;
+
+    import flash.events.Event;
+
+    import mx.core.Application;
+    import mx.core.Container;
+    import mx.events.FlexEvent;
+
+    // Singleton reference to nile loading indicator
+    public static var loadingIndicator:LoadingIndicator;
+
+    // We don't request things multiple times, we just give up
+    private var requiredSession:Boolean = false;
+    private var requiredPermissions:Boolean = false;
+
+    // Called when our app is initialized...
+    // The first thing to do is authorize our application..
+    private function applicationComplete(event:FlexEvent):void {
+      // our app global loading indicator!
+      loadingIndicator = loader;
+
+      composer.enabled = false;
+
+      // If we have stored session data, let's pull it in
+      var windowData:Object = getPreference("window");
+      if (windowData) {
+        nativeWindow.x = windowData.x;
+        nativeWindow.y = windowData.y;
+        nativeWindow.height = windowData.height;
+      }
+
+      // If we just updated, let's delete our autoupdate file
+      if (FBUpdater.firstRun())
+        FBUpdater.deleteInstallationFile();
+      // Load old data only if we didn't just autoupdate
+      //   Between updates our data model might change...
+      else {
+        // Load our profile data.
+        var profileCache:Object = getPreference("profileCache");
+        if (profileCache) ProfileCache.cache = profileCache;
+
+        // If we have cached renderer data, hit it up
+        var nileCache:Object = ApplicationBase.getPreference("nileCache");
+        if (nileCache) {
+          nileContainer.dataCache = nileCache;
+          nileContainer.updateMetadata();
+        }
+
+        // If we have tabs data, hit it up
+        var filtersData:Object = ApplicationBase.getPreference("filters");
+        if (filtersData) {
+          // Set nile stuff first to prepare for events
+          var stream_filters:Array = new Array();
+          for each (var tab:Object in filtersData.tabData)
+            stream_filters.push(tab.filter_key);
+          nileContainer.loadInitialFilters(stream_filters);
+
+          // Now set filtersBar and we're off and running
+          filtersBar.focusHistory = filtersData.focusHistory;
+          filtersBar.tabData = filtersData.tabData;
+          filtersBar.data = filtersData.data;
+          filtersBar.currentTab = filtersData.currentTab;
+        }
+      }
+      
+      // We want to listen to changes to status or permissions,
+      //   so let's add event listeners for both.
+      FBConnect.dispatcher.addEventListener(FBEvent.STATUS_CHANGED,
+        statusChanged);
+      FBConnect.dispatcher.addEventListener(FBEvent.PERMISSION_CHANGED,
+        permissionChanged);
+      FBConnect.dispatcher.addEventListener(FBEvent.ALERT,
+        applicationAlert);
+
+      // Now we call this to init our application.
+      // Always call this only once, in the applicationComplete callback.
+      FBConnect.init('39f0aec9479177cddacef90da714b037');
+
+      // This function checks to see if we're already connected
+      statusChanged();
+    }
+
+    // Checks our status and requires Session if we're not connected.
+    private function statusChanged(event:FBEvent = null):void {
+      // If we're already connected then let's move on to extended permissions
+      if (FBConnect.status == FBConnect.Connected)
+        connected();
+      // If we already tried requiring session, then give up
+      else if (requiredSession)
+        close();
+      // If we're not connected then we need to call FBConnect.requireSession()
+      // This is the function you should call to authorize your app.
+      else if (FBConnect.status == FBConnect.NotLoggedIn) {
+        requiredSession = true;
+        requiredPermissions = false;
+        FBConnect.requireSession();
+      }
+    }
+
+    // Once connected we want to check on our permissions
+    private function connected():void {
+      permissionChanged();
+    }
+
+    // This function checks our permissions and calls requirePermission.
+    // FBConnect.requirePermission(permission_name) is the way to
+    //   acquire extended permissions.
+    private function permissionChanged(event:FBEvent = null):void {
+      if (FBConnect.hasPermission("read_stream") &&
+          FBConnect.hasPermission("publish_stream"))
+        fullyAuthorized();
+      else if (requiredPermissions)
+        close();
+      else {
+        requiredSession = false;
+        requiredPermissions = true;
+        FBConnect.requirePermissions(["read_stream", "publish_stream"]);
+      }
+    }
+
+    // Now fully authorized, we'll display our content
+    // And begin polling.
+    // We'll also check for any updates to ourself
+    private function fullyAuthorized():void {
+      // Allow loader to display what we expect in the future
+      loader.loadStatus("Connecting to Facebook");
+
+      // Allow Composing
+      composer.enabled = true;
+
+      // Fetch filters
+      filtersBar.fetchFilters();
+
+      // Begin polling
+      nileContainer.beginPolling();
+
+      // Autoupdating ftw
+      FBUpdater.saveVersionToFile();
+      FBUpdater.checkForNewVersion();
+    }
+
+    private function applicationAlert(event:FBEvent):void {
+      loader.loadStatus(event.data.text);
+    }
+
+    // Called when the composer has added a status update!
+    private function statusUpdated(event:FBEvent):void {
+      nileContainer.addStatusMessage(event.data);
+    }
+
+    private function filterTabAdded(event:FBEvent):void {
+      nileContainer.filterAdded(event.data);
+    }
+
+    private function filterTabRemoved(event:FBEvent):void {
+      nileContainer.filterRemoved(event.data);
+    }
+
+    private function filterTabFocused(event:FBEvent):void {
+      nileContainer.filterSelected(event.data);
+    }
+
+    // Called when the app is ending and we want to save some data
+    private function closing(event:Event):void {
+      setPreference("window", {
+        x:nativeWindow.x,
+        y:nativeWindow.y,
+        height:nativeWindow.height
+      });
+
+      setPreference("filters", {
+        data:filtersBar.data,
+        tabData:filtersBar.tabData,
+        focusHistory:filtersBar.focusHistory,
+        currentTab:filtersBar.currentTab
+      });
+
+      setPreference("nileCache", nileContainer.dataCache);
+
+      setPreference("styles", {
+        sizeStyle:StylePrefs.prefs.sizeStyle
+      });
+
+      setPreference("profileCache", ProfileCache.cache);
+    }
+  ]]></mx:Script>
+</app:ApplicationBase>

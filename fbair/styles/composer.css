@@ -1,0 +1,12 @@
+Composer {
+  backgroundColors: #f0f0f0, #d6d6d6;
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  bottomBorderColor: #aaaaaa;
+  horizontalGap: 6;
+  insetRightBorder: -1;
+  paddingBottom: 6;
+  paddingLeft: 6;
+  paddingRight: 6;
+  paddingTop: 5;
+  verticalAlign: bottom;
+}

@@ -1,0 +1,94 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- Loading indicator displays itself when we have trouble connecting
+     to Facebook for authentication or stream loading -->
+<util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
+                     xmlns:util="fbair.util.display.*"
+                     xmlns:fb="fb.display.*"
+                     animate="false"
+                     animateOut="true"
+                     animateOnce="true"
+                     buttonMode="{isError}"
+                     styleName="{isError ? 'errorIndicator'
+                                         : 'loadingIndicator'}" >
+
+  <mx:HBox width="100%"
+           id="loadingBox"
+           styleName="loadingBox">
+
+    <mx:Label text="{text}" />
+
+    <fb:LoadAnimation width="20"
+                      height="100%"
+                      visible="{MathUtil.and(!isError, immediateVisible)}" />
+  </mx:HBox>
+
+  <mx:Script><![CDATA[
+    import fbair.util.MathUtil;
+
+    import flash.events.MouseEvent;
+
+    private var _text:String = "Connecting to Facebook";
+    private var errorCallback:Function;
+    private var hideOnClick:Boolean;
+
+    [Bindable] public var isError:Boolean = false;
+    [Bindable] public var text:String;
+
+    public function loadStatus(txt:String):void {
+      if (errorCallback != null || hideOnClick)
+        close();
+
+      isError = false;
+      animateIn = true;
+      visible = true;
+      text = txt;
+    }
+
+    // Called from anywhere in the app when an error occurs.
+    // Callback is a function to call when the user has dismissed the error.
+    // hideOnClick indicates whether clicking it should hide it.  (duh?)
+    public function errorStatus(txt:String,
+                                callback:Function = null,
+                                hide:Boolean = false):void {
+      isError = true;
+      animateIn = true;
+      visible = true;
+      text = txt;
+      errorCallback = callback;
+      hideOnClick = hide;
+
+      if (errorCallback != null || hideOnClick)
+        addEventListener(MouseEvent.CLICK, errorClicked);
+    }
+
+    public function close():void {
+      visible = false;
+      errorCallback = null;
+      hideOnClick = false;
+      removeEventListener(MouseEvent.CLICK, errorClicked);
+    }
+
+    private function errorClicked(event:MouseEvent):void {
+      removeEventListener(MouseEvent.CLICK, errorClicked);
+
+      var callback:Function = errorCallback;
+      if (hideOnClick) close();
+      if (callback != null) callback();
+    }
+
+  ]]></mx:Script>
+</util:AnimatedCanvas>

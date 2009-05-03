@@ -1,0 +1,72 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- Every NileRenderer contains one ActionRow
+     It contains the Like and Comment links.
+     As well as any extra Action links. -->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:util="fbair.util.display.*" >
+  <mx:Metadata>
+    [Event(name="likeClick", type="flash.events.Event")]
+    [Event(name="commentClick", type="flash.events.Event")]
+  </mx:Metadata>
+
+  <!-- Tells us the time ago since it happened -->
+  <mx:Text id="timePhrase"
+           styleName="timePhrase"
+           text="{data.timePhrase}" />
+
+  <!-- Dot and link for commenting -->
+  <mx:Label text="·"
+            width="4"
+            paddingLeft="-2"
+            paddingRight="-2"
+            visible="{data.comments.can_post}"
+            includeInLayout="{data.comments.can_post}" />
+  <util:LinkLabel text="{commentText}"
+                  visible="{data.comments.can_post}"
+                  includeInLayout="{data.comments.can_post}"
+                  click="dispatchEvent(new Event('commentClick'))" />
+
+  <!-- Dot and link for liking -->
+  <mx:Label text="·"
+            width="4"
+            paddingLeft="-2"
+            paddingRight="-2"
+            visible="{data.likes.can_like}"
+            includeInLayout="{data.likes.can_like}" />
+  <util:LinkLabel id="likeLink"
+                  text="{data.likes.user_likes ? 'Unlike' : 'Like'}"
+                  visible="{data.likes.can_like}"
+                  includeInLayout="{data.likes.can_like}"
+                  click="dispatchEvent(new Event('likeClick'))" />
+  <mx:Script><![CDATA[
+    import fbair.util.TimeUtil;
+
+    import mx.utils.ObjectProxy;
+
+    [Bindable] public var commentText:String = "Comment";
+
+    override public function set data(new_data:Object):void {
+      if (!new_data) return;
+      super.data = new ObjectProxy(new_data);
+
+      // We build our fancy timephrase here.
+      // like "about an hour ago"
+      data.timePhrase = TimeUtil.describeWhen(data.created_time);
+    }
+  ]]></mx:Script>
+
+</mx:HBox>

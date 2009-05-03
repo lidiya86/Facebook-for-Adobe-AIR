@@ -1,0 +1,21 @@
+.actorAndMessage, ApplicationBase, FBButton, GrowableTextArea {
+  font-size: 11;
+}
+
+.commentButtonDisabled, .commentButtonDown, .fbButtonDisabled, .fbButtonDown {
+  paddingBottom: 2;
+  paddingLeft: 5;
+  paddingRight: 5;
+  paddingTop: 4;
+}
+
+.commentButtonOver, .commentButtonUp, .fbButtonOver, .fbButtonUp {
+  paddingBottom: 3;
+  paddingLeft: 5;
+  paddingRight: 5;
+  paddingTop: 3;
+}
+
+.commentTimeStamp, .itemSource, ActionRow {
+  font-size: 9;
+}

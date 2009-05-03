@@ -1,0 +1,161 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This VBox acts as a simple "List" of NileRenderers
+     It polls the server and creates NileRenderers off the results. -->
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" >
+  <mx:Script><![CDATA[
+    import fbair.nile.NileContainer;
+    import fbair.nile.renderers.NileRenderer;
+    import fbair.util.Output;
+    import mx.collections.ArrayCollection;
+    import flash.events.Event;
+    import flash.geom.Point;
+
+    import mx.binding.utils.ChangeWatcher;
+
+    // items[0] => Newest.
+    // items[items.length-1] => Oldest.
+    public var items:Vector.<NileRenderer> = new Vector.<NileRenderer>();
+
+    // Key => post_id, value => renderer
+    public var itemsByID:Object = new Object();
+
+    // This is the entry of the nile that's at the of our view port
+    //   if we get new data we reposition to keep this on top.
+    public var topRenderer:NileRenderer;
+    private var topRendererPoint:Point;
+    private var changeWatcher:ChangeWatcher;
+
+    override public function set data(new_data:Object):void {
+      super.data = new_data;
+
+      var updates:ArrayCollection = new_data as ArrayCollection;
+      var update:Object;
+
+      // We store where our top is so that after resize we can return
+      markTopRenderer();
+
+      // Create updatesByID
+      var updatesByID:Object = new Object();
+      for each (update in updates)
+        updatesByID[update.post_id] = true;
+
+      // Remove anything not in this update
+      for (var i:int = 0; i < items.length; i++)
+        if (!updatesByID[items[i].data.post_id])
+          removeStoryAtIndex(i--);
+
+      // Add anything new
+      for each (update in updates)
+        addStory(update);
+    }
+
+    // Public function adds stories, and returns their index placement
+    // entry_position specifies the minimem position they could be in.
+    public function addStory(storyData:Object):void {
+      // Update the data of our nile renderer
+      var renderer:NileRenderer = itemsByID[storyData.post_id] ? 
+        itemsByID[storyData.post_id] : new NileRenderer();
+      renderer.data = storyData;
+
+      // Needs to be added to display tree?
+      if (!renderer.parent) {
+        renderer.percentWidth = 100;
+        var entry_position:int = 0;
+        while(entry_position < numChildren &&
+              NileRenderer(getChildAt(entry_position)).data.created_time >
+                renderer.data.created_time)
+          entry_position++;
+
+        if (entry_position == numChildren)
+          addChild(renderer);
+        else
+          addChildAt(renderer, entry_position);
+      }
+
+      // Needs to be added to items?
+      if (!itemsByID[renderer.data.post_id]) {
+        var item_position:int = 0;
+        while (item_position < items.length &&
+               items[item_position].data.created_time >
+                 renderer.data.created_time)
+          item_position++;
+        items.splice(item_position, 0, renderer);
+        itemsByID[renderer.data.post_id] = renderer;
+      }
+    }
+
+    // Function to remove a story, by story data
+    public function removeStoryByID(post_id:String):void {
+      if (!itemsByID[post_id]) return;
+      removeStoryAtIndex(items.indexOf(itemsByID[post_id]));
+    }
+
+    // Function to remove a story, by index
+    public function removeStoryAtIndex(i:int):void {
+      Output.assert(i >= 0 && i < items.length,
+        "Invalid removeStoryAtIndex: " + i);
+
+      // Remove from all our lists
+      var deadRenderer:NileRenderer = items.splice(i, 1)[0];
+      delete itemsByID[deadRenderer.data.post_id];
+      deadRenderer.remove();
+      
+      // Remove topRenderer if it's this one
+      if (topRenderer == deadRenderer) {
+        topRenderer = null;
+        markTopRenderer();
+      }
+    }
+
+    // Scrolls us to top, and abandons marked renderer
+    public function scrollToTop():void {
+      if (changeWatcher) changeWatcher.unwatch();
+      topRenderer = null;
+      y = 0;
+    }
+
+    // This function marks what our current top renderer is
+    public function markTopRenderer():void {
+      if (topRenderer &&
+          topRenderer.y + y < 0 &&
+          topRenderer.y + y + topRenderer.height > 0) {
+        topRendererPoint = topRenderer.contentToGlobal(new Point(0, 0));
+        return;
+      }
+
+      if (changeWatcher) changeWatcher.unwatch();
+
+      topRenderer = null;
+      for (var i:int = 0; i < items.length && items[i].y + y < 0; i++)
+        topRenderer = items[i];
+
+      // If at the very top, then we don't mark a topRenderer
+      if (topRenderer) {
+        topRendererPoint = topRenderer.contentToGlobal(new Point(0, 0));
+        changeWatcher = ChangeWatcher.watch(topRenderer, "y",
+          returnTopRenderer);
+      }
+    }
+
+    // This function returns the scroller to the marked topRenderer
+    public function returnTopRenderer(event:Event):void {
+      if (!topRenderer) return;
+      var newPoint:Point = topRenderer.contentToGlobal(new Point(0, 0));
+      y += topRendererPoint.y - newPoint.y;
+    }
+  ]]></mx:Script>
+</mx:VBox>

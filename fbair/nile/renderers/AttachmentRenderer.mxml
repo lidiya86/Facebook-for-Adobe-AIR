@@ -1,0 +1,76 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This is a content renderer.
+     Every NileRenderer that contains more than a status update
+     has exactly one attachment renderer. -->
+<mx:Box xmlns:mx="http://www.adobe.com/2006/mxml"
+        xmlns:renderer="fbair.nile.renderers.*"
+        xmlns:util="fbair.util.display.*"
+        direction="{data.media.length > 1 ? 'vertical' : 'horizontal'}" >
+
+  <!-- HBox of all our items -->
+  <mx:HBox id="mediaItems"
+           styleName="mediaItems"
+           includeInLayout="{data.media.length > 0}" >
+    <mx:Repeater id="rp"
+                 dataProvider="{data.media}" >
+      <renderer:MediaItem data="{rp.currentItem}"
+                          maxImageHeight="{data.media.length > 1 ?
+                            MaxImageHeightMulti : MaxImageHeight}"
+                          maxImageWidth="{data.media.length > 1 ? (width -
+                            mediaItems.getStyle('horizontalGap') *
+                            (data.media.length - 1)) / 
+                            data.media.length : MaxImageWidth}" />
+    </mx:Repeater>
+  </mx:HBox>
+
+  <mx:VBox width="100%"
+           styleName="{data.media.length == 0 ? 'noItemDetail' : 'multiItemDetail'}" >
+
+    <util:LinkText id="itemLink"
+                   styleName="itemLink"
+                   width="100%"
+                   text="{data.name}"
+                   url="{data.href}"
+                   includeInLayout="{!StringUtil.empty(data.name)}"
+                   visible="{itemLink.includeInLayout}" />
+
+    <mx:Text id="itemSource"
+             styleName="itemSource"
+             htmlText="{data.caption}"
+             width="100%"
+             includeInLayout="{!StringUtil.empty(data.caption)}"
+             visible="{itemSource.includeInLayout}" />
+
+    <mx:Text id="itemDescription"
+             styleName="itemDescription"
+             htmlText="{data.description}"
+             width="100%"
+             condenseWhite="true"
+             truncateToFit="true"
+             maxHeight="{data.media.length == 1 ? 63 : 47}"
+             includeInLayout="{!StringUtil.empty(itemDescription.htmlText)}"
+             visible="{itemDescription.includeInLayout}" />
+  </mx:VBox>
+
+  <mx:Script><![CDATA[
+    import fbair.util.StringUtil;
+
+    public static const MaxImageWidth:int = 117;
+    public static const MaxImageHeight:int = 160;
+    public static const MaxImageHeightMulti:int = 120;
+  ]]></mx:Script>
+</mx:Box>

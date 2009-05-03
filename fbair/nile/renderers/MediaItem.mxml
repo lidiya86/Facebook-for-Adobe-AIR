@@ -1,0 +1,51 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- This is a media item renderer.
+     Most attachments have media items,
+     which can be links, photos, or videos -->
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+             xmlns:util="fbair.util.display.*" >
+
+  <util:LinkImage id="linkImage"
+                  styleName="mediaImage"
+                  source="{StringUtil.extractURL(data.src)}"
+                  url="{data.href}"
+                  maxWidth="{maxImageWidth}"
+                  maxHeight="{maxImageHeight}" />
+
+  <mx:Image id="videoBadge"
+            styleName="videoBadge"
+            source="@Embed('../../assets/video_badge.png')"
+            mouseEnabled="false"
+            includeInLayout="{data.type == 'video'}"
+            visible="{videoBadge.includeInLayout}" />
+
+  <mx:Button id="photoFrame"
+             styleName="photoFrame"
+             height="100%"
+             width="100%"
+             buttonMode="true"
+             includeInLayout="{data.type == 'photo'}"
+             visible="{photoFrame.includeInLayout}"
+             click="{linkImage.gotoLink()}" />
+
+  <mx:Script><![CDATA[
+    import fbair.util.StringUtil;
+
+    [Bindable] public var maxImageWidth:Number;
+    [Bindable] public var maxImageHeight:Number;
+  ]]></mx:Script>
+</mx:Canvas>

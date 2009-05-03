@@ -1,0 +1,50 @@
+.actorAndMessage, ApplicationBase, FBButton, GrowableTextArea {
+  font-size: 13;
+}
+
+.commentButtonDisabled, .commentButtonDown {
+  paddingBottom: 2;
+  paddingLeft: 5;
+  paddingRight: 5;
+  paddingTop: 4;
+}
+
+.commentButtonDisabled, .commentButtonDown, .commentButtonOver, .commentButtonUp {
+  font-size: 11;
+}
+
+.commentButtonOver, .commentButtonUp {
+  paddingBottom: 3;
+  paddingLeft: 5;
+  paddingRight: 5;
+  paddingTop: 3;
+}
+
+.composerInput {
+  paddingBottom: 4;
+  paddingLeft: 4;
+  paddingRight: 4;
+  paddingTop: 4;
+}
+
+.fbButtonDisabled, .fbButtonDown {
+  paddingBottom: 2;
+  paddingLeft: 7;
+  paddingRight: 7;
+  paddingTop: 5;
+}
+
+.fbButtonOver, .fbButtonUp {
+  paddingBottom: 3;
+  paddingLeft: 7;
+  paddingRight: 7;
+  paddingTop: 4;
+}
+
+.itemSource, .commentTimeStamp {
+  font-size: 9;
+}
+
+ActionRow, UFI, .commentInput, .contentBox {
+  font-size: 11;
+}
