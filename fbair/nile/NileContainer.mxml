@@ -122,19 +122,24 @@
       // Add our initial nile to the canvas
       nile.visible = false;
       nile.addEventListener(Event.RESIZE, boundNile);
+      nileCanvas.addChild(nile);
     }
 
     // We call this on launch to set up our initial set of filters, if cached
+    // dataCache should already be set now as well
     public function loadInitialFilters(stream_filters:Array):void {
       // Blow away any defaults since we have cache
       CurrentFilter = null;
       niles = new Object();
       nile.removeEventListener(Event.RESIZE, boundNile);
+      nileCanvas.removeChild(nile);
       nile = null;
 
       // Populate our filters and their niles
       streamFilters = stream_filters;
       for each (var streamFilter:String in streamFilters) {
+        Output.assert(dataCache[streamFilter] != null,
+          "Loading streamFilter with no dataCache entry? : " + streamFilter);
         niles[streamFilter] = new Nile();
         niles[streamFilter].visible = false;
         niles[streamFilter].addEventListener(Event.RESIZE, boundNile);
@@ -173,9 +178,11 @@
     public function beginPolling():void {
       if (FBConnect.status != FBConnect.Connected) return;
 
+      // Begin our polling routine
       pollingTimer.addEventListener(TimerEvent.TIMER, poll);
       poll();
 
+      // Show the nile to the world!
       nile.visible = true;
     }
 
@@ -350,7 +357,8 @@
         niles[filter_key] = new Nile();
         nile = niles[filter_key];
         nile.addEventListener(Event.RESIZE, boundNile);
-
+        nileCanvas.addChild(nile);
+        
         // poll baby!
         fbair.loadingIndicator.loadStatus("Fetching Stream Data");
         poll();
@@ -364,14 +372,15 @@
       var filter_index:int = streamFilters.indexOf(filter_key);
       Output.assert(filter_index != -1, "Removing filter with index -1?: " +
         filter_key);
+      Output.assert(nileCanvas.contains(niles[filter_key]),
+        "Removing nile not in display?");
       Output.assert(niles[filter_key] != null,
         "Removing filter that had no nile?: " + filter_key);
 
       // Remove nile itself
       niles[filter_key].removeEventListener(Event.RESIZE, boundNile);
       if (nile == niles[filter_key]) nile = null;
-      if (nileCanvas.contains(niles[filter_key]))
-        nileCanvas.removeChild(niles[filter_key]);
+      nileCanvas.removeChild(niles[filter_key]);
       delete niles[filter_key];
 
       // Remove from filters
@@ -395,12 +404,6 @@
         // Add new nile
         nile = niles[filter_key];
         nile.visible = true;
-        Animate = false;
-        if (!nileCanvas.contains(nile))
-          nileCanvas.addChild(nile);
-        
-        // Mark this as an update in case new data hits fast
-        updateTime = (new Date()).time;
       }
     }
 

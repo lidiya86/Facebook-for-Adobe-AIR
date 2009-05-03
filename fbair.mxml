@@ -113,6 +113,9 @@
         // If we have tabs data, hit it up
         var filtersData:Object = ApplicationBase.getPreference("filters");
         if (filtersData) {
+          Output.assert(nileCache != null,
+            "We have a filter cache but not a nile cache?!");
+
           // Set nile stuff first to prepare for events
           var stream_filters:Array = new Array();
           for each (var tab:Object in filtersData.tabData)
@@ -126,7 +129,7 @@
           filtersBar.currentTab = filtersData.currentTab;
         }
       }
-      
+
       // We want to listen to changes to status or permissions,
       //   so let's add event listeners for both.
       FBConnect.dispatcher.addEventListener(FBEvent.STATUS_CHANGED,
