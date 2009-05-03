@@ -218,8 +218,9 @@
 
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
-      fbair.loadingIndicator.close();
       data = event.data;
+      if (dataCache[CurrentFilter])
+        fbair.loadingIndicator.close();
     }
 
     // Setting our massive container data (massive, baby, that's what she said)
