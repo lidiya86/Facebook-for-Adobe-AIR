@@ -21,6 +21,7 @@
          height="26"
          width="100%"
          minWidth="46"
+         maxWidth="{tabLabelWidth + 50}"
          creationComplete="creationComplete(event)"
          buttonMode="{!data.active}"
          rollOver="{rollOver(event)}"
@@ -72,7 +73,6 @@
 
     private function creationComplete(event:FlexEvent):void {
       tabLabelWidth = tabLabel.measureText(data.name).width;
-      maxWidth = tabLabelWidth + 50;
 
       addEventListener(MouseEvent.ROLL_OUT, rollOut);
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
