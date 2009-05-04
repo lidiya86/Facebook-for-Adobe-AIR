@@ -91,7 +91,7 @@
     }
 
     private function deleteClicked(event:Event):void {
-      rollOut(null);
+      rollOut();
       dispatchEvent(new FBEvent('deleteClick'));
     }
 
