@@ -74,7 +74,7 @@
 
     [Bindable] public static var TabCount:int = 0;
 
-    public static const MaxTabs:int = 7;
+    public static const MaxTabs:int = 5;
 
     private var menu:FiltersMenu;
 
