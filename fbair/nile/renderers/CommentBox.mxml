@@ -79,6 +79,8 @@
     //   when data.commentBoxActive is flipped
     override public function get isPopUp():Boolean { return _isPopUp; }
     override public function set isPopUp(to:Boolean):void {
+      if (isPopUp == to) return;
+      
       _isPopUp = to;
 
       if (to)
@@ -92,6 +94,7 @@
     }
 
     private function releaseFocus(event:MouseEvent):void {
+      return;
       if (!hitTestPoint(event.stageX, event.stageY))
         Application.application.setFocus();
     }

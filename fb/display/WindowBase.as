@@ -27,7 +27,6 @@ package fb.display {
       resizable = minimizable = maximizable = false;
       addEventListener(Event.ADDED, added);
     }
-
     private function added(event:Event):void {
       clean(event.target);
     }

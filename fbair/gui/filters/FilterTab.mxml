@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
-<!-- This contains our filters tab bar at top of window -->
+<!-- This contains our filters tab bar at top of window. -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
          styleName="{data.active ? 'filterTabActive' :

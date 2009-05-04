@@ -15,6 +15,8 @@
  */
 // Simple TextArea extension grows with text size
 package fbair.util.display {
+  import fb.util.Output;
+
   import flash.events.Event;
   import flash.events.KeyboardEvent;
   import flash.ui.Keyboard;
@@ -32,11 +34,17 @@ package fbair.util.display {
       addEventListener(KeyboardEvent.KEY_DOWN, keyPressed);
     }
 
+    override public function set height(to:Number):void {
+      super.height = Math.max(to, realTextHeight);
+    }
+
     private function changed(event:Event):void {
-      height = Math.max(
-        (textField.textHeight + TextPadding) +
-         getStyle("paddingTop") + getStyle("paddingBottom"),
-        minTextHeight);
+      height = Math.max(realTextHeight, minTextHeight);
+    }
+
+    private function get realTextHeight():Number {
+      return textField.textHeight + TextPadding +
+        getStyle("paddingTop") + getStyle("paddingBottom");
     }
 
     // This solves an issue where holding Shift and hitting space

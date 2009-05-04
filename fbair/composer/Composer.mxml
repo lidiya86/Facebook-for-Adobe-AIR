@@ -74,6 +74,7 @@
 
     // We want to let clicks anywhere else in the app for a loss of focus
     private function releaseFocus(event:MouseEvent):void {
+      return;
       if (!hitTestPoint(event.stageX, event.stageY))
         Application.application.setFocus();
     }

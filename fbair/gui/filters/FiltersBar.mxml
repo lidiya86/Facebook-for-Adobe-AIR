@@ -52,15 +52,16 @@
                     alpha="{filterMenuButton.state == FBButton.OVER ?
                             1.0 : 0.7}"
                     icon="@Embed('../../assets/plus.png')"
-                    mouseDown="menuButtonClicked(event)" />
+                    mouseDown="menuButtonClicked(event)" 
+                    enabled="{menu.data.length > 0}" />
 
   <mx:Script><![CDATA[
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.Output;
 
     import fbair.gui.filters.FilterTab;
-    import fb.util.Output;
 
     import flash.events.Event;
     import flash.events.KeyboardEvent;
@@ -76,7 +77,7 @@
 
     public static const MaxTabs:int = 5;
 
-    private var menu:FiltersMenu;
+    [Bindable] private var menu:FiltersMenu;
 
     [Bindable] public var focusHistory:Array = new Array();
     private var _tabData:ArrayCollection = new ArrayCollection();
@@ -92,6 +93,23 @@
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }
 
+    override protected function createChildren():void {
+      super.createChildren();
+
+      menu = new FiltersMenu();
+      BindingUtils.bindSetter(function(new_y:int):void {
+        menu.y = new_y + 2;
+      }, this, "y");
+      menu.addEventListener(FlexEvent.UPDATE_COMPLETE,
+        function(event:FlexEvent):void {
+          menu.x = width - menu.width - 2;
+        });
+      menu.visible = false;
+      menu.addEventListener("itemClick", menuItemClicked);
+      PopUpManager.addPopUp(menu, this);
+    }
+
+    // Keyboard shortcuts
     private function keyDown(event:KeyboardEvent):void {
       if (tabData.length == 1 || focusManager.getFocus()) return;
 
@@ -124,31 +142,12 @@
         currentTab = tabData[tmpIndex].filter_key;
     }
 
-    private function get currentTabIndex():int {
-      for (var i:int = 0; i < tabData.length; i++)
-        if (tabData[i].filter_key == currentTab) return i;
-      return -1;
-    }
+    // Callback on filterTab width to determine if logo displays
     private function filterTabChanged(event:FlexEvent):void {
       fbLogo.visible = (width - 98) > filterTabs.measuredWidth;
     }
 
-    override protected function createChildren():void {
-      super.createChildren();
-
-      menu = new FiltersMenu();
-      BindingUtils.bindSetter(function(new_y:int):void {
-        menu.y = new_y + 2;
-      }, this, "y");
-      menu.addEventListener(FlexEvent.UPDATE_COMPLETE,
-        function(event:FlexEvent):void {
-          menu.x = width - menu.width - 2;
-        });
-      menu.visible = false;
-      menu.addEventListener("itemClick", menuItemClicked);
-      PopUpManager.addPopUp(menu, this);
-    }
-
+    // Button click callbacks
     private function menuItemClicked(event:FBEvent):void {
       addTab(event.data);
       hideMenu();
@@ -158,6 +157,7 @@
       showMenu();
     }
 
+    // Menu visibility
     public function showMenu():void {
       menu.visible = true;
       stage.addEventListener(MouseEvent.CLICK, stageClicked, true);
@@ -172,6 +172,7 @@
       hideMenu();
     }
 
+    // Filter fetching
     public function fetchFilters():void {
       FBAPI.callMethod("fql.query", {
         query:"select filter_key, name, rank, icon_url, is_visible, " +
@@ -182,6 +183,7 @@
       });
     }
 
+    // Data setting
     [Bindable]
     public function get tabData():ArrayCollection { return _tabData; }
     public function set tabData(new_tabData:ArrayCollection):void {
@@ -224,6 +226,7 @@
         addTab(data[0].filter_key);
     }
 
+    // Tab clicking
     private function deleteTabClicked(event:FBEvent):void {
       removeTab(event.target.data.filter_key);
     }
@@ -232,6 +235,7 @@
       currentTab = event.target.data.filter_key;
     }
 
+    // Tab adding/removing
     public function addTab(key:String):void {
       // if a tab already exists for this filter, focus it.
       if (tabsByID[key]) {
@@ -288,6 +292,7 @@
       dispatchEvent(new FBEvent("tabRemoved", key));
     }
 
+    // Tab switching
     [Bindable]
     public function get currentTab():String {
       return _currentTab;
@@ -308,6 +313,13 @@
       dispatchEvent(new FBEvent("tabFocused", key));
     }
 
+    private function get currentTabIndex():int {
+      for (var i:int = 0; i < tabData.length; i++)
+        if (tabData[i].filter_key == currentTab) return i;
+      return -1;
+    }
+
+    // History
     private function removeFromHistory(key:String):void {
       var historyIndex:int = focusHistory.indexOf(key);
       if (historyIndex != -1) focusHistory.splice(historyIndex, 1);
