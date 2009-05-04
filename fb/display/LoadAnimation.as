@@ -16,7 +16,7 @@
 // Creates the "Loading" Animation used on Facebook to indicate
 // network activity.
 package fb.display {
-  import fbair.util.MathUtil;
+  import fb.util.MathUtil;
 
   import flash.events.Event;
 

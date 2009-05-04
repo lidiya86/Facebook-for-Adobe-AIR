@@ -14,9 +14,8 @@
   limitations under the License.
  */
 package fb.net {
-  import fbair.util.Output;
-
   import fb.FBEvent;
+  import fb.util.Output;
 
   import flash.events.Event;
   import flash.events.EventDispatcher;

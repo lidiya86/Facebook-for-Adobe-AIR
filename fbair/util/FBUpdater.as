@@ -18,6 +18,7 @@
 //   and marks that version for the check again on the next launch, etc.
 package fbair.util {
   import fb.display.FBDialog;
+  import fb.util.Output;
 
   import flash.desktop.Updater;
   import flash.events.Event;

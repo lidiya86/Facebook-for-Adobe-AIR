@@ -16,9 +16,8 @@
 // FBDialog extension specifically for authorize
 // Please see FBDialog for more details.
 package fb.display {
-  import fbair.util.Output;
-
   import fb.display.FBDialog;
+  import fb.util.Output;
 
   import flash.events.Event;
 

@@ -37,7 +37,7 @@
   </mx:HBox>
 
   <mx:Script><![CDATA[
-    import fbair.util.MathUtil;
+    import fb.util.MathUtil;
 
     import flash.events.MouseEvent;
 

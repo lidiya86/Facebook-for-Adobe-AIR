@@ -42,7 +42,7 @@ package fbair.util {
   //       trace("The time of comment was: " + event.data.time);
   //     });
   public class CommentCache {
-    import fbair.util.Output;
+    import fb.util.Output;
 
     public static const COMMENTS_FETCHED:String = "commentFetched";
 

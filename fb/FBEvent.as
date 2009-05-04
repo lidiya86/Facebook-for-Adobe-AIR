@@ -28,6 +28,7 @@ package fb {
     public static const PERMISSION_CHANGED:String = "permissionChanged";
     public static const ALERT:String = "fb_alert";
     public static const ERROR:String = "fb_error";
+    public static const RESOLVED:String = "fb_resolved";
 
     private var _data:*;
 

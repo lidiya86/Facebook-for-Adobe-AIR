@@ -19,7 +19,7 @@
   <mx:Script><![CDATA[
     import fbair.nile.NileContainer;
     import fbair.nile.renderers.NileRenderer;
-    import fbair.util.Output;
+    import fb.util.Output;
     import mx.collections.ArrayCollection;
     import flash.events.Event;
     import flash.geom.Point;

@@ -62,7 +62,7 @@
     import fb.FBEvent;
 
     import fbair.gui.filters.FiltersBar;
-    import fbair.util.MathUtil;
+    import fb.util.MathUtil;
 
     import flash.events.Event;
     import flash.events.MouseEvent;

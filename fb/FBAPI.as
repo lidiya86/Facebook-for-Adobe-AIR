@@ -14,13 +14,12 @@
   limitations under the License.
 */
 package fb {
-  import fbair.util.Output;
-
   import com.adobe.crypto.MD5;
   import com.adobe.serialization.json.JSON;
 
   import fb.FBConnect;
   import fb.FBEvent;
+  import fb.util.Output;
   import fb.net.FBPost;
   import fb.net.JSONLoader;
 

@@ -14,7 +14,6 @@
   limitations under the License.
  */
 package fb {
-
   import com.adobe.serialization.json.JSON;
 
   import fb.FBAPI;
@@ -24,6 +23,7 @@ package fb {
   import fb.display.FBDialog;
   import fb.display.FBPermDialog;
   import fb.net.RedirectTester;
+  import fb.util.Output;
 
   import flash.events.Event;
   import flash.events.EventDispatcher;
@@ -115,8 +115,8 @@ package fb {
       if (validating_permissions) return;
 
       // Ask about all these first, to see if we're already auth'd
-      dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-                               {text:"Checking Extended Permissions"}));
+      dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT, 
+        "Checking Extended Permissions"));
       validating_permissions = permission_names;
       FBAPI.callMethod("fql.query", {
         query:"select " + permission_names.join(", ") +
@@ -150,7 +150,7 @@ package fb {
         dispatcher.dispatchEvent(new FBEvent(FBEvent.PERMISSION_CHANGED));
       } else {
         dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-                                 {text:"Confirming Logged In Status"}));
+          "Confirming Logged In Status"));
         // Confirm we are logged in before trying the perm dialog
         var redirectTester:RedirectTester = new RedirectTester(
           LoggedInPath + "?next=" + FBDialog.NextPath + "&api_key=" + api_key,
@@ -206,7 +206,7 @@ package fb {
       if (!api_key || !session) return;
 
       dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-                               {text:"Validating Session Key"}));
+        "Validating Session Key"));
       var loggedIn:EventDispatcher =
         FBAPI.callMethod("users.getLoggedInUser");
       loggedIn.addEventListener(FBEvent.SUCCESS, gotLoggedInUser);

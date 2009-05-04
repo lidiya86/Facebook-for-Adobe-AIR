@@ -48,10 +48,10 @@
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.Output;
 
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
-    import fbair.util.Output;
 
     import flash.events.FocusEvent;
     import flash.events.MouseEvent;

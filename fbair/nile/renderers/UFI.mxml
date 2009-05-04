@@ -117,7 +117,7 @@
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;
     import fbair.nile.renderers.UFI;
-    import fbair.util.MathUtil;
+    import fb.util.MathUtil;
     import fbair.util.StringUtil;
 
     public static const UFI_PREVIEW:int = 1;

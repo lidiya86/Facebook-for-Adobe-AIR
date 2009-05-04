@@ -18,9 +18,9 @@ package fb.net {
 
   import com.adobe.serialization.json.JSON;
 
+  import fb.FBConnect;
   import fb.FBEvent;
-
-  import fbair.util.Output;
+  import fb.util.Output;
 
   import flash.events.Event;
   import flash.events.IOErrorEvent;
@@ -69,7 +69,7 @@ package fb.net {
 
     override public function load(new_request:URLRequest):void {
       if (++attempts > MaxAttempts) return;
-      Output.log("JSON Loading: " + new_request.url);
+      Output.log("JSON Loading: " + new_request);
       if (new_request) request = new_request;
       if (!urlMonitor) {
         urlMonitor = new URLMonitor(request);
@@ -84,8 +84,10 @@ package fb.net {
         var eventData:* = JSON.decode(event.target.data);
         if (eventData.constructor == Object && eventData.error_code) {
           Output.put("Server Error", eventData);
-          fbair.loadingIndicator.errorStatus("Server Error (Click To Retry)",
-            function():void { attempts = 0; reload(); } , true);
+          FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ERROR,
+            {text:"Server Error (Click To Retry)",
+             callback:function():void { attempts = 0; reload(); },
+             hide:true}));
           dispatchEvent(new FBEvent(FBEvent.FAILURE, eventData));
           urlMonitor.start();
         }
@@ -95,8 +97,10 @@ package fb.net {
         }
       } else {
         Output.put("Server XML returned", event.target.data);
-        fbair.loadingIndicator.errorStatus("Server XML (Click To Retry)",
-          function():void { attempts = 0; reload(); } , true);
+        FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ERROR,
+          {text:"Server XML (Click To Retry)",
+           callback:function():void { attempts = 0; reload(); },
+           hide:true}));
         dispatchEvent(new FBEvent(FBEvent.FAILURE));
         urlMonitor.start();
       }

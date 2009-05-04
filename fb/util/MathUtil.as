@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-package fbair.util {
+package fb.util {
   public final class MathUtil {
     // returns bounded n to the min and max
     public static function clamp(n:Number, min:Number=0, max:Number=1):Number {

@@ -53,7 +53,7 @@
                click="deleteComment(event)" />
   </mx:HBox>
   <mx:Script><![CDATA[
-    import fbair.util.Output;
+    import fb.util.Output;
     import fbair.util.ProfileCache;
     import fbair.util.StringUtil;
     import fbair.util.TimeUtil;

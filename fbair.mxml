@@ -61,7 +61,7 @@
 
     import fbair.gui.StylePrefs;
     import fbair.util.FBUpdater;
-    import fbair.util.Output;
+    import fb.util.Output;
     import fbair.util.ProfileCache;
 
     import flash.events.Event;
@@ -70,9 +70,6 @@
     import mx.core.Container;
     import mx.events.FlexEvent;
 
-    // Singleton reference to nile loading indicator
-    public static var loadingIndicator:LoadingIndicator;
-
     // We don't request things multiple times, we just give up
     private var requiredSession:Boolean = false;
     private var requiredPermissions:Boolean = false;
@@ -80,9 +77,6 @@
     // Called when our app is initialized...
     // The first thing to do is authorize our application..
     private function applicationComplete(event:FlexEvent):void {
-      // our app global loading indicator!
-      loadingIndicator = loader;
-
       // Don't enable our composer until we're authorized
       composer.enabled = false;
 
@@ -139,6 +133,10 @@
         permissionChanged);
       FBConnect.dispatcher.addEventListener(FBEvent.ALERT,
         applicationAlert);
+      FBConnect.dispatcher.addEventListener(FBEvent.ERROR,
+        applicationError);
+      FBConnect.dispatcher.addEventListener(FBEvent.RESOLVED,
+        applicationResolved);
 
       // Now we call this to init our application.
       // Always call this only once, in the applicationComplete callback.
@@ -207,15 +205,27 @@
       FBUpdater.checkForNewVersion();
     }
 
+    // Global alerts
     private function applicationAlert(event:FBEvent):void {
-      loader.loadStatus(event.data.text);
+      loader.loadStatus(event.data);
     }
 
+    private function applicationError(event:FBEvent):void {
+      loader.errorStatus(event.data.text,
+                         event.data.callback,
+                         event.data.hide);
+    }
+    
+    private function applicationResolved(event:FBEvent):void {
+      loader.close();
+    }
+     
     // Called when the composer has added a status update!
     private function statusUpdated(event:FBEvent):void {
       nileContainer.addStatusMessage(event.data);
     }
 
+    // Filter tab switching
     private function filterTabAdded(event:FBEvent):void {
       nileContainer.filterAdded(event.data);
     }

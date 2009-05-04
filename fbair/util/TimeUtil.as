@@ -14,6 +14,8 @@
   limitations under the License.
  */
 package fbair.util {
+  import fb.util.MathUtil;
+
   public class TimeUtil {
     private static const OneMinute:int = 60;
     private static const OneHour:int = OneMinute * 60;

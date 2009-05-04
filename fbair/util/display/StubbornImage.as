@@ -19,7 +19,7 @@
 package fbair.util.display {
   import air.net.URLMonitor;
 
-  import fbair.util.Output;
+  import fb.util.Output;
   import fbair.util.StringUtil;
 
   import flash.events.Event;

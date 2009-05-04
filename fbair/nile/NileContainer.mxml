@@ -44,7 +44,7 @@
 
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
-    import fbair.util.Output;
+    import fb.util.Output;
 
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -222,14 +222,15 @@
 
     // Called when a net connection was flaky and the query is reattempted
     private function queryRetried(event:FBEvent):void {
-      fbair.loadingIndicator.loadStatus("Connecting to Facebook");
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
+        "Connecting to Facebook"));
     }
 
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
       data = event.data;
       if (dataCache[CurrentFilter])
-        fbair.loadingIndicator.close();
+        FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
     }
 
     // Setting our massive container data (massive, baby, that's what she said)
@@ -370,7 +371,8 @@
         nileCanvas.addChild(nile);
 
         // poll baby!
-        fbair.loadingIndicator.loadStatus("Fetching Stream Data");
+        FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
+          "Fetching Stream Data"));
         poll();
       }
       // Or maybe just point shit

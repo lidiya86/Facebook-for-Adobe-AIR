@@ -14,9 +14,13 @@
   limitations under the License.
  */
 package {
+  import fb.util.Output;
+
   import flash.data.EncryptedLocalStore;
   import flash.display.InteractiveObject;
   import flash.events.Event;
+  import flash.events.KeyboardEvent;
+  import flash.ui.Keyboard;
   import flash.utils.ByteArray;
 
   import mx.controls.TextArea;
@@ -32,6 +36,10 @@ package {
       layout = "absolute";
       showGripper = showStatusBar = false;
       addEventListener(Event.ADDED, added);
+      addEventListener(Event.ADDED_TO_STAGE, addedToStage);
+    }
+    private function addedToStage(event:Event):void {
+      stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }
 
     private function added(event:Event):void {
@@ -57,6 +65,12 @@ package {
       if (container is InteractiveObject &&
           !(container is TextArea))
         container.tabEnabled = false;
+    }
+    
+    // Keybord shortcut to dump data
+    private function keyDown(event:KeyboardEvent):void {
+      if (event.commandKey && event.keyCode == Keyboard.D)
+        Output.logDump();
     }
     
     // We manage locally stored preferences with these functions
