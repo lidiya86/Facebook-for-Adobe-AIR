@@ -58,7 +58,7 @@ package {
           !(container is TextArea))
         container.tabEnabled = false;
     }
-
+    
     // We manage locally stored preferences with these functions
     public static function getPreference(prefName:String):Object {
       var bytes:ByteArray = EncryptedLocalStore.getItem(prefName);

@@ -46,7 +46,9 @@
     import fbair.util.Output;
 
     import flash.display.DisplayObjectContainer;
+    import flash.events.KeyboardEvent;
     import flash.events.MouseEvent;
+    import flash.ui.Keyboard;
 
     import mx.collections.ArrayCollection;
     import mx.collections.Sort;
@@ -61,6 +63,7 @@
     private static const MinAnimationDelay:int = 5000;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
+    private static const ArrowClickSize:int = 32;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
 
@@ -123,6 +126,9 @@
       nile.visible = false;
       nile.addEventListener(Event.RESIZE, boundNile);
       nileCanvas.addChild(nile);
+      
+      // Listen for keypresses to scroll
+      Application.application.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }
 
     // We call this on launch to set up our initial set of filters, if cached
@@ -448,6 +454,21 @@
         nile.y = nileCanvas.height - nile.height;
         scrollBar.scrollPosition = scrollBar.maxScrollPosition;
         nile.markTopRenderer();
+      }
+    }
+
+    // For keyboard shortcuts
+    private function keyDown(event:KeyboardEvent):void {
+      // If a textfield has focus, then nevermind!
+      if (focusManager.getFocus()) return;
+      
+      if (event.keyCode == Keyboard.UP) {
+        nile.y += ArrowClickSize;
+        boundNile();
+      }
+      else if (event.keyCode == Keyboard.DOWN) {
+        nile.y -= ArrowClickSize;
+        boundNile();
       }
     }
   ]]></mx:Script>
