@@ -38,7 +38,7 @@
     <!-- Main big image of Profile pic of Actor of this Stream entry -->
     <gui:RoundedProfileImage id="profilePic"
                              profileID="{data.actor_id}"
-                             size="{StylePrefs.prefs.sizeStyle
+                             size="{StylePrefs.sizeStyle
                                     == StylePrefs.SIZE_LARGE ?
                                     PicSizeLarge : PicSizeSmall}" />
 

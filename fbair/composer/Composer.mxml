@@ -28,14 +28,14 @@
                          width="100%"
                          text="{FocusOutText}"
                          height="{
-                           StylePrefs.prefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
                                   (active ? FocusInHeightL : FocusOutHeightL) :
                                   (active ? FocusInHeightS : FocusOutHeightS)}"
                          color="{active ? EnabledColor : DisabledColor}"
                          focusIn="focusIn(event)"
                          focusOut="focusOut(event)"
                          minTextHeight="{
-                           StylePrefs.prefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
                                          FocusInHeightL :
                                          FocusInHeightS}" />
 

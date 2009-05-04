@@ -15,10 +15,13 @@
  */
 // Global manager of style prefs.
 package fbair.gui {
+  import flash.events.Event;
   import flash.filesystem.File;
-
+  import mx.events.FlexEvent;
+  
+  import mx.core.Application;
   import mx.styles.StyleManager;
-
+  import fbair.util.StringUtil;
   // We hold style prefs here of the user
   public class StylePrefs {
     // We use these constants to represent dynamic css resources
@@ -28,32 +31,45 @@ package fbair.gui {
     public static const SIZE_SMALL:String =
       "fbair/styles/bin/size_small.css.swf";
 
-    private static var _instance:StylePrefs = new StylePrefs();
-    public static function get prefs():StylePrefs { return _instance; }
+    [Bindable] public static var sizeStyle:String = '';
 
-    public function StylePrefs() {
-      if (_instance) throw new Error("StylePrefs is a singleton");
-
+    private static var initialized:Boolean = initialize();
+    private static function initialize():Boolean {
+      Application.application.addEventListener(FlexEvent.APPLICATION_COMPLETE,
+        opening);
+      Application.application.addEventListener(Event.CLOSING,
+        closing);
+      return true;
+    }
+    private static function opening(event:FlexEvent):void {
       var styleData:Object = ApplicationBase.getPreference("styles");
-      if (styleData) {
-        sizeStyle = styleData.sizeStyle;
-      } else {
-        sizeStyle = SIZE_LARGE;
-      }
+
+      // Set size
+      if (styleData) setSizeStyle(styleData.sizeStyle);
+      else setSizeStyle(SIZE_LARGE);
     }
 
-    private var _sizeStyle:String;
-    [Bindable] public function get sizeStyle():String { return _sizeStyle; }
-    public function set sizeStyle(to:String):void {
-      if (_sizeStyle == to) return;
-      if (_sizeStyle) {
+    public static function setSizeStyle(to:String):void {
+      if (sizeStyle == to) return;
+
+      // Unload old style size
+      if (!StringUtil.empty(sizeStyle)) {
         var resourcePath:String = File.applicationDirectory
-                                      .resolvePath(_sizeStyle).url;
+                                      .resolvePath(sizeStyle).url;
         StyleManager.unloadStyleDeclarations(resourcePath, false);
       }
-      _sizeStyle = to;
-      resourcePath = File.applicationDirectory.resolvePath(_sizeStyle).url;
+
+      // Load new style size
+      sizeStyle = to;
+      resourcePath = File.applicationDirectory
+                         .resolvePath(sizeStyle).url;
       StyleManager.loadStyleDeclarations(resourcePath);
+    }
+
+    private static function closing(event:Event):void {
+      ApplicationBase.setPreference("styles", {
+        sizeStyle:StylePrefs.sizeStyle
+      });
     }
   }
 }

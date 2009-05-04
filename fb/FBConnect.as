@@ -83,6 +83,7 @@ package fb {
 
     // Must be called to start things off.
     public static function init(new_api_key:String):void {
+      Output.log("FBConnect init beginning...");
       api_key = new_api_key;
 
       _status = NotLoggedIn;
@@ -96,6 +97,7 @@ package fb {
         session.uid = sharedObject.data["uid"];
         session.expires = sharedObject.data["expires"];
         session.secret = sharedObject.data["secret"];
+        Output.log("Loaded session from cache: ", session);
       }
     }
 
