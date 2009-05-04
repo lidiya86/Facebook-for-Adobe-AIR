@@ -104,7 +104,7 @@
       if (event.keyCode == Keyboard.LEFT) {
         tmpIndex = currentTabIndex - 1;
         if (tmpIndex == -1)
-          tmpIndex == tabData.length - 1;
+          tmpIndex = tabData.length - 1;
       }
       if (event.keyCode == Keyboard.RIGHT) {
         tmpIndex = currentTabIndex + 1;
