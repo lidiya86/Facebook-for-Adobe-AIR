@@ -94,11 +94,7 @@
       // Load old data only if we didn't just autoupdate
       //   Between updates our data model might change...
       else {
-        Output.log("Loading cached data");
-        
-        // Load our profile data.
-        var profileCache:Object = getPreference("profileCache");
-        if (profileCache) ProfileCache.cache = profileCache;
+        Output.log("Loading nile/filter cached data");
 
         // If we have cached renderer data, hit it up
         var nileCache:Object = ApplicationBase.getPreference("nileCache");
@@ -217,11 +213,11 @@
                          event.data.callback,
                          event.data.hide);
     }
-    
+
     private function applicationResolved(event:FBEvent):void {
       loader.close();
     }
-     
+
     // Called when the composer has added a status update!
     private function statusUpdated(event:FBEvent):void {
       nileContainer.addStatusMessage(event.data);
@@ -256,8 +252,6 @@
       });
 
       setPreference("nileCache", nileContainer.dataCache);
-
-      setPreference("profileCache", ProfileCache.cache);
     }
   ]]></mx:Script>
 </app:ApplicationBase>

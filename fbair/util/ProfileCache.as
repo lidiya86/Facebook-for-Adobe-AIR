@@ -14,15 +14,6 @@
   limitations under the License.
  */
 package fbair.util {
-
-  import fb.FBAPI;
-  import fb.FBEvent;
-
-  import flash.events.Event;
-  import flash.events.EventDispatcher;
-
-  import mx.core.Application;
-
   // This class holds a reference to all the data about
   //   any profile-id we've fetched.
   //
@@ -50,11 +41,23 @@ package fbair.util {
   //       trace("My profile pic is at : " + event.data.pic_square);
   //     });
   public class ProfileCache {
+    import fb.FBAPI;
+    import fb.FBEvent;
+    import fb.util.Output;
+
+    import fbair.util.FBUpdater;
+
+    import flash.events.Event;
+    import flash.events.EventDispatcher;
+
+    import mx.core.Application;
+    import mx.events.FlexEvent;
+
     public static const PROFILE_FETCHED:String = "profileFetched";
 
     // How long till our profile data is "old"
     private static const MaxProfileAge:int = 86400; // One day
-    
+
     // Contains all the Profile objects already fetched.
     // key => profileID
     // value => {id, name, pic_square, url}
@@ -64,9 +67,29 @@ package fbair.util {
     // So that we can batch-request them at end of frame
     private static var queuedRequests:Object = new Object;
 
+    // Initializing
+    private static var initialized:Boolean = initialize();
+    private static function initialize():Boolean {
+      Application.application.addEventListener(FlexEvent.INITIALIZE,
+        opening);
+      Application.application.addEventListener(Event.CLOSING,
+        closing);
+      return true;
+    }
+
+    // Laod preferences
+    private static function opening(event:FlexEvent):void {
+      if (!FBUpdater.firstRun()) {
+        Output.log("Loading profile cache");
+
+        var profileCache:Object = ApplicationBase.getPreference("profileCache");
+        if (profileCache) cache = profileCache;
+      }
+    }
+
     // Simply tells us whether given profileID is already cached
     public static function hasProfile(profileID:String):Boolean {
-      return cache.hasOwnProperty(profileID) && 
+      return cache.hasOwnProperty(profileID) &&
         (new Date().time / 1000) - cache[profileID].time < MaxProfileAge;
     }
 
@@ -119,7 +142,7 @@ package fbair.util {
       var uncached_ids:Array = new Array();
       for (var uncached_request_id:String in uncached_requests)
         uncached_ids.push(uncached_request_id);
-      
+
       // If we have some uncached, then request them from the server.
       if (uncached_ids.length > 0) {
         FBAPI.callMethod("fql.query", {
@@ -151,6 +174,11 @@ package fbair.util {
 
       // Clear our list of queued requests now that we're done
       queuedRequests = new Object();
+    }
+
+    // Save preferences at end
+    private static function closing(event:Event):void {
+      ApplicationBase.setPreference("profileCache", cache);
     }
   }
 }

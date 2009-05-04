@@ -15,13 +15,15 @@
  */
 // Global manager of style prefs.
 package fbair.gui {
+  import fb.util.Output;
+
   import flash.events.Event;
   import flash.filesystem.File;
-  import mx.events.FlexEvent;
-  
+
   import mx.core.Application;
+  import mx.events.FlexEvent;
   import mx.styles.StyleManager;
-  import fbair.util.StringUtil;
+
   // We hold style prefs here of the user
   public class StylePrefs {
     // We use these constants to represent dynamic css resources
@@ -31,16 +33,19 @@ package fbair.gui {
     public static const SIZE_SMALL:String =
       "fbair/styles/bin/size_small.css.swf";
 
-    [Bindable] public static var sizeStyle:String = '';
+    [Bindable] public static var sizeStyle:String;
 
+    // Initializing
     private static var initialized:Boolean = initialize();
     private static function initialize():Boolean {
-      Application.application.addEventListener(FlexEvent.APPLICATION_COMPLETE,
+      Application.application.addEventListener(FlexEvent.INITIALIZE,
         opening);
       Application.application.addEventListener(Event.CLOSING,
         closing);
       return true;
     }
+    
+    // Load preferences
     private static function opening(event:FlexEvent):void {
       var styleData:Object = ApplicationBase.getPreference("styles");
 
@@ -51,9 +56,12 @@ package fbair.gui {
 
     public static function setSizeStyle(to:String):void {
       if (sizeStyle == to) return;
+      if (!to) to = SIZE_LARGE;
+
+      Output.log("Setting style size: " + to);
 
       // Unload old style size
-      if (!StringUtil.empty(sizeStyle)) {
+      if (sizeStyle) {
         var resourcePath:String = File.applicationDirectory
                                       .resolvePath(sizeStyle).url;
         StyleManager.unloadStyleDeclarations(resourcePath, false);
@@ -66,9 +74,10 @@ package fbair.gui {
       StyleManager.loadStyleDeclarations(resourcePath);
     }
 
+    // Save preferences when done
     private static function closing(event:Event):void {
       ApplicationBase.setPreference("styles", {
-        sizeStyle:StylePrefs.sizeStyle
+        sizeStyle:sizeStyle
       });
     }
   }
