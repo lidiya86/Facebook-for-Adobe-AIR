@@ -25,6 +25,8 @@
          creationComplete="creationComplete(event)"
          buttonMode="{!data.active}"
          rollOver="{rollOver(event)}"
+         toolTip="{tabLabelWidth > tabLabel.width ? 
+                   data.name : null}"
          click="tabClicked(event)" >
   <mx:Metadata>
     [Event(name="deleteClick", type="fb.FBEvent")]
@@ -35,9 +37,7 @@
                      width="16"
                      height="16"
                      offsetX="16"
-                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}"
-                     toolTip="{tabLabelWidth > tabLabel.width ? 
-                               data.name : null}" />
+                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}" />
 
   <mx:Label id="tabLabel"
             text="{data.name}"

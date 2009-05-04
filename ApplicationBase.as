@@ -41,7 +41,6 @@ package {
     private function addedToStage(event:Event):void {
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }
-
     private function added(event:Event):void {
       clean(event.target);
     }
