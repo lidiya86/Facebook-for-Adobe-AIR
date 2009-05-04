@@ -94,6 +94,14 @@
 
     private function keyDown(event:KeyboardEvent):void {
       if (tabData.length == 1 || focusManager.getFocus()) return;
+
+      // If escape, then close this tab
+      if (event.keyCode == Keyboard.ESCAPE) {
+        removeTab(currentTab);
+        return;
+      }
+
+      // If 2 modifiers and an arrow, then bounce around
       var modifiers:int = (event.commandKey ? 1 : 0) +
                           (event.shiftKey ? 1 : 0) +
                           (event.controlKey ? 1 : 0) +
@@ -254,6 +262,8 @@
     }
 
     public function removeTab(key:String):void {
+      if (tabData.length == 1) return;
+
       Output.assert(tabData.getItemIndex(tabsByID[key].data) != -1,
         "Trying to remove key not in list?: " + key);
       Output.assert(focusHistory.indexOf(key) != -1,
