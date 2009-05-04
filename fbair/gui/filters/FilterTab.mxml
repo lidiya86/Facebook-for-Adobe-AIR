@@ -64,6 +64,7 @@
     import fbair.gui.filters.FiltersBar;
     import fbair.util.MathUtil;
 
+    import flash.events.Event;
     import flash.events.MouseEvent;
 
     import mx.events.FlexEvent;
@@ -76,8 +77,14 @@
 
       addEventListener(MouseEvent.ROLL_OUT, rollOut);
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
+      stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
+      addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
     }
 
+    private function removedFromStage(event:Event):void {
+      stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
+    }
+    
     private function tabClicked(event:Event):void {
       if (event.target == tabDeleteButton) return;
       dispatchEvent(new FBEvent('tabClick'));
