@@ -77,8 +77,8 @@
 
       addEventListener(MouseEvent.ROLL_OUT, rollOut);
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
-      stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
       addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
+      stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
     }
 
     private function removedFromStage(event:Event):void {
