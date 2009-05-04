@@ -17,7 +17,7 @@
      It also manages fetching data from the various active filters -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:nile="fbair.nile.*"
-         creationComplete="creationComplete(event)" 
+         creationComplete="creationComplete(event)"
          addedToStage="addedToStage(event)" >
   <mx:Canvas id="nileCanvas"
              width="100%"
@@ -368,7 +368,7 @@
         nile = niles[filter_key];
         nile.addEventListener(Event.RESIZE, boundNile);
         nileCanvas.addChild(nile);
-        
+
         // poll baby!
         fbair.loadingIndicator.loadStatus("Fetching Stream Data");
         poll();
@@ -448,6 +448,7 @@
     // Ensures that our nile is not being displayed beyond the scrollable edges
     // If we move, we also recache what the topRenderer is
     private function boundNile(event:Event = null):void {
+      nile.y = Math.min(0, nile.y);
       if (nile.height < nileCanvas.height) {
         nile.y = 0;
         scrollBar.scrollPosition = 0;
@@ -464,9 +465,9 @@
     private function keyDown(event:KeyboardEvent):void {
       // If a textfield has focus, then nevermind!
       if (focusManager.getFocus()) return;
-      
+
       if (event.keyCode == Keyboard.UP) {
-        nile.y = Math.min(0, nile.y + ArrowClickSize);
+        nile.y += ArrowClickSize;
         boundNile();
       }
       else if (event.keyCode == Keyboard.DOWN) {
