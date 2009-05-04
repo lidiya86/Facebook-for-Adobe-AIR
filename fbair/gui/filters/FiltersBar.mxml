@@ -18,7 +18,8 @@
            xmlns:filters="fbair.gui.filters.*"
            xmlns:display="fbair.util.display.*"
            height="26"
-           creationComplete="creationComplete(event)" >
+           creationComplete="creationComplete(event)"
+           addedToStage="addedToStage(event)" >
   <mx:Metadata>
     [Event(name="tabAdded", type="fb.FBEvent")]
     [Event(name="tabRemoved", type="fb.FBEvent")]
@@ -58,9 +59,13 @@
     import fb.FBConnect;
     import fb.FBEvent;
 
+    import fbair.gui.filters.FilterTab;
     import fbair.util.Output;
 
-    import fbair.gui.filters.FilterTab;
+    import flash.events.Event;
+    import flash.events.KeyboardEvent;
+    import flash.ui.Keyboard;
+
     import mx.binding.utils.BindingUtils;
     import mx.collections.ArrayCollection;
     import mx.events.FlexEvent;
@@ -68,7 +73,7 @@
     import mx.utils.ObjectProxy;
 
     [Bindable] public static var TabCount:int = 0;
-    
+
     public static const MaxTabs:int = 7;
 
     private var menu:FiltersMenu;
@@ -83,7 +88,39 @@
       addEventListener("deleteClick", deleteTabClicked);
       addEventListener("tabClick", tabClicked);
     }
+    private function addedToStage(event:Event):void {
+      stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
+    }
 
+    private function keyDown(event:KeyboardEvent):void {
+      if (tabData.length == 1 || focusManager.getFocus()) return;
+      var modifiers:int = (event.commandKey ? 1 : 0) +
+                          (event.shiftKey ? 1 : 0) +
+                          (event.controlKey ? 1 : 0) +
+                          (event.altKey ? 1 : 0);
+      if (modifiers < 2) return;
+
+      var tmpIndex:int = -1;
+      if (event.keyCode == Keyboard.LEFT) {
+        tmpIndex = currentTabIndex - 1;
+        if (tmpIndex == -1)
+          tmpIndex == tabData.length - 1;
+      }
+      if (event.keyCode == Keyboard.RIGHT) {
+        tmpIndex = currentTabIndex + 1;
+        if (tmpIndex == tabData.length)
+          tmpIndex = 0;
+      }
+
+      if (tmpIndex != -1)
+        currentTab = tabData[tmpIndex].filter_key;
+    }
+
+    private function get currentTabIndex():int {
+      for (var i:int = 0; i < tabData.length; i++)
+        if (tabData[i].filter_key == currentTab) return i;
+      return -1;
+    }
     private function filterTabChanged(event:FlexEvent):void {
       fbLogo.visible = (width - 98) > filterTabs.measuredWidth;
     }
@@ -149,7 +186,7 @@
 
       // Update tabcount
       TabCount = tabData.length;
-      
+
       // Add everything
       for each (var tab:Object in tabData) {
         tabsByID[tab.filter_key] = new FilterTab();
@@ -200,7 +237,7 @@
       // Remove staleness
       while (tabData.length >= MaxTabs)
         removeTab(focusHistory[0]);
-        
+
       // Update tabCount
       TabCount = tabData.length;
 
