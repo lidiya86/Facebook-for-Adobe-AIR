@@ -65,7 +65,7 @@
     private static const MinAnimationDelay:int = 5000;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
-    private static const ArrowClickSize:int = 32;
+    private static const ArrowClickSize:int = 64;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
 
