@@ -65,7 +65,7 @@
     private static const MinAnimationDelay:int = 5000;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
-    private static const ArrowClickSize:int = 64;
+    private static const ArrowClickSize:int = 32;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
 
@@ -466,7 +466,7 @@
       if (focusManager.getFocus()) return;
       
       if (event.keyCode == Keyboard.UP) {
-        nile.y += ArrowClickSize;
+        nile.y = Math.min(0, nile.y + ArrowClickSize);
         boundNile();
       }
       else if (event.keyCode == Keyboard.DOWN) {
