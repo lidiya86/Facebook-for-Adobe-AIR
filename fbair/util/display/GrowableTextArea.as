@@ -20,11 +20,12 @@ package fbair.util.display {
   import flash.events.Event;
   import flash.events.FocusEvent;
   import flash.events.KeyboardEvent;
+  import flash.events.MouseEvent;
   import flash.ui.Keyboard;
 
   import mx.controls.TextArea;
   import mx.events.FlexEvent;
-    
+
   public class GrowableTextArea extends TextArea {
     private static const TextPadding:int = 6;
 
@@ -54,7 +55,7 @@ package fbair.util.display {
       _active = to;
       updateState();
     }
-    
+
     // Update our settings based on active and all our vars
     private function updateState():void {
       setStyle("color", active ? enabledColor : disabledColor);
@@ -66,9 +67,15 @@ package fbair.util.display {
     private function focusIn(event:FocusEvent):void {
       active = true;
       if (text == focusOutText) text = "";
+      stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
     }
-
-    private function focusOut(event:FocusEvent):void {
+    private function stageDown(event:MouseEvent):void {
+      if (hitTestPoint(event.stageX, event.stageY)) return;
+      if (stage.focus && contains(stage.focus))
+        stage.focus = null;
+    }
+    private function focusOut(event:FocusEvent = null):void {      
+      stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
       active = (text.length > 0);
     }
 
