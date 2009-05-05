@@ -72,16 +72,8 @@
 
     private var submittedMessage:String;
 
-    // We want to let clicks anywhere else in the app for a loss of focus
-    private function releaseFocus(event:MouseEvent):void {
-      return;
-      if (!hitTestPoint(event.stageX, event.stageY))
-        Application.application.setFocus();
-    }
-
     // Called when our input gains focus, and we want to expand
     private function focusIn(event:FocusEvent):void {
-      stage.addEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
       active = true;
       if (composerInput.text == FocusOutText)
         composerInput.text = "";
@@ -89,7 +81,6 @@
 
     // Called when our input loses focus, and we want to contract
     private function focusOut(event:FocusEvent):void {
-      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
       if (composerInput.text == "") {
         active = false;
         composerInput.text = FocusOutText;
@@ -116,7 +107,6 @@
       active = false;
       composerInput.editable = false;
       shareButton.enabled = false;
-      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
 
       // Call the server with status.set to set our new status
       FBAPI.callMethod("stream.publish", {message:submittedMessage}

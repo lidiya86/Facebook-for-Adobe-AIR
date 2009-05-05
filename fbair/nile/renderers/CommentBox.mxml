@@ -17,9 +17,7 @@
      We hide and show this box to create new comments -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:gui="fbair.gui.*"
-         xmlns:util="fbair.util.display.*"
-         removedFromStage="removedFromStage(event)"
-         isPopUp="{data.commentBoxActive}" >
+         xmlns:util="fbair.util.display.*" >
 
   <mx:Metadata>
     [Event(name="commented", type="fb.FBEvent")]
@@ -73,32 +71,6 @@
     private static const EnabledColor:uint = 0x333333;
     private static const DisabledColor:uint = 0x808080;
 
-    private var _isPopUp:Boolean = false;
-
-    // This just gives us a bindable variable to use for doing something
-    //   when data.commentBoxActive is flipped
-    override public function get isPopUp():Boolean { return _isPopUp; }
-    override public function set isPopUp(to:Boolean):void {
-      if (isPopUp == to) return;
-      
-      _isPopUp = to;
-
-      if (to)
-        stage.addEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
-      else
-        stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
-    }
-
-    private function removedFromStage(event:Event):void {
-      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
-    }
-
-    private function releaseFocus(event:MouseEvent):void {
-      return;
-      if (!hitTestPoint(event.stageX, event.stageY))
-        Application.application.setFocus();
-    }
-
     // Called when our input gains focus, and we want to expand
     private function focusIn(event:FocusEvent):void {
       data.commentBoxActive = true;
@@ -108,7 +80,6 @@
 
     // Called when our input loses focus, and we want to contract
     private function focusOut(event:FocusEvent):void {
-      stage.removeEventListener(MouseEvent.MOUSE_DOWN, releaseFocus, true);
       if (commentInput.text == "") {
         data.commentBoxActive = false;
         commentInput.text = FocusOutText;

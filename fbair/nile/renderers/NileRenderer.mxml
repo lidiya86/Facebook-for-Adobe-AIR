@@ -224,7 +224,6 @@
       //   that requires a "ContentRenderer".
       // If we don't already have a ContentRenderer...
       if (!content && data.attachment.media) {
-
         // Turn attachment into collection for binding
         if ((data.attachment.media is Array)) {
           for (var i:int = 0; i < data.attachment.media.length; i++) {

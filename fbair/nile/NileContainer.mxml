@@ -126,7 +126,6 @@
 
       // Add our initial nile to the canvas
       nile.visible = false;
-      nile.addEventListener(Event.RESIZE, boundNile);
       nileCanvas.addChild(nile);
     }
     private function addedToStage(event:Event):void {
@@ -140,7 +139,6 @@
       // Blow away any defaults since we have cache
       CurrentFilter = null;
       niles = new Object();
-      nile.removeEventListener(Event.RESIZE, boundNile);
       nileCanvas.removeChild(nile);
       nile = null;
 
@@ -151,7 +149,6 @@
           "Loading streamFilter with no dataCache entry? : " + streamFilter);
         niles[streamFilter] = new Nile();
         niles[streamFilter].visible = false;
-        niles[streamFilter].addEventListener(Event.RESIZE, boundNile);
         nileCanvas.addChild(niles[streamFilter]);
       }
     }
@@ -160,6 +157,8 @@
     //   we have to be sure to remove any event listeners from any persistent
     //   objects or it won't get garbage collected
     private function nileRemoved(event:Event):void {
+      if (event.target is Nile)
+        event.target.removeEventListener(Event.RESIZE, boundNile);
       removeMouseWheel(event.target);
     }
     private function removeMouseWheel(displayObject:*):void {
@@ -174,6 +173,8 @@
     // So we'll just subscribe to every child and then only listen to the
     //   original dispatcher to avoid duplicate work with bubbling events
     private function nileAdded(event:Event):void {
+      if (event.target is Nile)
+        event.target.addEventListener(Event.RESIZE, boundNile);
       addMouseWheel(event.target);
     }
     private function addMouseWheel(displayObject:*):void {
@@ -367,7 +368,6 @@
         // Create a new nile, and add it
         niles[filter_key] = new Nile();
         nile = niles[filter_key];
-        nile.addEventListener(Event.RESIZE, boundNile);
         nileCanvas.addChild(nile);
 
         // poll baby!
@@ -390,7 +390,6 @@
         "Removing filter that had no nile?: " + filter_key);
 
       // Remove nile itself
-      niles[filter_key].removeEventListener(Event.RESIZE, boundNile);
       if (nile == niles[filter_key]) nile = null;
       nileCanvas.removeChild(niles[filter_key]);
       delete niles[filter_key];
@@ -413,8 +412,9 @@
         // Remove old nile
         if (nile) nile.visible = false;
 
-        // Add new nile
+        // Select new main nile
         nile = niles[filter_key];
+        boundNile();
         nile.visible = true;
       }
     }
@@ -449,17 +449,22 @@
 
     // Ensures that our nile is not being displayed beyond the scrollable edges
     // If we move, we also recache what the topRenderer is
+    // We do this to ALL niles to make sure none get over limits
     private function boundNile(event:Event = null):void {
-      nile.y = Math.min(0, nile.y);
-      if (nile.height < nileCanvas.height) {
-        nile.y = 0;
-        scrollBar.scrollPosition = 0;
-        nile.markTopRenderer();
+      var cur_nile:Nile = (event && (event.target is Nile) ?
+        Nile(event.target) : nile);
+      cur_nile.y = Math.min(0, cur_nile.y);
+      if (cur_nile.height < nileCanvas.height) {
+        cur_nile.y = 0;
+        if (cur_nile == nile)
+          scrollBar.scrollPosition = 0;
+        cur_nile.markTopRenderer();
       }
-      else if (nile.y < nileCanvas.height - nile.height) {
-        nile.y = nileCanvas.height - nile.height;
-        scrollBar.scrollPosition = scrollBar.maxScrollPosition;
-        nile.markTopRenderer();
+      else if (cur_nile.y < nileCanvas.height - cur_nile.height) {
+        cur_nile.y = nileCanvas.height - cur_nile.height;
+        if (cur_nile == nile)
+          scrollBar.scrollPosition = scrollBar.maxScrollPosition;
+        cur_nile.markTopRenderer();
       }
     }
 
