@@ -62,7 +62,7 @@ package fb.net {
     }
     
     public function reload():void {
-      Output.put("Reloading JSON" + request.url);
+      Output.put("Reloading JSON: " + request.url);
       load(request);
     }
 
