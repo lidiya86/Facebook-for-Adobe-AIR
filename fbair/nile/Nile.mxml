@@ -40,7 +40,6 @@
     private var changeWatcher:ChangeWatcher;
 
     override public function set data(new_data:Object):void {
-      dataSets++;
       super.data = new_data;
 
       var updates:ArrayCollection = new_data as ArrayCollection;
