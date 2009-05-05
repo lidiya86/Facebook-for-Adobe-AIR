@@ -97,7 +97,8 @@ package fb {
         session.uid = sharedObject.data["uid"];
         session.expires = sharedObject.data["expires"];
         session.secret = sharedObject.data["secret"];
-        Output.log("Loaded session from cache: ", session);
+        Output.log("Loaded session from cache: ",
+          session.key, session.uid, session.expires, session.secret);
       }
     }
 
