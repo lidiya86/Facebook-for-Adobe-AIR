@@ -58,18 +58,17 @@ package fb.net {
 
     private function statusChanged(event:StatusEvent):void {
       Output.put("JSON Status changed: " + urlMonitor.available);
-      if (urlMonitor.available)
-        reload();
+      if (urlMonitor.available) reload();
     }
     
     public function reload():void {
-      Output.put("Reloading JSON");
+      Output.put("Reloading JSON" + request.url);
       load(request);
     }
 
     override public function load(new_request:URLRequest):void {
       if (++attempts > MaxAttempts) return;
-      Output.log("JSON Loading: " + new_request);
+      Output.log("JSON Loading: " + new_request.url);
       if (new_request) request = new_request;
       if (!urlMonitor) {
         urlMonitor = new URLMonitor(request);
