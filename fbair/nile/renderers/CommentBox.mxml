@@ -86,6 +86,7 @@
 
     private function bind():void {
       if (!data) return;
+      Output.assert(!bound, "Calling bind when already bound? memmory leak");
       dataWatcher = BindingUtils.bindProperty(commentInput, "active",
                                               data, "commentBoxActive");
       activeWatcher = BindingUtils.bindProperty(data, "commentBoxActive",
