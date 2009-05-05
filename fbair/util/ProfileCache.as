@@ -14,6 +14,18 @@
   limitations under the License.
  */
 package fbair.util {
+  import fb.FBAPI;
+  import fb.FBEvent;
+  import fb.util.Output;
+
+  import fbair.util.FBUpdater;
+
+  import flash.events.Event;
+  import flash.events.EventDispatcher;
+
+  import mx.core.Application;
+  import mx.events.FlexEvent;
+
   // This class holds a reference to all the data about
   //   any profile-id we've fetched.
   //
@@ -41,18 +53,6 @@ package fbair.util {
   //       trace("My profile pic is at : " + event.data.pic_square);
   //     });
   public class ProfileCache {
-    import fb.FBAPI;
-    import fb.FBEvent;
-    import fb.util.Output;
-
-    import fbair.util.FBUpdater;
-
-    import flash.events.Event;
-    import flash.events.EventDispatcher;
-
-    import mx.core.Application;
-    import mx.events.FlexEvent;
-
     public static const PROFILE_FETCHED:String = "profileFetched";
 
     // How long till our profile data is "old"

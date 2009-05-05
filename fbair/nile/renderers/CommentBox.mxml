@@ -17,7 +17,8 @@
      We hide and show this box to create new comments -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:gui="fbair.gui.*"
-         xmlns:util="fbair.util.display.*" >
+         xmlns:util="fbair.util.display.*" 
+         creationComplete="creationComplete(event)" >
 
   <mx:Metadata>
     [Event(name="commented", type="fb.FBEvent")]
@@ -35,15 +36,7 @@
     <!-- This is where you put your comment! -->
     <util:GrowableTextArea id="commentInput"
                            styleName="commentInput"
-                           width="100%"
-                           height="{data.commentBoxActive ?
-                             FocusInHeight : FocusOutHeight}"
-                           text="{FocusOutText}"
-                           color="{data.commentBoxActive ?
-                             EnabledColor : DisabledColor}"
-                           focusIn="focusIn(event)"
-                           focusOut="focusOut(event)"
-                           minTextHeight="{FocusInHeight}" />
+                           width="100%" />
 
     <util:FBButton id="commentButton"
                    autoStyle="true"
@@ -59,37 +52,50 @@
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.Output;
 
     import flash.events.Event;
 
-    import mx.core.Application;
+    import mx.binding.utils.BindingUtils;
+    import mx.binding.utils.ChangeWatcher;
+    import mx.events.FlexEvent;
 
-    private static const FocusOutHeight:int = 25;
-    private static const FocusInHeight:int = 40;
-    private static const FocusOutText:String = "Write a comment...";
+    // This binds our textarea's active with the data.commentBoxActive
+    private var bound:Boolean = false;
+    private var dataWatcher:ChangeWatcher;
+    private var activeWatcher:ChangeWatcher;
 
-    private static const EnabledColor:uint = 0x333333;
-    private static const DisabledColor:uint = 0x808080;
-
-    // Called when our input gains focus, and we want to expand
-    private function focusIn(event:FocusEvent):void {
-      data.commentBoxActive = true;
-      if (commentInput.text == FocusOutText)
-        commentInput.text = "";
+    // constructor
+    private function creationComplete(event:FlexEvent):void {
+      if (!bound) bind();
     }
 
-    // Called when our input loses focus, and we want to contract
-    private function focusOut(event:FocusEvent):void {
-      if (commentInput.text == "") {
-        data.commentBoxActive = false;
-        commentInput.text = FocusOutText;
-      }
+    // Our data setter
+    override public function set data(new_data:Object):void {
+      unbind();
+      super.data = new_data;
+      bind();
     }
 
-    // Called when we actually click the Submit button and want to submit
-    //   a comment.
+    // Watcher setups
+    private function unbind():void {
+      if (dataWatcher) dataWatcher.unwatch();
+      if (activeWatcher) activeWatcher.unwatch();
+      bound = false;
+    }
+
+    private function bind():void {
+      if (!data) return;
+      dataWatcher = BindingUtils.bindProperty(commentInput, "active",
+                                              data, "commentBoxActive");
+      activeWatcher = BindingUtils.bindProperty(data, "commentBoxActive",
+                                                commentInput, "active");
+      bound = true;
+    }
+
+    // Called when we actually click the Submit button
     private function submitComment(event:MouseEvent):void {
-      if (!data.comments.can_post || commentInput.text == "") return;
+      if (!data.comments.can_post || commentInput.text.length == 0) return;
 
       // Disable input for now
       commentInput.editable = false;
@@ -116,7 +122,6 @@
       data.commentBoxActive = false;
       commentButton.enabled = true;
       commentInput.editable = true;
-      commentInput.text = "";
     }
   ]]></mx:Script>
 </mx:HBox>

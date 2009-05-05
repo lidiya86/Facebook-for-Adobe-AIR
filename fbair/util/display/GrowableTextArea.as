@@ -18,30 +18,74 @@ package fbair.util.display {
   import fb.util.Output;
 
   import flash.events.Event;
+  import flash.events.FocusEvent;
   import flash.events.KeyboardEvent;
   import flash.ui.Keyboard;
 
   import mx.controls.TextArea;
-
+  import mx.events.FlexEvent;
+    
   public class GrowableTextArea extends TextArea {
     private static const TextPadding:int = 6;
 
-    public var minTextHeight:int = 0;
+    [Bindable] public var enabledColor:uint = 0x333333;
+    [Bindable] public var disabledColor:uint = 0x808080;
+    [Bindable] public var focusOutHeight:int = 25;
+    [Bindable] public var focusInHeight:int = 40;
+    [Bindable] public var focusOutText:String = "Write a comment...";
+
+    private var _active:Boolean = false;
 
     public function GrowableTextArea() {
       addEventListener(Event.CHANGE, changed);
       addEventListener(KeyboardEvent.KEY_UP, changed);
       addEventListener(KeyboardEvent.KEY_DOWN, keyPressed);
+      addEventListener(FocusEvent.FOCUS_IN, focusIn);
+      addEventListener(FocusEvent.FOCUS_OUT, focusOut);
+      addEventListener(FlexEvent.CREATION_COMPLETE, creationComplete);
+    }
+    private function creationComplete(event:FlexEvent):void {
+      updateState();
     }
 
+    // Setting active
+    [Bindable] public function get active():Boolean { return _active; }
+    public function set active(to:Boolean):void {
+      _active = to;
+      updateState();
+    }
+    
+    // Update our settings based on active and all our vars
+    private function updateState():void {
+      setStyle("color", active ? enabledColor : disabledColor);
+      if (!active) text = focusOutText;
+      height = (active ? focusInHeight : focusOutHeight);
+    }
+
+    // Focusing
+    private function focusIn(event:FocusEvent):void {
+      active = true;
+      if (text == focusOutText) text = "";
+    }
+
+    private function focusOut(event:FocusEvent):void {
+      active = (text.length > 0);
+    }
+
+    // Height change
     override public function set height(to:Number):void {
-      super.height = Math.max(to, realTextHeight);
+      // If no text at all, or focus out text, then do as you wish
+      if (text == focusOutText || text.length == 0) super.height = to;
+      // Otherwise, you're not allowed to become smaller than our user text
+      else super.height = Math.max(to, realTextHeight);
     }
 
+    // Called when the user presses a key
     private function changed(event:Event):void {
-      height = Math.max(realTextHeight, minTextHeight);
+      super.height = Math.max(realTextHeight, focusInHeight);
     }
 
+    // Gets our real Text height
     private function get realTextHeight():Number {
       return textField.textHeight + TextPadding +
         getStyle("paddingTop") + getStyle("paddingBottom");
@@ -50,6 +94,7 @@ package fbair.util.display {
     // This solves an issue where holding Shift and hitting space
     //   wasn't entering a space
     private function keyPressed(event:KeyboardEvent):void {
+      return;
       if (event.keyCode == Keyboard.SPACE && event.shiftKey) {
         textField.replaceText(caretIndex, caretIndex, ' ');
         setSelection(caretIndex+1, caretIndex+1);

@@ -14,8 +14,6 @@
   limitations under the License.
  */
 package fbair.util {
-  import fbair.nile.renderers.CommentsRenderer;
-
   import fb.FBAPI;
   import fb.FBEvent;
 
@@ -42,8 +40,6 @@ package fbair.util {
   //       trace("The time of comment was: " + event.data.time);
   //     });
   public class CommentCache {
-    import fb.util.Output;
-
     public static const COMMENTS_FETCHED:String = "commentFetched";
 
     // How long before comment data is stale

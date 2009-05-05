@@ -26,18 +26,13 @@
   <util:GrowableTextArea id="composerInput"
                          styleName="composerInput"
                          width="100%"
-                         text="{FocusOutText}"
-                         height="{
+                         focusOutText="What's on your mind?"
+                         focusInHeight="{
+                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ? 
+                             48 : 40}"
+                         focusOutHeight="{
                            StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
-                                  (active ? FocusInHeightL : FocusOutHeightL) :
-                                  (active ? FocusInHeightS : FocusOutHeightS)}"
-                         color="{active ? EnabledColor : DisabledColor}"
-                         focusIn="focusIn(event)"
-                         focusOut="focusOut(event)"
-                         minTextHeight="{
-                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
-                                         FocusInHeightL :
-                                         FocusInHeightS}" />
+                             29 : 25}" />
 
   <util:FBButton id="shareButton"
                  autoStyle="true"
@@ -53,39 +48,11 @@
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
 
-    import flash.events.FocusEvent;
     import flash.events.MouseEvent;
 
     import mx.core.Application;
 
-    public static const FocusOutHeightS:int = 25;
-    public static const FocusInHeightS:int = 40;
-
-    public static const FocusOutHeightL:int = 29;
-    public static const FocusInHeightL:int = 48;
-
-    public static const FocusOutText:String = "What's on your mind?";
-    public static const EnabledColor:uint = 0x333333;
-    public static const DisabledColor:uint = 0x808080;
-
-    [Bindable] public var active:Boolean = false;
-
     private var submittedMessage:String;
-
-    // Called when our input gains focus, and we want to expand
-    private function focusIn(event:FocusEvent):void {
-      active = true;
-      if (composerInput.text == FocusOutText)
-        composerInput.text = "";
-    }
-
-    // Called when our input loses focus, and we want to contract
-    private function focusOut(event:FocusEvent):void {
-      if (composerInput.text == "") {
-        active = false;
-        composerInput.text = FocusOutText;
-      }
-    }
 
     // Called when the Share button has been clicked
     private function shareStatus(event:MouseEvent):void {
@@ -94,7 +61,7 @@
         return;
       }
 
-      if (!active) {
+      if (!composerInput.active) {
         Application.application.focusManager.setFocus(composerInput);
         return;
       }
@@ -104,7 +71,7 @@
 
       // Disenable
       submittedMessage = composerInput.text;
-      active = false;
+      composerInput.active = false;
       composerInput.editable = false;
       shareButton.enabled = false;
 
