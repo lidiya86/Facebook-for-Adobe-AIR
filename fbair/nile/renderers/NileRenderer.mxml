@@ -22,8 +22,8 @@
                      xmlns:gui="fbair.gui.*"
                      xmlns:renderer="fbair.nile.renderers.*"
                      xmlns:util="fbair.util.display.*"
+                     implements="fbair.gc.Recyclable" 
                      includeInLayout="{false}"
-                     creationComplete="creationComplete(event)"
                      minWidth="369"
                      width="100%"
                      animate="false"
@@ -32,7 +32,7 @@
                      animateOut="{MathUtil.and(NileContainer.Animate,
                        data.filter_key == NileContainer.CurrentFilter)}"
                      animateOnce="true"
-                     implements="fbair.gc.Recyclable" >
+                     creationComplete="creationComplete(event)" >
 
   <mx:HBox styleName="nileRenderer"
            width="100%" >
