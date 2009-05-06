@@ -47,7 +47,7 @@ package fb.net {
     }
 
     private function error(event:Event):void {
-      Output.put("JSON Error: " + urlMonitor.available);
+      Output.error("JSON Error: " + urlMonitor.available);
       dispatchEvent(new FBEvent(FBEvent.RETRY));
       if (attempts++ < MaxAttempts) reload();
       else if (!urlMonitor.available) {
@@ -57,12 +57,12 @@ package fb.net {
     }
 
     private function statusChanged(event:StatusEvent):void {
-      Output.put("JSON Status changed: " + urlMonitor.available);
+      Output.error("JSON Status changed: " + urlMonitor.available);
       if (urlMonitor.available) reload();
     }
     
     public function reload():void {
-      Output.put("Reloading JSON: " + request.url);
+      Output.error("Reloading JSON: " + request.url);
       load(request);
     }
 
@@ -82,7 +82,7 @@ package fb.net {
       if (event.target.data.indexOf("<") != 0) {
         var eventData:* = JSON.decode(event.target.data);
         if (eventData.constructor == Object && eventData.error_code) {
-          Output.put("Server Error", eventData);
+          Output.error("Server Error", eventData);
           FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ERROR,
             {text:"Server Error (Click To Retry)",
              callback:function():void { attempts = 0; reload(); },
@@ -95,7 +95,7 @@ package fb.net {
           dispatchEvent(new FBEvent(FBEvent.SUCCESS, eventData));
         }
       } else {
-        Output.put("Server XML returned", event.target.data);
+        Output.error("Server XML returned", event.target.data);
         FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ERROR,
           {text:"Server XML (Click To Retry)",
            callback:function():void { attempts = 0; reload(); },

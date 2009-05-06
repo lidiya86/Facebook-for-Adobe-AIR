@@ -21,6 +21,7 @@ package fb.util {
   import mx.controls.Alert;
 
   public class Output {
+    private static var verbose:Boolean = false;
     private static var debugFile:File =
       File.desktopDirectory.resolvePath("air_debug.txt");
     private static var debugStream:FileStream = new FileStream();
@@ -28,18 +29,27 @@ package fb.util {
 
     // Trace
     public static function log(... rest):void {
+      if (!verbose) return;
       for each (var item:* in rest)
         loggedItems.push(item);
     }
 
     // Trace no matter what
-    public static function put(... rest):void {
+    public static function bug(... rest):void {
       for each (var item:* in rest) {
         loggedItems.push(item);
         trace(pretty(item));
       }
     }
-
+    
+    // Trace error no matter what
+    public static function error(... rest):void {
+      for each (var item:* in rest) {
+        loggedItems.push(item);
+        trace(pretty(item));
+      }
+    }
+    
     // File shit
     public static function logDump():void {
       debugStream.open(debugFile, FileMode.WRITE);
@@ -50,7 +60,7 @@ package fb.util {
 
     // Assert the fucker
     public static function assert(assertion:Boolean, ... rest):void {
-      if (!assertion) for each (var item:* in rest) put(item);
+      if (!assertion) for each (var item:* in rest) error(item);
     }
 
     // Alert

@@ -101,7 +101,6 @@ package fbair.util.display {
     // This solves an issue where holding Shift and hitting space
     //   wasn't entering a space
     private function keyPressed(event:KeyboardEvent):void {
-      return;
       if (event.keyCode == Keyboard.SPACE && event.shiftKey) {
         textField.replaceText(caretIndex, caretIndex, ' ');
         setSelection(caretIndex+1, caretIndex+1);

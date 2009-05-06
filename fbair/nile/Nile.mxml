@@ -75,7 +75,9 @@
       // Needs to be added to display tree?
       if (!renderer.parent) {
         Output.log("Adding renderer to display tree: " + renderer.data.post_id +
-          " to filter-key: " + renderer.data.filter_key);
+          " to filter-key: " + renderer.data.filter_key +
+          " in nile " + this);
+        renderer.percentWidth = 100;
         var entry_position:int = 0;
         while(entry_position < numChildren &&
               NileRenderer(getChildAt(entry_position)).data.created_time >
@@ -91,7 +93,8 @@
       // Needs to be added to items?
       if (!itemsByID[renderer.data.post_id]) {
         Output.log("Adding renderer to items-list: " + renderer.data.post_id +
-          " to filter-key: " + renderer.data.filter_key);
+          " to filter-key: " + renderer.data.filter_key +
+          " in nile " + this);
         var item_position:int = 0;
         while (item_position < items.length &&
                items[item_position].data.created_time >
@@ -105,7 +108,8 @@
     // Function to remove a story, by story data
     public function removeStoryByID(post_id:String):void {
       Output.log("Removing story by id: " + post_id +
-        " from filter-key: " + itemsByID[post_id].data.post_id);
+        " from filter-key: " + itemsByID[post_id].data.post_id +
+        " from nile " + this);
       if (!itemsByID[post_id]) return;
       removeStoryAtIndex(items.indexOf(itemsByID[post_id]));
     }
@@ -115,7 +119,8 @@
       Output.assert(i >= 0 && i < items.length,
         "Invalid removeStoryAtIndex: " + i);
       Output.log("Removing story by index: " + items[i].data.post_id +
-        " from filter-key: " + items[i].data.filter_key);
+        " from filter-key: " + items[i].data.filter_key +
+        " from nile " + this);
 
       // Remove from all our lists
       var deadRenderer:NileRenderer = items.splice(i, 1)[0];
