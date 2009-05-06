@@ -15,7 +15,8 @@
  -->
 <!-- This VBox acts as a simple "List" of NileRenderers
      It polls the server and creates NileRenderers off the results. -->
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" >
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         width="100%">
   <mx:Script><![CDATA[
     import fbair.nile.NileContainer;
     import fbair.nile.renderers.NileRenderer;
