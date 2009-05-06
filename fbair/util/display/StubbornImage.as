@@ -64,8 +64,9 @@ package fbair.util.display {
     override public function set source(new_source:Object):void {
       Output.log("Image Setting source: " + new_source);
       if (!StringUtil.empty(source)) {
+        Output.error("Image re-setting source: " + source);
         if (urlMonitor.available) {
-          Output.error("Image Stopping urlMonitor");
+          Output.error("Image Stopping urlMonitor: " + source);
           urlMonitor.stop();
         }
         super.source = '';
