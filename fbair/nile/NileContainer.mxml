@@ -92,7 +92,6 @@
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
     private function getLatestUpdate(filter_key:String):int {
-      return 0;
       if (latestUpdates[filter_key]) return latestUpdates[filter_key];
       else return 0;
     }
@@ -254,7 +253,7 @@
       for (var z:int = 0; z < updates.length; z++)
         if (zombies[updates[z].post_id])
           updates.removeItemAt(z--);
-
+        
       // Remove everything from dataCache, except immunes, then done w/ immunes
       for each (filterSet in dataCache)
         for (var f:int = 0; f < filterSet.length; f++)
