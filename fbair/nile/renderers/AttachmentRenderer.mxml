@@ -148,7 +148,7 @@
     private function removeItemAtIndex(i:int):void {
       Output.assert(i >= 0 && i < items.length,
         "Invalid removeItemAtIndex: " + i + " from " + this);
-      Output.assert(mediaItems == null, "mediaItems is null");
+      Output.assert(mediaItems != null, "mediaItems is null");
       Output.assert(mediaItems.contains(items[i]),
         "Removing item: " + items[i] +
         " mediaItems doesn't contain? " + this);
