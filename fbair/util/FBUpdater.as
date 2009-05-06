@@ -129,7 +129,7 @@ package fbair.util {
     // Called if we failed to load something somewhere and we don't care
     //   we'll just give up.
     private static function errorOccurred(event:Event):void {
-      Output.put("Failed to fetch Auto-Update data");
+      Output.error("Failed to fetch Auto-Update data");
     }
   }
 }

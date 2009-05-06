@@ -42,7 +42,7 @@ package fbair.util.display {
     }
 
     private function error(event:Event):void {
-      Output.put("Image Error : " + urlMonitor.available + ",  " + source);
+      Output.error("Image Error : " + urlMonitor.available + ",  " + source);
       if (attempts++ < MaxAttempts) reload();
       else if (!urlMonitor.available) {
         attempts = 0;
@@ -51,13 +51,13 @@ package fbair.util.display {
     }
 
     private function statusChanged(event:StatusEvent):void {
-      Output.put("Image Status changed: " + urlMonitor.available);
+      Output.error("Image Status changed: " + urlMonitor.available);
       if (urlMonitor.available)
         reload();
     }
 
     private function reload():void {
-      Output.put("Reloading image: " + origSource);
+      Output.error("Reloading image: " + origSource);
       load(origSource);
     }
 
@@ -65,7 +65,7 @@ package fbair.util.display {
       Output.log("Image Setting source: " + new_source);
       if (!StringUtil.empty(source)) {
         if (urlMonitor.available) {
-          Output.put("Image Stopping urlMonitor");
+          Output.error("Image Stopping urlMonitor");
           urlMonitor.stop();
         }
         super.source = '';

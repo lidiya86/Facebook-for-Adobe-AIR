@@ -253,7 +253,7 @@
       for (var z:int = 0; z < updates.length; z++)
         if (zombies[updates[z].post_id])
           updates.removeItemAt(z--);
-        
+      
       // Remove everything from dataCache, except immunes, then done w/ immunes
       for each (filterSet in dataCache)
         for (var f:int = 0; f < filterSet.length; f++)
@@ -273,7 +273,7 @@
       for each (filterSet in dataCache)
         while (filterSet.length > MaxEntries)
           filterSet.removeItemAt(filterSet.length-1);
-
+        
       // Update our metadata
       updateMetadata();
 
