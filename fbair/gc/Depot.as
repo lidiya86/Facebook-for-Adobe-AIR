@@ -18,19 +18,22 @@ package fbair.gc {
   import fb.util.Output;
 
   import fbair.gc.Recyclable;
-  
+
+  import flash.utils.Dictionary;
+
   public class Depot {
-    private static var pool:Object = new Object();
-    
+    private static var pool:Dictionary = new Dictionary();
+
     public static function get(type:Class):* {
-      if (!pool[type]) pool[type] = new Array();
-      if (pool[type].length == 0) pool[type].push(new type());
-      return pool[type].pop();
+      if (pool[type] is Array && pool[type].length > 0) {
+        return pool[type].pop();
+      }
+      return new type();
     }
-    
-    public static function put(item:Object):void {
+
+    public static function put(item:*):void {
       if (item is Recyclable) item.recycle();
-      
+
       if (!pool[item.constructor]) pool[item.constructor] = new Array();
       pool[item.constructor].push(item);
     }
