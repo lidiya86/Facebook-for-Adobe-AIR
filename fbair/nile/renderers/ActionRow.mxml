@@ -55,13 +55,11 @@
   <mx:Script><![CDATA[
     import fbair.util.TimeUtil;
 
-    import mx.utils.ObjectProxy;
-
     [Bindable] public var commentText:String = "Comment";
 
     override public function set data(new_data:Object):void {
-      if (!new_data) return;
-      super.data = new ObjectProxy(new_data);
+      super.data = new_data;
+      if (!data) return;
 
       // We build our fancy timephrase here.
       // like "about an hour ago"

@@ -53,18 +53,16 @@
                click="deleteComment(event)" />
   </mx:HBox>
   <mx:Script><![CDATA[
+    import fb.FBAPI;
+    import fb.FBConnect;
+    import fb.FBEvent;
     import fb.util.Output;
+
     import fbair.util.ProfileCache;
     import fbair.util.StringUtil;
     import fbair.util.TimeUtil;
 
-    import fb.FBAPI;
-    import fb.FBConnect;
-    import fb.FBEvent;
-
     import flash.events.MouseEvent;
-
-    import mx.utils.ObjectProxy;
 
     public static const COMMENT_REMOVED:String = "commentRemoved";
     public static const PicSize:int = 28;
@@ -73,7 +71,7 @@
     override public function set data(new_data:Object):void {
       if (data || !new_data) return;
 
-      super.data = new ObjectProxy(new_data);
+      super.data = new_data;
       if (!data) return;
 
       // Fetch the profile data for this user.
