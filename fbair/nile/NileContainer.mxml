@@ -247,6 +247,7 @@
       // All our updates, wrapped in an array collection
       var updates:ArrayCollection = new ArrayCollection(new_data as Array);
       var filterSet:ArrayCollection;
+      var filterKey:String;
       var update:Object;
 
       // If we have any zombies, they need to be counted out right away
@@ -288,7 +289,7 @@
       Animate = !bigUpdate && longDelay;
 
       // Set nile data every fucking where
-      for (var filterKey:String in dataCache)
+      for (filterKey in dataCache)
         if (niles[filterKey])
           niles[filterKey].data = dataCache[filterKey];
 
