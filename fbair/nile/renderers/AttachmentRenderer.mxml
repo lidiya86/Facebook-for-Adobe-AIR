@@ -19,6 +19,7 @@
 <mx:Box xmlns:mx="http://www.adobe.com/2006/mxml"
         xmlns:renderer="fbair.nile.renderers.*"
         xmlns:util="fbair.util.display.*"
+        implements="fbair.gc.Recyclable"
         direction="{data.media.length > 1 ? 'vertical' : 'horizontal'}"
         creationComplete="creationComplete(event)" >
 
