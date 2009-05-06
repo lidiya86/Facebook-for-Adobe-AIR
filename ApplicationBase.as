@@ -15,63 +15,42 @@
  */
 package {
   import fb.util.Output;
+  import fb.util.FlexUtil;
 
   import flash.data.EncryptedLocalStore;
-  import flash.display.InteractiveObject;
   import flash.events.Event;
   import flash.events.KeyboardEvent;
   import flash.ui.Keyboard;
   import flash.utils.ByteArray;
 
-  import mx.controls.TextArea;
-  import mx.core.Container;
-  import mx.core.ScrollPolicy;
   import mx.core.WindowedApplication;
 
   public class ApplicationBase extends WindowedApplication {
     // Our app id
     public static const AppID:Number = 75647677556;
-    
+
     public function ApplicationBase() {
       layout = "absolute";
       showGripper = showStatusBar = false;
       addEventListener(Event.ADDED, added);
       addEventListener(Event.ADDED_TO_STAGE, addedToStage);
     }
+
     private function addedToStage(event:Event):void {
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }
+
     private function added(event:Event):void {
-      clean(event.target);
+      if (event.target == this) return;
+      FlexUtil.simplify(event.target);
     }
-    
-    private function clean(container:*):void {
-      if (container == this) return;
-      
-      // Automagic scrollbars and masks in flex cause so much pain
-      //   and trouble, that we're going to remove them for all
-      //   containers added to our application. Take that, flex!
-      if (container is Container) {
-        container.clipContent = false;
-        container.horizontalScrollPolicy =
-        container.verticalScrollPolicy = ScrollPolicy.OFF;
-        
-        for (var i:int = 0; i < container.numChildren; i++)
-          clean(container.getChildAt(i));
-      }
-      
-      // We don't want tab enabled for anything but text
-      if (container is InteractiveObject &&
-          !(container is TextArea))
-        container.tabEnabled = false;
-    }
-    
+
     // Keybord shortcut to dump data
     private function keyDown(event:KeyboardEvent):void {
       if (event.commandKey && event.keyCode == Keyboard.D)
         Output.logDump();
     }
-    
+
     // We manage locally stored preferences with these functions
     public static function getPreference(prefName:String):Object {
       var bytes:ByteArray = EncryptedLocalStore.getItem(prefName);
@@ -79,7 +58,7 @@ package {
       return bytes.readObject();
     }
 
-    public static function setPreference(prefName:String, 
+    public static function setPreference(prefName:String,
                                          prefObject:Object):void {
       var bytes:ByteArray = new ByteArray();
       bytes.writeObject(prefObject);

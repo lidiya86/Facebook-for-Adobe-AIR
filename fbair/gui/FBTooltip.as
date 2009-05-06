@@ -16,6 +16,7 @@
 // Gives you tips about tools
 package fbair.gui {
   import fb.util.MathUtil;
+  import fb.util.FlexUtil;
 
   import flash.display.DisplayObject;
   import flash.display.GraphicsPathCommand;
@@ -113,17 +114,9 @@ package fbair.gui {
         points[16] = midPoint; points[17] = -ArrowSize;
 
       graphics.clear();
-      graphics.beginFill(style("backgroundColor", 0x000000));
+      graphics.beginFill(FlexUtil.getStyle(this, "backgroundColor", 0x111111));
       graphics.drawPath(commands, points);
       graphics.endFill();
-    }
-
-    private function style(... styles):* {
-      if (!styles || styles.length == 0) return null;
-      for (var i:int = 0; i < styles.length-1; i++)
-        if (getStyle(styles[i]))
-          return getStyle(styles[i]);
-      return styles[styles.length-1];
     }
   }
 }

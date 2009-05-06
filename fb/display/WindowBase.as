@@ -14,12 +14,12 @@
   limitations under the License.
  */
 package fb.display {
+  import fb.util.FlexUtil;
+
   import flash.events.Event;
 
-  import mx.core.Container;
-  import mx.core.ScrollPolicy;
   import mx.core.Window;
-  
+
   public class WindowBase extends Window {
     public function WindowBase() {
       alwaysInFront = true;
@@ -27,24 +27,10 @@ package fb.display {
       resizable = minimizable = maximizable = false;
       addEventListener(Event.ADDED, added);
     }
+
     private function added(event:Event):void {
-      clean(event.target);
-    }
-    
-    private function clean(container:*):void {
-      if (container == this) return;
-      
-      // Automagic scrollbars and masks in flex cause so much pain
-      //   and trouble, that we're going to remove them for all
-      //   containers added to our application. Take that, flex!
-      if (container is Container) {
-        container.clipContent = false;
-        container.horizontalScrollPolicy =
-        container.verticalScrollPolicy = ScrollPolicy.OFF;
-        
-        for (var i:int = 0; i < container.numChildren; i++)
-          clean(container.getChildAt(i));
-      }
+      if (event.target == this) return;
+      FlexUtil.simplify(event.target);
     }
   }
 }

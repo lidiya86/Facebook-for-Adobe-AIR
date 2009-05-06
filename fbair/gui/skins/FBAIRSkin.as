@@ -15,6 +15,8 @@
  */
 // Flexible Skin we've built for easily skinning parts of the app
 package fbair.gui.skins {
+  import fb.util.FlexUtil;
+
   import flash.geom.Matrix;
   import flash.geom.Point;
 
@@ -25,10 +27,10 @@ package fbair.gui.skins {
                                                   unscaledHeight:Number):void {
       super.updateDisplayList(unscaledWidth, unscaledHeight);
 
-      var insetT:Number = style("insetTopBorder", "inset", 0);
-      var insetB:Number = style("insetBottomBorder", "inset", 0);
-      var insetL:Number = style("insetLeftBorder", "inset", 0);
-      var insetR:Number = style("insetRightBorder", "inset", 0);
+      var insetT:Number = FlexUtil.getStyle(this, "insetTopBorder", "inset", 0);
+      var insetB:Number = FlexUtil.getStyle(this, "insetBottomBorder", "inset", 0);
+      var insetL:Number = FlexUtil.getStyle(this, "insetLeftBorder", "inset", 0);
+      var insetR:Number = FlexUtil.getStyle(this, "insetRightBorder", "inset", 0);
 
       var upperLeft:Point = new Point(0+insetL, 0+insetT);
       var upperRight:Point = new Point(unscaledWidth-1-insetR, 0+insetT);
@@ -68,7 +70,7 @@ package fbair.gui.skins {
             }
           }
 
-          var angle:Number = style("backgroundAngle", 0);
+          var angle:Number = FlexUtil.getStyle(this, "backgroundAngle", 0);
           angle *= (Math.PI/180);
 
           var gradMatrix:Matrix = new Matrix();
@@ -96,21 +98,13 @@ package fbair.gui.skins {
       drawBorder("bottom", lowerLeft, lowerRight);
     }
 
-    private function style(... styles):* {
-      if (!styles || styles.length == 0) return null;
-      for (var i:int = 0; i < styles.length-1; i++)
-        if (getStyle(styles[i]))
-          return getStyle(styles[i]);
-      return styles[styles.length-1];
-    }
-
     private function drawBorder(side:String, start:Point, end:Point):void {
-      var borderColor:uint = style(this,
-        side + "BorderColor", null);
+      var borderColor:uint = FlexUtil.getStyle(this,
+                               side + "BorderColor", null);
       if (borderColor) {
-        var borderThickness:int = style(this,
+        var borderThickness:int = FlexUtil.getStyle(this,
           side + "BorderThickness", "borderThickness", 1);
-        var borderAlpha:int = style(this,
+        var borderAlpha:int = FlexUtil.getStyle(this,
           side + "BorderAlpha", "borderAlpha", 1);
         graphics.lineStyle(borderThickness, borderColor, borderAlpha);
         graphics.moveTo(start.x, start.y);
