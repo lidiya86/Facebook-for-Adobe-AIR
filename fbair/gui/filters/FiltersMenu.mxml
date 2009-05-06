@@ -15,7 +15,8 @@
  -->
 <!-- This contains our list of filters in a menu -->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
-           xmlns:filters="fbair.gui.filters.*" >
+           xmlns:filters="fbair.gui.filters.*"
+           mouseEnabled="false" >
   <mx:Metadata>
     [Event(name="itemClick", type="fb.FBEvent")]
   </mx:Metadata>

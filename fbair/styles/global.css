@@ -100,10 +100,9 @@ TitleBar {
 }
 
 FBTooltip {
-  backgroundColor: #000000;
-  color: #FFFFFF;
+  backgroundColor: #111111;
+  color: #EEEEEE;
   fontSize: 11;
-  fontWeight: bold;
   paddingLeft: 4;
   paddingRight: 4;
 }

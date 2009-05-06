@@ -26,6 +26,9 @@ package fbair.gui {
   import mx.managers.PopUpManager;
 
   public class FBTooltip extends Text {
+
+    public static const ArrowSize:Number = 4;
+
     public static var instance:FBTooltip = new FBTooltip();
     private var arrowOffset:Number = 0;
 
@@ -71,10 +74,9 @@ package fbair.gui {
       }
 
       // determine position of tip
-      var targetX:Number = pt.x - width * 0.5;
-      y = Math.round(pt.y + (below ? 5 : (-height - 5)));
-      x = Math.round(MathUtil.clamp(targetX,
-                     1, stage.stageWidth - width - 1));
+      var targetX:Number = Math.round(pt.x - width * 0.5);
+      y = Math.round(pt.y + (below ? ArrowSize : (-height - ArrowSize)));
+      x = MathUtil.clamp(targetX, 1, stage.stageWidth - width - 1);
       arrowOffset = x - targetX;
       invalidateDisplayList();
     }
@@ -100,16 +102,15 @@ package fbair.gui {
         points[8] = 0; points[9] = 0;
 
       // draw arrow
-      var arrowSize:Number = 4;
-      var midPoint:Number = Math.round(unscaledWidth * 0.5) + 0.5 - arrowOffset;
+      var midPoint:Number = Math.round(unscaledWidth * 0.5) - 0.5 - arrowOffset;
       commands[5] = GraphicsPathCommand.MOVE_TO;
-        points[10] = midPoint; points[11] = -arrowSize;
+        points[10] = midPoint; points[11] = -ArrowSize;
       commands[6] = GraphicsPathCommand.LINE_TO;
-        points[12] = midPoint + arrowSize; points[13] = 0;
+        points[12] = midPoint + ArrowSize; points[13] = 0;
       commands[7] = GraphicsPathCommand.LINE_TO;
-        points[14] = midPoint - arrowSize; points[15] = 0;
+        points[14] = midPoint - ArrowSize; points[15] = 0;
       commands[8] = GraphicsPathCommand.LINE_TO;
-        points[16] = midPoint; points[17] = -arrowSize;
+        points[16] = midPoint; points[17] = -ArrowSize;
 
       graphics.clear();
       graphics.beginFill(style("backgroundColor", 0x000000));
