@@ -15,20 +15,17 @@
  */
 // Gives you tips about tools
 package fbair.gui {
-  import fb.util.Output;
   import fb.util.MathUtil;
 
-  import flash.geom.Point;
   import flash.display.DisplayObject;
   import flash.display.GraphicsPathCommand;
+  import flash.geom.Point;
 
-  import mx.core.Application;
-  import mx.core.IToolTip;
   import mx.controls.Text;
+  import mx.core.Application;
   import mx.managers.PopUpManager;
 
   public class FBTooltip extends Text {
-
     public static var instance:FBTooltip = new FBTooltip();
     private var arrowOffset:Number = 0;
 
