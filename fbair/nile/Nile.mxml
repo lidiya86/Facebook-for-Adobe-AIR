@@ -16,16 +16,19 @@
 <!-- This VBox acts as a simple "List" of NileRenderers
      It polls the server and creates NileRenderers off the results. -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
-         width="100%">
+         width="100%"
+         removed="rendererRemoved(event)" >
   <mx:Script><![CDATA[
-    import fbair.nile.NileContainer;
-    import fbair.nile.renderers.NileRenderer;
     import fb.util.Output;
-    import mx.collections.ArrayCollection;
+
+    import fbair.gc.Depot;
+    import fbair.nile.renderers.NileRenderer;
+
     import flash.events.Event;
     import flash.geom.Point;
 
     import mx.binding.utils.ChangeWatcher;
+    import mx.collections.ArrayCollection;
 
     // items[0] => Newest.
     // items[items.length-1] => Oldest.
@@ -63,13 +66,20 @@
       for each (update in updates)
         addStory(update);
     }
+    
+    // When we remove old items from the nile,
+    //   we want to put them in the depot
+    private function rendererRemoved(event:Event):void {
+      if (event.target is NileRenderer)
+        Depot.put(event.target);
+    }
 
     // Public function adds stories, and returns their index placement
     // entry_position specifies the minimem position they could be in.
     public function addStory(storyData:Object):void {
       // Update the data of our nile renderer
       var renderer:NileRenderer = itemsByID[storyData.post_id] ?
-        itemsByID[storyData.post_id] : new NileRenderer();
+        itemsByID[storyData.post_id] : Depot.get(NileRenderer);
       renderer.data = storyData;
 
       // Needs to be added to display tree?

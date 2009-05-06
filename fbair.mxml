@@ -105,7 +105,8 @@
 
         // If we have tabs data, hit it up
         var filtersData:Object = ApplicationBase.getPreference("filters");
-        if (filtersData && filtersData.data.length > 0) {
+        if (filtersData && filtersData.data && 
+            filtersData.data.length > 0) {
           Output.assert(nileCache != null,
             "We have a filter cache but not a nile cache?!");
 

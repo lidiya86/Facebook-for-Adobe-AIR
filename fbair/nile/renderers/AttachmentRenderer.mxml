@@ -72,5 +72,9 @@
     public static const MaxImageWidth:int = 117;
     public static const MaxImageHeight:int = 160;
     public static const MaxImageHeightMulti:int = 120;
+    
+    public function recycle():void {
+      // TODO: No more repeater here...need to recycle those.
+    }
   ]]></mx:Script>
 </mx:Box>

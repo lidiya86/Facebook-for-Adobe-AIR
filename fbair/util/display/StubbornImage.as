@@ -42,7 +42,8 @@ package fbair.util.display {
     }
 
     private function error(event:Event):void {
-      Output.error("Image Error : " + urlMonitor.available + ",  " + source);
+      Output.error("Image Error: " + urlMonitor.available +
+        " for source:  " + origSource);
       if (attempts++ < MaxAttempts) reload();
       else if (!urlMonitor.available) {
         attempts = 0;
@@ -51,9 +52,9 @@ package fbair.util.display {
     }
 
     private function statusChanged(event:StatusEvent):void {
-      Output.error("Image Status changed: " + urlMonitor.available);
-      if (urlMonitor.available)
-        reload();
+      Output.error("Image Status changed: " + urlMonitor.available + 
+        " for source: " + origSource);
+      if (urlMonitor.available) reload();
     }
 
     private function reload():void {
@@ -63,19 +64,15 @@ package fbair.util.display {
 
     override public function set source(new_source:Object):void {
       Output.log("Image Setting source: " + new_source);
-      if (!StringUtil.empty(source)) {
-        Output.error("Image re-setting source: " + source);
-        if (urlMonitor.available) {
-          Output.error("Image Stopping urlMonitor: " + source);
-          urlMonitor.stop();
-        }
+      if (new_source.constructor == Class) {
+        Output.error("Image re-setting source to crap: " + new_source
+          + " from " + source);
         super.source = '';
       }
       else {
-        if (!urlMonitor) {
-          urlMonitor = new URLMonitor(new URLRequest(String(new_source)));
-          urlMonitor.addEventListener(StatusEvent.STATUS, statusChanged);
-        }
+        if (urlMonitor) urlMonitor.stop();
+        urlMonitor = new URLMonitor(new URLRequest(String(new_source)));
+        urlMonitor.addEventListener(StatusEvent.STATUS, statusChanged);
         super.source = origSource = new_source;
       }
     }

@@ -31,7 +31,8 @@
                        data.filter_key == NileContainer.CurrentFilter)}"
                      animateOut="{MathUtil.and(NileContainer.Animate,
                        data.filter_key == NileContainer.CurrentFilter)}"
-                     animateOnce="true" >
+                     animateOnce="true"
+                     implements="fbair.gc.Recyclable" >
 
   <mx:HBox styleName="nileRenderer"
            width="100%" >
@@ -72,7 +73,7 @@
                            id="contentBox"
                            styleName="contentBox"
                            animateIn="false"
-                           animate="{MathUtil.and(NileContainer.Animate, 
+                           animate="{MathUtil.and(NileContainer.Animate,
                              data.filter_key == NileContainer.CurrentFilter)}" >
       </util:AnimatedCanvas>
 
@@ -95,12 +96,13 @@
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.MathUtil;
+    import fb.util.Output;
 
+    import fbair.gc.Depot;
     import fbair.gui.StylePrefs;
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;
-    import fb.util.MathUtil;
-    import fb.util.Output;
     import fbair.util.ProfileCache;
     import fbair.util.StringUtil;
 
@@ -137,6 +139,18 @@
         content.percentWidth = 100;
         contentBox.addChild(content);
       }
+    }
+
+    // Save the earth, kids!
+    public function recycle():void {
+      if (content) {
+        if (contentBox.contains(content))
+          contentBox.removeChild(content);
+        Depot.put(content);
+        content = null;
+      }
+
+      super.data = null;
     }
 
     private function clickedProfilePic(event:MouseEvent):void {
@@ -189,7 +203,8 @@
     // We'll pass along pieces to our CommentsRenderer, LikesRenderer
     //    and perhaps a "ContentRenderer"
     override public function set data(new_data:Object):void {
-      if (!new_data) return;
+      Output.assert(new_data != null,
+        "Setting null data on NileRenderer?: " + this);
 
       // We don't want to rebuild this string every time
       if (data && data.actorAndMessage)
@@ -237,17 +252,21 @@
         }
 
         // Create correct type of content
-        content = new AttachmentRenderer();
+        content = Depot.get(AttachmentRenderer);
         content.data = data.attachment;
       }
     }
 
     // Called when we've fetched profile data about actor.
     private function profileFetched(event:FBEvent):void {
+      // Make sure the profile cach has what we need
       if (!ProfileCache.hasProfile(data.actor_id)) return;
       if (data.target_id && !ProfileCache.hasProfile(data.target_id)) return;
+
+      // Get our actor data
       var actorData:Object = ProfileCache.cache[data.actor_id];
 
+      // Build our body that contains actor/target/message
       var body:String = StringUtil.linkify(actorData.name, actorData.url);
       if (ProfileCache.hasProfile(data.target_id))
         body += StringUtil.colorize(' ► ', 'aaaaaa') +

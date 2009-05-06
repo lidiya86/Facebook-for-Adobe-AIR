@@ -57,9 +57,10 @@
 
   <mx:Script><![CDATA[
     import fb.FBEvent;
+    import fb.util.MathUtil;
+    import fb.util.Output;
 
     import fbair.gui.filters.FiltersBar;
-    import fb.util.MathUtil;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -68,8 +69,6 @@
     import mx.core.IToolTip;
     import mx.events.FlexEvent;
     import mx.managers.ToolTipManager;
-
-    import fb.util.Output;
 
     [Bindable] private var hovering:Boolean = false;
     [Bindable] private var tabLabelWidth:int = 0;
@@ -122,8 +121,10 @@
         ToolTipManager.destroyToolTip(tip);
         tip = null;
       }
-      stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
-      stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
+      if (stage) {
+        stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
+        stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
+      }
     }
   ]]></mx:Script>
 </mx:HBox>
