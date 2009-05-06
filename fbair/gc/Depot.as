@@ -29,9 +29,7 @@ package fbair.gc {
     }
     
     public static function put(item:Object):void {
-      Output.assert(item is Recyclable,
-        "Depot putting non recyclable?: " + item);
-      item.recycle();
+      if (item is Recyclable) item.recycle();
       
       if (!pool[item.constructor]) pool[item.constructor] = new Array();
       pool[item.constructor].push(item);
