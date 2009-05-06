@@ -119,10 +119,8 @@
     private static const PicSizeLarge:int = 42;
     private static const PicSizeSmall:int = 36;
 
-    // We assign this to our ContentRenderer if we make one.
-    // So this is like polymorphic association, where the abstract
-    //   base class is simply Container.
-    private var content:Container;
+    // Our attachment renderer, if we make one
+    private var content:AttachmentRenderer;
 
     private function creationComplete(evt:Event):void {
       includeInLayout = visible;

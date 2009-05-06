@@ -19,26 +19,20 @@
 <mx:Box xmlns:mx="http://www.adobe.com/2006/mxml"
         xmlns:renderer="fbair.nile.renderers.*"
         xmlns:util="fbair.util.display.*"
-        direction="{data.media.length > 1 ? 'vertical' : 'horizontal'}" >
+        direction="{data.media.length > 1 ? 'vertical' : 'horizontal'}"
+        creationComplete="creationComplete(event)" >
 
   <!-- HBox of all our items -->
   <mx:HBox id="mediaItems"
+           width="100%"
+           height="100%"
            styleName="mediaItems"
-           includeInLayout="{data.media.length > 0}" >
-    <mx:Repeater id="rp"
-                 dataProvider="{data.media}" >
-      <renderer:MediaItem data="{rp.currentItem}"
-                          maxImageHeight="{data.media.length > 1 ?
-                            MaxImageHeightMulti : MaxImageHeight}"
-                          maxImageWidth="{data.media.length > 1 ? (width -
-                            mediaItems.getStyle('horizontalGap') *
-                            (data.media.length - 1)) / 
-                            data.media.length : MaxImageWidth}" />
-    </mx:Repeater>
-  </mx:HBox>
+           removed="itemRemoved(event)"
+           includeInLayout="{data.media.length > 0}" />
 
   <mx:VBox width="100%"
-           styleName="{data.media.length == 0 ? 'noItemDetail' : 'multiItemDetail'}" >
+           styleName="{data.media.length == 0 ?
+             'noItemDetail' : 'multiItemDetail'}" >
 
     <util:LinkText id="itemLink"
                    styleName="itemLink"
@@ -67,14 +61,113 @@
   </mx:VBox>
 
   <mx:Script><![CDATA[
+    import fb.util.Output;
+
+    import fbair.gc.Depot;
+    import fbair.nile.renderers.MediaItem;
     import fbair.util.StringUtil;
+
+    import mx.events.FlexEvent;
 
     public static const MaxImageWidth:int = 117;
     public static const MaxImageHeight:int = 160;
     public static const MaxImageHeightMulti:int = 120;
-    
+
+    // Our list of media items
+    private var items:Vector.<MediaItem> = new Vector.<MediaItem>();
+    private var itemsBySrc:Object = new Object();
+
+    // When we were created
+    private function creationComplete(event:FlexEvent):void {
+      // Add any items to display tree that were already set in data
+      for each (var item:MediaItem in items)
+        mediaItems.addChild(item);
+      
+      // Update our dimensions
+      updateImageDimensions();
+    }
+
+    // When we got new data
+    override public function set data(new_data:Object):void {
+      super.data = new_data;
+
+      // If no data, then recycle
+      if (!data) recycle();
+      else {
+        var mediaItem:Object;
+
+        // Organize new items by src
+        var updatesBySrc:Object = new Object();
+        for each (mediaItem in data.media)
+          updatesBySrc[mediaItem.src] = mediaItem;
+
+        // Remove any existent that aren't in this update
+        for (var i:int = 0; i < items.length; i++)
+          if (!updatesBySrc[items[i].data.src])
+            removeItemAtIndex(i--);
+
+        // Add any not already existent
+        for each (mediaItem in data.media)
+          if (!itemsBySrc[mediaItem.src])
+            addItem(mediaItem);
+        
+        // Update our dimensions, if we have a display tree..
+        if (mediaItems) updateImageDimensions();
+      }
+    }
+
+    // Fight global warming!
     public function recycle():void {
-      // TODO: No more repeater here...need to recycle those.
+      for (var i:int = 0; i < items.length; i++)
+        removeItemAtIndex(i--);
+    }
+
+    // When we remove old items from the attachment renderer
+    //   we want to recycle them
+    private function itemRemoved(event:Event):void {
+      if (event.target is MediaItem)
+        Depot.put(event.target);
+    }
+
+    // Add item
+    private function addItem(item:Object):void {
+      // Create the item
+      var mediaItem:MediaItem = Depot.get(MediaItem);
+      mediaItem.data = item;
+
+      // Add to our lists
+      items.push(mediaItem);
+      itemsBySrc[mediaItem.data.src] = mediaItem;
+
+      // Add to display tree
+      if (mediaItems) mediaItems.addChild(mediaItem);
+    }
+
+    // Remove item by index from list
+    private function removeItemAtIndex(i:int):void {
+      Output.assert(i >= 0 && i < items.length,
+        "Invalid removeItemAtIndex: " + i + " from " + this);
+      Output.assert(mediaItems.contains(items[i]),
+        "Removing item: " + items[i] +
+        " mediaItems doesn't contain? " + this);
+      // Remove from lists
+      var deadItem:MediaItem = items.splice(i, 1)[0];
+      delete itemsBySrc[deadItem.data.src];
+
+      // Remove from display tree
+      mediaItems.removeChild(deadItem);
+    }
+
+    // Update all our image dimensions
+    private function updateImageDimensions():void {
+      for each (var item:MediaItem in items) {
+        item.maxImageHeight = items.length > 1 ?
+          MaxImageHeightMulti : MaxImageHeight;
+        item.maxImageWidth = items.length > 1 ?
+          (width - mediaItems.getStyle('horizontalGap') *
+            (items.length - 1)) /
+          items.length : MaxImageWidth;
+      }
     }
   ]]></mx:Script>
 </mx:Box>
