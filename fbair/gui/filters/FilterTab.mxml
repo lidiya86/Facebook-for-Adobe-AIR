@@ -61,6 +61,7 @@
     import fb.util.Output;
 
     import fbair.gui.filters.FiltersBar;
+    import fbair.gui.FBTooltip;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -98,14 +99,9 @@
 
     private function rollOver(event:MouseEvent):void {
       hovering = true;
-      if (!tip && tabLabelWidth > tabLabel.width) {
-        var pt:Point = localToGlobal(new Point(
-           (width - tabLabelWidth) * 0.5,
-           height + 5));
-        pt.x = Math.min(Math.max(1, pt.x),
-          stage.stageWidth - tabLabelWidth);
-        tip = ToolTipManager.createToolTip(data.name, pt.x, pt.y);
-      }
+      if (tabLabelWidth > tabLabel.width)
+        FBTooltip.show(data.name, this);
+
       stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
       stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
     }
@@ -117,10 +113,8 @@
 
     private function rollOut(event:Event = null):void {
       hovering = false;
-      if (tip) {
-        ToolTipManager.destroyToolTip(tip);
-        tip = null;
-      }
+      FBTooltip.hide();
+
       if (stage) {
         stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
         stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);

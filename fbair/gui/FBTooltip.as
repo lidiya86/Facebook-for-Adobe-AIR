@@ -13,21 +13,80 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-// Skin for tooltips
-package fbair.gui.skins {
-  import flash.geom.Matrix;
-  import flash.geom.Point;
+// Gives you tips about tools
+package fbair.gui {
+  import fb.util.Output;
+  import fb.util.MathUtil;
 
+  import flash.geom.Point;
+  import flash.display.DisplayObject;
   import flash.display.GraphicsPathCommand;
 
-  import mx.skins.halo.HaloBorder;
+  import mx.core.Application;
+  import mx.core.IToolTip;
+  import mx.controls.Text;
+  import mx.managers.PopUpManager;
 
-  public class TooltipSkin extends HaloBorder {
+  public class FBTooltip extends Text {
+
+    public static var instance:FBTooltip = new FBTooltip();
+    private var arrowOffset:Number = 0;
+
+    public function FBTooltip() {
+      if (instance) throw new Error("FBTooltip is a Singleton");
+    }
+
+    public static function hide():void {
+      instance.visible = false;
+      instance.text = "";
+    }
+
+    // shows a tooltip at a point or under a display object
+    public static function show(txt:String, at:*, below:Boolean = true):void {
+      instance._show(txt, at, below);
+    }
+
+    private function _show(txt:String, at:*, below:Boolean):void {
+      if (text == txt) return;
+
+      // add to display tree
+      if (!stage) {
+        PopUpManager.addPopUp(this, Application.application as Application);
+        maxWidth = stage.stageWidth * 0.75;
+      } else {
+        PopUpManager.bringToFront(this);
+      }
+      visible = true;
+
+      // set text
+      text = txt;
+      validateNow();
+
+      // determine point of interest
+      var pt:Point;
+      if (at is Point) {
+        pt = at as Point;
+      } else if (at is DisplayObject) {
+        var dObj:DisplayObject = at as DisplayObject;
+        pt = dObj.localToGlobal(new Point(dObj.width * 0.5, 0));
+        if (below)
+          pt.y += dObj.height;
+      }
+
+      // determine position of tip
+      var targetX:Number = pt.x - width * 0.5;
+      y = Math.round(pt.y + (below ? 5 : (-height - 5)));
+      x = Math.round(MathUtil.clamp(targetX,
+                     1, stage.stageWidth - width - 1));
+      arrowOffset = x - targetX;
+      invalidateDisplayList();
+    }
 
     override protected function updateDisplayList(unscaledWidth:Number,
                                                   unscaledHeight:Number):void {
       super.updateDisplayList(unscaledWidth, unscaledHeight);
 
+      // use this opportunity to draw in the background
       var points:Vector.<Number> = new Vector.<Number>(18, true);
       var commands:Vector.<int> = new Vector.<int>(9, true);
 
@@ -44,8 +103,8 @@ package fbair.gui.skins {
         points[8] = 0; points[9] = 0;
 
       // draw arrow
-      var arrowSize:Number = 5;
-      var midPoint:Number = Math.round(unscaledWidth * 0.5);
+      var arrowSize:Number = 4;
+      var midPoint:Number = Math.round(unscaledWidth * 0.5) + 0.5 - arrowOffset;
       commands[5] = GraphicsPathCommand.MOVE_TO;
         points[10] = midPoint; points[11] = -arrowSize;
       commands[6] = GraphicsPathCommand.LINE_TO;

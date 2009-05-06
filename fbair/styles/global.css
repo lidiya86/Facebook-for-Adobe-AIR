@@ -99,10 +99,11 @@ TitleBar {
   backgroundAlpha: 0;
 }
 
-ToolTip {
-  borderSkin: ClassReference('fbair.gui.skins.TooltipSkin');
+FBTooltip {
   backgroundColor: #000000;
   color: #FFFFFF;
   fontSize: 11;
   fontWeight: bold;
+  paddingLeft: 4;
+  paddingRight: 4;
 }
