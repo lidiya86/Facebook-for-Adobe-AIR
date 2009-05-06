@@ -64,15 +64,21 @@
 
     import flash.events.MouseEvent;
 
+    import mx.utils.ObjectProxy;
+    
     public static const COMMENT_REMOVED:String = "commentRemoved";
     public static const PicSize:int = 28;
 
     // "data" in this context is actually an item in stream.comments.posts
     override public function set data(new_data:Object):void {
-      if (data || !new_data) return;
-
-      super.data = new_data;
-      if (!data) return;
+      // Clear us out
+      if (!new_data) {
+        super.data = null;
+        return;
+      }
+      
+      // Proxy our vars, for binding
+      super.data = new ObjectProxy(new_data);
 
       // Fetch the profile data for this user.
       ProfileCache.getProfile(data.fromid).addEventListener(
