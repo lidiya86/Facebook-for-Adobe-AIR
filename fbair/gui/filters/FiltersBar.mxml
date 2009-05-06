@@ -52,7 +52,7 @@
                     alpha="{filterMenuButton.state == FBButton.OVER ?
                             1.0 : 0.7}"
                     icon="@Embed('../../assets/plus.png')"
-                    mouseDown="menuButtonClicked(event)" 
+                    mouseDown="menuButtonClicked(event)"
                     enabled="{menu.data.length > 0}" />
 
   <mx:Script><![CDATA[
@@ -73,10 +73,9 @@
     import mx.managers.PopUpManager;
     import mx.utils.ObjectProxy;
 
+    private static const MaxTabs:int = 7;
+
     [Bindable] public static var TabCount:int = 0;
-
-    public static const MaxTabs:int = 5;
-
     [Bindable] private var menu:FiltersMenu;
 
     [Bindable] public var focusHistory:Array = new Array();
@@ -247,7 +246,7 @@
       tabData.addItem(dataByID[key]);
 
       // Remove staleness
-      while (tabData.length >= MaxTabs)
+      while (tabData.length > MaxTabs)
         removeTab(focusHistory[0]);
 
       // Update tabCount
