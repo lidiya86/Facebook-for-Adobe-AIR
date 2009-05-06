@@ -72,7 +72,7 @@ Label, Text, TextArea {
   color: #333;
 }
 
-Label, Text, TextArea, Button {
+Label, Text, TextArea, Button, ToolTip {
   font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
 }
 
@@ -97,4 +97,11 @@ TextArea {
 
 TitleBar {
   backgroundAlpha: 0;
+}
+
+ToolTip {
+  borderSkin: ClassReference('fbair.gui.skins.TooltipSkin');
+  backgroundColor: #000000;
+  color: #FFFFFF;
+  fontSize: 11;
 }
