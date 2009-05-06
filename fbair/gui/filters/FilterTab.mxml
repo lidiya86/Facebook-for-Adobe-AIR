@@ -25,8 +25,6 @@
          creationComplete="creationComplete(event)"
          buttonMode="{!data.active}"
          rollOver="{rollOver(event)}"
-         toolTip="{tabLabelWidth > tabLabel.width ? 
-                   data.name : null}"
          click="tabClicked(event)" >
   <mx:Metadata>
     [Event(name="deleteClick", type="fb.FBEvent")]
@@ -66,11 +64,17 @@
 
     import flash.events.Event;
     import flash.events.MouseEvent;
+    import flash.geom.Point;
 
+    import mx.core.IToolTip;
     import mx.events.FlexEvent;
+    import mx.managers.ToolTipManager;
+    
+    import fb.util.Output;
 
     [Bindable] private var hovering:Boolean = false;
     [Bindable] private var tabLabelWidth:int = 0;
+    private var tip:IToolTip;
 
     private function creationComplete(event:FlexEvent):void {
       tabLabelWidth = tabLabel.measureText(data.name).width;
@@ -97,10 +101,21 @@
 
     private function rollOver(event:MouseEvent):void {
       hovering = true;
+      if (tabLabelWidth > tabLabel.width) {
+        var pt:Point = localToGlobal(new Point(0,0));
+        pt.x += (width - tabLabelWidth) * 0.5;
+        pt.y += height + 5;
+        tip = ToolTipManager.createToolTip(data.name, pt.x, pt.y);
+        Output.bug (tip);
+      }
     }
 
     private function rollOut(event:Event = null):void {
       hovering = false;
+      if (tip) {
+        ToolTipManager.destroyToolTip(tip);
+        tip = null;
+      }
     }
   ]]></mx:Script>
 </mx:HBox>

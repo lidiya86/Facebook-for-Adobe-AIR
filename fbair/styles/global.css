@@ -104,4 +104,5 @@ ToolTip {
   backgroundColor: #000000;
   color: #FFFFFF;
   fontSize: 11;
+  fontWeight: bold;
 }

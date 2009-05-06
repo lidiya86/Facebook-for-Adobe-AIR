@@ -44,7 +44,7 @@ package fbair.gui.skins {
         points[8] = 0; points[9] = 0;
 
       // draw arrow
-      var arrowSize:Number = 4;
+      var arrowSize:Number = 5;
       var midPoint:Number = Math.round(unscaledWidth * 0.5);
       commands[5] = GraphicsPathCommand.MOVE_TO;
         points[10] = midPoint; points[11] = -arrowSize;
