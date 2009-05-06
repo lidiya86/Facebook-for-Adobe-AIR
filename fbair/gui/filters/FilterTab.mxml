@@ -68,7 +68,7 @@
     import mx.core.IToolTip;
     import mx.events.FlexEvent;
     import mx.managers.ToolTipManager;
-    
+
     import fb.util.Output;
 
     [Bindable] private var hovering:Boolean = false;
@@ -81,13 +81,12 @@
       addEventListener(MouseEvent.ROLL_OUT, rollOut);
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
       addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
-      stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
     }
 
     private function removedFromStage(event:Event):void {
       stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
     }
-    
+
     private function tabClicked(event:Event):void {
       if (event.target == tabDeleteButton) return;
       dispatchEvent(new FBEvent('tabClick'));
@@ -101,13 +100,20 @@
     private function rollOver(event:MouseEvent):void {
       hovering = true;
       if (!tip && tabLabelWidth > tabLabel.width) {
-        var pt:Point = localToGlobal(new Point(0,0));
-        pt.x += (width - tabLabelWidth) * 0.5;
-        pt.y += height + 5;
-        if (pt.x < 1) pt.x = 1;
-        if (pt.x > stage.stageWidth - tabLabelWidth) pt.x = stage.stageWidth - tabLabelWidth;
+        var pt:Point = localToGlobal(new Point(
+           (width - tabLabelWidth) * 0.5,
+           height + 5));
+        pt.x = Math.min(Math.max(1, pt.x),
+          stage.stageWidth - tabLabelWidth);
         tip = ToolTipManager.createToolTip(data.name, pt.x, pt.y);
       }
+      stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
+      stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
+    }
+
+    private function mouseMove(event:MouseEvent):void {
+      if (hitTestPoint(event.stageX, event.stageY)) return;
+      rollOut();
     }
 
     private function rollOut(event:Event = null):void {
@@ -116,6 +122,8 @@
         ToolTipManager.destroyToolTip(tip);
         tip = null;
       }
+      stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
+      stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
     }
   ]]></mx:Script>
 </mx:HBox>
