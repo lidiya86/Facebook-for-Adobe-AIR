@@ -24,7 +24,6 @@
          maxWidth="{tabLabelWidth + 50}"
          creationComplete="creationComplete(event)"
          buttonMode="{!data.active}"
-         rollOver="{rollOver(event)}"
          click="tabClicked(event)" >
   <mx:Metadata>
     [Event(name="deleteClick", type="fb.FBEvent")]
@@ -101,12 +100,13 @@
 
     private function rollOver(event:MouseEvent):void {
       hovering = true;
-      if (tabLabelWidth > tabLabel.width) {
+      if (!tip && tabLabelWidth > tabLabel.width) {
         var pt:Point = localToGlobal(new Point(0,0));
         pt.x += (width - tabLabelWidth) * 0.5;
         pt.y += height + 5;
+        if (pt.x < 1) pt.x = 1;
+        if (pt.x > stage.stageWidth - tabLabelWidth) pt.x = stage.stageWidth - tabLabelWidth;
         tip = ToolTipManager.createToolTip(data.name, pt.x, pt.y);
-        Output.bug (tip);
       }
     }
 
