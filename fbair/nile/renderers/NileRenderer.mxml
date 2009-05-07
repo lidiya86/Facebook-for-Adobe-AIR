@@ -153,7 +153,7 @@
 
       // Clean out comments renderer and rest it's shit
       ufi.commentsRenderer.destroy();
-      
+
       super.data = null;
     }
 
@@ -263,6 +263,8 @@
 
     // Called when we've fetched profile data about actor.
     private function profileFetched(event:FBEvent):void {
+      if (!data) return;
+
       // Make sure the profile cach has what we need
       if (!ProfileCache.hasProfile(data.actor_id)) return;
       if (data.target_id && !ProfileCache.hasProfile(data.target_id)) return;
