@@ -46,6 +46,7 @@
     import fbair.gc.Depot;
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
+    import fbair.util.HashArray;
 
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -71,13 +72,13 @@
     private static const MaxAnimations:int = 3;
 
     // Our current filter
-    [Bindable] public static var CurrentFilter:String = "nf";
+    [Bindable] public static var CurrentFilter:String;
 
     // All our niles, keyed by filter_key
-    private var niles:Object = {"nf":(Depot.get(Nile))};
+    private var niles:Object = new Object();
 
     // Our current nile
-    [Bindable] private var nile:Nile = niles["nf"];
+    [Bindable] private var nile:Nile;
 
     // This timer determines how often to poll for new data
     private var pollingTimer:Timer = new Timer(PollingDelay);
@@ -92,16 +93,12 @@
 
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
-    private function getLatestUpdate(filter_key:String):int {
-      if (latestUpdates[filter_key]) return latestUpdates[filter_key];
-      else return 0;
-    }
 
     // Cache of all nile renderer data
-    public var dataCache:Object = {"nf":(new ArrayCollection())};
+    public var dataCache:Object = new Object();
 
     // Our active filters, by filter_key
-    public var streamFilters:Array = ["nf"];
+    public var streamFilters:HashArray = new HashArray();
 
     // Sorter for anything based on created_time
     private var sort:Sort = new Sort();
@@ -123,11 +120,8 @@
 
       // Initialize created_time sorter
       sort.fields = [new SortField("created_time", false, true)];
-
-      // Add our initial nile to the canvas
-      nile.visible = false;
-      nileCanvas.addChild(nile);
     }
+
     private function addedToStage(event:Event):void {
       // Listen for keypresses to scroll
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
@@ -135,14 +129,7 @@
 
     // We call this on launch to set up our initial set of filters, if cached
     // dataCache should already be set now as well
-    public function loadInitialFilters(stream_filters:Array):void {
-      // Blow away any defaults since we have cache
-      CurrentFilter = null;
-      niles = new Object();
-      nileCanvas.removeChild(nile);
-      Depot.put(nile);
-      nile = null;
-
+    public function loadInitialFilters(stream_filters:HashArray):void {
       // Populate our filters and their niles
       streamFilters = stream_filters;
       for each (var streamFilter:String in streamFilters) {
@@ -150,8 +137,14 @@
           "Loading streamFilter with no dataCache entry? : " + streamFilter);
         niles[streamFilter] = Depot.get(Nile);
         niles[streamFilter].visible = false;
+        niles[streamFilter].data = dataCache[streamFilter];
         nileCanvas.addChild(niles[streamFilter]);
       }
+    }
+
+    private function getLatestUpdate(filter_key:String):int {
+      if (latestUpdates[filter_key]) return latestUpdates[filter_key];
+      else return 0;
     }
 
     // When we remove old items from the nile,
@@ -191,12 +184,12 @@
     public function beginPolling():void {
       if (FBConnect.status != FBConnect.Connected) return;
 
-      // Begin our polling routine
       pollingTimer.addEventListener(TimerEvent.TIMER, poll);
-      poll();
 
-      // Show the nile to the world!
-      nile.visible = true;
+      if (nile) {
+        poll();
+        nile.visible = true;
+      }
     }
 
     // Called on a loop to fetch new entries from the stream
@@ -257,7 +250,7 @@
       for (var z:int = 0; z < updates.length; z++)
         if (zombies[updates[z].post_id])
           updates.removeItemAt(z--);
-      
+
       // Remove everything from dataCache, except immunes, then done w/ immunes
       for each (filterSet in dataCache)
         for (var f:int = 0; f < filterSet.length; f++)
@@ -277,14 +270,14 @@
       for each (filterSet in dataCache)
         while (filterSet.length > MaxEntries)
           filterSet.removeItemAt(filterSet.length-1);
-        
+
       // Update our metadata
       updateMetadata();
 
       // Determine BigUpdate
       var totalAdditions:int = 0;
       for each (update in dataCache[CurrentFilter])
-        if (!nile.items.hasKey(update.post_id))
+        if (nile && !nile.items.hasKey(update.post_id))
           totalAdditions++;
       var bigUpdate:Boolean = (totalAdditions > MaxAnimations);
 
@@ -297,7 +290,7 @@
           niles[filterKey].data = dataCache[filterKey];
 
       // If there's nothing in our current filter, then we need to clear it
-      if (!dataCache[CurrentFilter])
+      if (nile && !dataCache[CurrentFilter])
         nile.data = new Array();
 
       // Begin timer for next run
@@ -353,17 +346,17 @@
 
     // Called when new filter has added to tab bar
     public function filterAdded(filter_key:String):void {
-      Output.assert(streamFilters.indexOf(filter_key) == -1,
+      Output.assert(streamFilters.hasKey(filter_key),
         "Adding filter_key that we already had?: " + filter_key);
       Output.assert(niles[filter_key] == null,
         "Adding filter_key with nile we had?:" + filter_key);
 
       // So truly add it
-      if (streamFilters.indexOf(filter_key) == -1) {
+      if (!streamFilters.hasKey(filter_key)) {
         Output.assert(niles[filter_key] == null,
           "We have no streamfilter but a nile?: " + filter_key);
 
-        streamFilters.push(filter_key);
+        streamFilters.push(filter_key, filter_key);
         CurrentFilter = filter_key;
 
         // If there's a nile in the canvas, remove it
@@ -376,7 +369,7 @@
 
         // poll baby!
         FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-          "Fetching Stream Data"));
+          "Loading Stream"));
         poll();
       }
       // Or maybe just point shit
@@ -385,9 +378,8 @@
 
     // Called when a filter has been removed
     public function filterRemoved(filter_key:String):void {
-      var filter_index:int = streamFilters.indexOf(filter_key);
-      Output.assert(filter_index != -1, "Removing filter with index -1?: " +
-        filter_key);
+      Output.assert(streamFilters.hasKey(filter_key),
+        "Removing filter with index -1?: " + filter_key);
       Output.assert(nileCanvas.contains(niles[filter_key]),
         "Removing nile not in display?");
       Output.assert(niles[filter_key] != null,
@@ -400,12 +392,12 @@
       delete niles[filter_key];
 
       // Remove from filters
-      streamFilters.splice(filter_index, 1);
+      streamFilters.removeKey(filter_key);
     }
 
-    // Called whena new filter is selected!
+    // Called when a new filter is selected!
     public function filterSelected(filter_key:String):void {
-      Output.assert(streamFilters.indexOf(filter_key) != -1,
+      Output.assert(streamFilters.hasKey(filter_key),
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);
@@ -420,7 +412,8 @@
         // Select new main nile
         nile = niles[filter_key];
         boundNile();
-        nile.visible = true;
+        if (FBConnect.status == FBConnect.Connected)
+          nile.visible = true;
       }
     }
 

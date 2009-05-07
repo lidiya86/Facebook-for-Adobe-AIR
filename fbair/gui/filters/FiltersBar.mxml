@@ -70,20 +70,17 @@
     import flash.ui.Keyboard;
 
     import mx.binding.utils.BindingUtils;
-    import mx.collections.ArrayCollection;
     import mx.events.FlexEvent;
     import mx.managers.PopUpManager;
     import mx.utils.ObjectProxy;
 
-    private static const MaxTabs:int = 7;
+    public static const MaxTabs:int = 7;
 
     [Bindable] public static var TabCount:int = 0;
-    [Bindable] private var menu:FiltersMenu;
-
     [Bindable] public var focusHistory:HashArray = new HashArray();
-    private var _currentTab:String;
-    private var dataByID:Object = new Object();
 
+    [Bindable] private var menu:FiltersMenu;
+    private var _currentTab:String;
     private var tabsHash:HashArray = new HashArray();
 
     private function creationComplete(event:FlexEvent):void {
@@ -181,7 +178,7 @@
           "type, value from stream_filter where uid = " +
           FBConnect.session.uid + " order by rank"
       }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
-        data = event.data;
+        data = new HashArray(event.data, 'filter_key');
       });
     }
 
@@ -213,23 +210,14 @@
 
     override public function set data(new_data:Object):void {
       // Build menu data
-      var menuData:ArrayCollection = new ArrayCollection();
-      var stream_filters:Array = new_data as Array;
-      for each (var stream_filter:Object in stream_filters)
-        menuData.addItem(new ObjectProxy(stream_filter));
-
-      // Pass on data
-      super.data = menuData;
+      super.data = new_data;
       menu.data = data;
 
-      // Build data by id
-      dataByID = new Object();
-      for each (var item:Object in menuData)
-        dataByID[item.filter_key] = item;
-
       // if this is your first launch, we'll give you default feed
-      if (tabsHash.length == 0)
-        addTab(data[0].filter_key);
+      if (tabsHash.length == 0) {
+        trace("adding the default feed");
+        addTab(data.getAt(0).filter_key);
+      }
     }
 
     // Tab clicking
@@ -255,7 +243,7 @@
 
       // Create new tab
       var renderer:FilterTab = Depot.get(FilterTab);
-      renderer.data = dataByID[key];
+      renderer.data = new ObjectProxy(data.getAtKey(key));
       tabsHash.push(key, renderer);
       filterTabs.addChild(renderer);
 

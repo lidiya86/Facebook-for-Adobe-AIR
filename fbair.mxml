@@ -63,6 +63,7 @@
     import fbair.util.FBUpdater;
     import fb.util.Output;
     import fbair.util.ProfileCache;
+    import fbair.util.HashArray;
 
     import flash.events.Event;
 
@@ -105,15 +106,15 @@
 
         // If we have tabs data, hit it up
         var filtersData:Object = ApplicationBase.getPreference("filters");
-        if (filtersData && filtersData.data && 
+        if (filtersData && filtersData.data &&
             filtersData.data.length > 0) {
           Output.assert(nileCache != null,
             "We have a filter cache but not a nile cache?!");
 
           // Set nile stuff first to prepare for events
-          var stream_filters:Array = new Array();
+          var stream_filters:HashArray = new HashArray();
           for each (var tab:Object in filtersData.tabData)
-            stream_filters.push(tab.filter_key);
+            stream_filters.push(tab.filter_key, tab.filter_key);
           nileContainer.loadInitialFilters(stream_filters);
 
           // Now set filtersBar and we're off and running
