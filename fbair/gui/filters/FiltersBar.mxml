@@ -214,10 +214,8 @@
       menu.data = data;
 
       // if this is your first launch, we'll give you default feed
-      if (tabsHash.length == 0) {
-        trace("adding the default feed");
+      if (tabsHash.length == 0)
         addTab(data.getAt(0).filter_key);
-      }
     }
 
     // Tab clicking

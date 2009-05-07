@@ -46,7 +46,6 @@
     import fbair.gc.Depot;
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
-    import fbair.util.HashArray;
 
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -98,7 +97,7 @@
     public var dataCache:Object = new Object();
 
     // Our active filters, by filter_key
-    public var streamFilters:HashArray = new HashArray();
+    public var streamFilters:Object = new Object();
 
     // Sorter for anything based on created_time
     private var sort:Sort = new Sort();
@@ -129,10 +128,10 @@
 
     // We call this on launch to set up our initial set of filters, if cached
     // dataCache should already be set now as well
-    public function loadInitialFilters(stream_filters:HashArray):void {
+    public function loadInitialFilters(stream_filters:Object):void {
       // Populate our filters and their niles
       streamFilters = stream_filters;
-      for each (var streamFilter:String in streamFilters) {
+      for (var streamFilter:String in streamFilters) {
         Output.assert(dataCache[streamFilter] != null,
           "Loading streamFilter with no dataCache entry? : " + streamFilter);
         niles[streamFilter] = Depot.get(Nile);
@@ -198,7 +197,7 @@
 
       // Build our filter-key or statement
       var requested_filters:Array = new Array();
-      for each (var streamFilter:String in streamFilters)
+      for (var streamFilter:String in streamFilters)
         requested_filters.push("(filter_key = '" + streamFilter + "' and " +
         "created_time >= " + getLatestUpdate(streamFilter) + ")");
 
@@ -346,17 +345,17 @@
 
     // Called when new filter has added to tab bar
     public function filterAdded(filter_key:String):void {
-      Output.assert(streamFilters.hasKey(filter_key),
+      Output.assert(streamFilters[filter_key],
         "Adding filter_key that we already had?: " + filter_key);
       Output.assert(niles[filter_key] == null,
         "Adding filter_key with nile we had?:" + filter_key);
 
       // So truly add it
-      if (!streamFilters.hasKey(filter_key)) {
+      if (!streamFilters[filter_key]) {
         Output.assert(niles[filter_key] == null,
           "We have no streamfilter but a nile?: " + filter_key);
 
-        streamFilters.push(filter_key, filter_key);
+        streamFilters[filter_key] = true;
         CurrentFilter = filter_key;
 
         // If there's a nile in the canvas, remove it
@@ -378,7 +377,7 @@
 
     // Called when a filter has been removed
     public function filterRemoved(filter_key:String):void {
-      Output.assert(streamFilters.hasKey(filter_key),
+      Output.assert(streamFilters[filter_key],
         "Removing filter with index -1?: " + filter_key);
       Output.assert(nileCanvas.contains(niles[filter_key]),
         "Removing nile not in display?");
@@ -392,12 +391,12 @@
       delete niles[filter_key];
 
       // Remove from filters
-      streamFilters.removeKey(filter_key);
+      delete streamFilters[filter_key];
     }
 
     // Called when a new filter is selected!
     public function filterSelected(filter_key:String):void {
-      Output.assert(streamFilters.hasKey(filter_key),
+      Output.assert(streamFilters[filter_key],
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);
