@@ -95,6 +95,8 @@
 
     // All the CommentRenderers, keyed by id
     private var commentsByID:Object = new Object();
+    
+    public var comments2:HashArray = new HashArray();
 
     // List of comment-ids we have absolutely deleted
     //   We hold on to make sure a quick refresh doesn't revive them.
