@@ -26,8 +26,7 @@ package fbair.gc {
 
     public static function get(type:Class):* {
       if (!pool[type]) pool[type] = new Array();
-      if (pool[type].length == 0) pool[type].push(new type());
-      return pool[type].pop();
+      return (pool[type].length > 0) ? pool[type].pop() : new type();
     }
 
     public static function put(item:*):void {
