@@ -58,7 +58,7 @@
 
       // Remove anything not in this update
       for (var i:int = 0; i < items.length; i++)
-        if (!updatesByID[items.getAtIndex(i).data.post_id])
+        if (!updatesByID[items.getAt(i).data.post_id])
           removeStoryAtIndex(i--);
 
       // Add anything new
@@ -106,7 +106,7 @@
           " in nile " + this);
         var item_position:int = 0;
         while (item_position < items.length &&
-               items.getAtIndex(item_position).data.created_time >
+               items.getAt(item_position).data.created_time >
                  renderer.data.created_time)
           item_position++;
         items.insertAt(item_position, renderer.data.post_id, renderer);
@@ -126,8 +126,8 @@
     public function removeStoryAtIndex(i:int):void {
       Output.assert(i >= 0 && i < items.length,
         "Invalid removeStoryAtIndex: " + i + " for " + this);
-      Output.log("Removing story by index: " + items.getAtIndex(i).data.post_id +
-        " from filter-key: " + items.getAtIndex(i).data.filter_key +
+      Output.log("Removing story by index: " + items.getAt(i).data.post_id +
+        " from filter-key: " + items.getAt(i).data.filter_key +
         " from nile " + this);
 
       // Remove from all our lists
@@ -163,8 +163,8 @@
       if (changeWatcher) changeWatcher.unwatch();
 
       topRenderer = null;
-      for (var i:int = 0; i < items.length && items.getAtIndex(i).y + y < 0; i++)
-        topRenderer = items.getAtIndex(i);
+      for (var i:int = 0; i < items.length && items.getAt(i).y + y < 0; i++)
+        topRenderer = items.getAt(i);
 
       // If at the very top, then we don't mark a topRenderer
       if (topRenderer) {

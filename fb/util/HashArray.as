@@ -18,8 +18,10 @@
 // search and retrieve time. Keys are unique, adding an item at an existing
 // key overwrites the previous entry
 package fb.util {
+  import flash.utils.Proxy;
+  import flash.utils.flash_proxy;
 
-  public class HashArray {
+  public class HashArray extends Proxy {
 
     // array of {obj:*, key:String}
     private var list:Array;
@@ -42,8 +44,13 @@ package fb.util {
       return length;
     }
 
+    // returns the object at key
+    override flash_proxy function getProperty(name:*):* {
+      return getAtKey(name);
+    }
+
     // returns the object at index
-    public function getAtIndex(index:uint):* {
+    public function getAt(index:uint):* {
       return list[index].obj;
     }
 
@@ -90,6 +97,21 @@ package fb.util {
       return list.length;
     }
 
+    override flash_proxy function nextName(index:int):String {
+      return list[index - 1].key;
+    }
+
+    override flash_proxy function nextNameIndex(index:int):int {
+      if (index < length)
+        return index + 1;
+      else
+        return 0;
+    }
+
+    override flash_proxy function nextValue(index:int):* {
+      return list[index - 1].obj;
+    }
+
     // removes and returns the last item in the HashArray
     public function pop():* {
       var item:Object = list.pop();
@@ -110,18 +132,27 @@ package fb.util {
     }
 
     // removes an item by key
-    // returns the new length of the array
-    public function removeKey(key:String):uint {
-      return removeIndex(indexAtKey(key));
+    // returns the removed item
+    public function removeKey(key:String):* {
+      var removed:Array = removeIndex(indexAtKey(key));
+      return removed[0];
     }
 
     // removes an item at index, optionally removing a number of items
     // returns the new length of the array
-    public function removeIndex(index:uint, count:uint=1):uint {
+    public function removeIndex(index:uint, count:uint=1):Array {
       var removedItems:Array = list.splice(index, count);
-      for each (var item:Object in removedItems)
+      var removed:Array = new Array();
+      for each (var item:Object in removedItems) {
         delete hash[item.key];
-      return length;
+        removed.push(item.obj);
+      }
+      return removed;
+    }
+
+    // we'll treat this as a push operation for key value pairs
+    override flash_proxy function setProperty(key:*, value:*):void {
+      push(key, value);
     }
 
     // removes and returns the first item in the list
