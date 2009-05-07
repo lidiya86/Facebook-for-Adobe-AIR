@@ -18,10 +18,17 @@
 // search and retrieve time. Keys are unique, adding an item at an existing
 // key overwrites the previous entry
 package fbair.util {
-  import flash.utils.Proxy;
+  import flash.net.registerClassAlias;
+  import flash.utils.IExternalizable;
+  import flash.utils.IDataInput;
+  import flash.utils.IDataOutput;
   import flash.utils.flash_proxy;
+  import flash.utils.Proxy;
 
-  public class HashArray extends Proxy {
+  public class HashArray extends Proxy implements IExternalizable {
+
+    private static const ALIAS:* =
+      registerClassAlias("fbair.util.HashArray", HashArray);
 
     // array of {obj:*, key:String}
     private var list:Array;
@@ -42,6 +49,27 @@ package fbair.util {
       for each (var item:Object in listObj)
         push(item[fieldName], item);
       return length;
+    }
+
+    // creates and returns a raw array of contents
+    public function asArray():Array {
+      var arr:Array = new Array();
+      for (var key:String in this)
+        arr.push(getAtKey(key));
+      return arr;
+    }
+
+    // creates and returns a raw array of contents
+    public function asObject():Object {
+      var obj:Object = new Object();
+      for (var key:String in this)
+        obj[key] = getAtKey(key);
+      return obj;
+    }
+
+    // returns the first entry
+    public function first():* {
+      return list[0].obj;
     }
 
     // returns the object at index
@@ -96,9 +124,14 @@ package fbair.util {
       list.splice(index, 0, listItem);
       hash[key] = hashItem;
       // repair references
-      for (var i:int = index; i < length; i++)
+      for (var i:int = index + 1; i < length; i++)
         hash[list[i].key].index = i;
       return length;
+    }
+
+    // returns the last entry
+    public function last():* {
+      return list[length - 1].obj;
     }
 
     // number of objects in the HashArray
@@ -140,6 +173,11 @@ package fbair.util {
       return length;
     }
 
+    public function readExternal(input:IDataInput):void {
+      list = input.readObject() as Array;
+      hash = input.readObject();
+    }
+
     // removes an item at index, optionally removing a number of items
     // returns an array of the removed items
     public function removeIndex(index:uint, count:uint=1):Array {
@@ -149,6 +187,9 @@ package fbair.util {
         delete hash[item.key];
         removed.push(item.obj);
       }
+      // repair references
+      for (var i:int = index; i < length; i++)
+        hash[list[i].key].index = i;
       return removed;
     }
 
@@ -177,10 +218,18 @@ package fbair.util {
       if (hasKey(key))
         removeKey(key);
       var listItem:Object = {obj:obj, key:key};
-      var hashItem:Object = {obj:obj, index:length};
+      var hashItem:Object = {obj:obj, index:0};
       list.unshift(listItem);
       hash[key] = hashItem;
+      // repair references
+      for (var i:int = 1; i < length; i++)
+        hash[list[i].key].index = i;
       return length;
+    }
+
+    public function writeExternal(output:IDataOutput):void {
+      output.writeObject(list);
+      output.writeObject(hash);
     }
   }
 }

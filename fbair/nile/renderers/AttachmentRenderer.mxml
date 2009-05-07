@@ -136,7 +136,7 @@
       var mediaItem:MediaItem = Depot.get(MediaItem);
       mediaItem.data = item;
 
-      // Add to our lists
+      // Add to our list
       itemsHash.push(mediaItem.data.src, mediaItem);
 
       // Add to display tree

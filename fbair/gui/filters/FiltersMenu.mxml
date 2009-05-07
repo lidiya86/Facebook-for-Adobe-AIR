@@ -39,6 +39,16 @@
   <mx:Script><![CDATA[
     import fb.FBEvent;
 
+    import mx.collections.ArrayCollection;
+    import mx.utils.ObjectProxy;
+
+    override public function set data(new_data:Object):void {
+      var collection:ArrayCollection = new ArrayCollection();
+      for each (var item:Object in new_data)
+        collection.addItem(new ObjectProxy(item));
+      super.data = collection;
+    }
+
     private function itemClicked(event:Event):void {
       dispatchEvent(new FBEvent("itemClick", event.target.data.filter_key));
     }
