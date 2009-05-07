@@ -76,6 +76,15 @@ package fbair.util {
       return hash[key].index;
     }
 
+    // returns the index where an object lives
+    // returns -1 if the object is not in our list
+    public function indexOf(obj:*):int {
+      for (var i:int = 0; i < length; i++)
+        if (list[i].obj == obj)
+          return i;
+      return -1;
+    }
+
     public function insertAt(index:uint, key:String, obj:*):uint {
       if (hasKey(key)) {
         if (indexAtKey(key) < index)

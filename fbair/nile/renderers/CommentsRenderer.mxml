@@ -90,13 +90,8 @@
 
     // comments[0] => Newest
     // comments[comments.length-1] = Oldest
-    public var comments:Vector.<CommentRenderer> =
-      new Vector.<CommentRenderer>();
-
     // All the CommentRenderers, keyed by id
-    private var commentsByID:Object = new Object();
-    
-    public var comments2:HashArray = new HashArray();
+    public var commentsHash:HashArray = new HashArray();
 
     // List of comment-ids we have absolutely deleted
     //   We hold on to make sure a quick refresh doesn't revive them.
@@ -140,43 +135,38 @@
     public function addComment(commentData:Object,
                                immune:Boolean = false,
                                firstBatch:Boolean = false):void {
+      if (commentsHash.hasKey(commentData.id)) return;
+
       // Pass on our can_remove var
       commentData.can_remove = data.comments.can_remove;
 
       // Mark in immunity if immune
       if (immune) immunes[commentData.id] = true;
 
-      // Create our new CommentRenderer, if we don't have one
-      if (!commentsByID[commentData.id])
-        commentsByID[commentData.id] = new CommentRenderer();
-
-      // Update the data of our comment renderer
-      var renderer:CommentRenderer =
-        commentsByID[commentData.id] as CommentRenderer;
-      renderer.animateIn = (!firstBatch && NileContainer.Animate);
-
+      // Create renderer
+      var renderer:CommentRenderer = new CommentRenderer();
       renderer.data = commentData;
 
-      if (comments.indexOf(renderer) == -1) {
-        // Add to display if not already, and put in line
-        var entry_position:int = 0;
-        while(entry_position < comments.length &&
-              comments[entry_position].data.time < renderer.data.time)
-          entry_position++;
+      // Determine position of comment based on timestamp
+      var entry_position:int = 0;
+      while(entry_position < commentsHash.length &&
+            commentsHash.getAt(entry_position).data.time < renderer.data.time)
+        entry_position++;
 
-        if (entry_position == comments.length) {
-          commentsBox.addChild(renderer);
-        } else {
-          var commentIndex:int = commentsBox.getChildIndex(
-                                   comments[entry_position]);
-          commentsBox.addChildAt(renderer, commentIndex);
-        }
-
-        commentsBoxContainer.visible = true;
-
-        // Put entry into comments list
-        comments.splice(entry_position, 0, renderer);
+      // Add comment renderer to the stage
+      if (entry_position == commentsHash.length) {
+        commentsBox.addChild(renderer);
+      } else {
+        var commentIndex:int = commentsBox.getChildIndex(
+                                 commentsHash.getAt(entry_position));
+        commentsBox.addChildAt(renderer, commentIndex);
       }
+
+      // remember this comment
+      commentsHash.insertAt(entry_position, commentData.id, renderer);
+
+      // show the comment box since there certainly are comments
+      commentsBoxContainer.visible = true;
     }
 
     // Called when we're revealing the commentsrenderer
@@ -216,7 +206,8 @@
     // Called when a comment has been deleted by the user
     private function commentRemoved(event:Event):void {
       var comment:CommentRenderer = event.target as CommentRenderer;
-      removeCommentAtIndex(comments.indexOf(comment), true);
+      removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id), true);
+      //removeCommentAtIndex(comments.indexOf(comment), true);
       data.comments.count--;
       allCommentsContainer.visible = (data.comments.count > MaxComments);
     }
@@ -255,11 +246,11 @@
       removeAllCommentsExcept(commentsArray);
 
       // Remove overflow, if any.
-      while (comments.length > MaxComments)
+      while (commentsHash.length > MaxComments)
         removeCommentAtIndex(0);
 
       // Mark latest update
-      latestUpdate = (comments.length == 0 ? 0 : comments[0].data.time);
+      latestUpdate = (commentsHash.length == 0 ? 0 : commentsHash.getAt(0).data.time);
     }
 
     // We call this to narrow our comment view down to the group
@@ -272,10 +263,10 @@
 
       // Now if we have any comments that don't exist
       //   in this update, we're gonna remove them
-      for (var i:int = 0; i < comments.length; i++)
-        if (!postsByID[comments[i].data.id]) {
-          if (immunes[comments[i].data.id])
-            immunes[comments[i].data.id] = false;
+      for (var i:int = 0; i < commentsHash.length; i++)
+        if (!postsByID[commentsHash.getAt(i).data.id]) {
+          if (immunes[commentsHash.getAt(i).data.id])
+            immunes[commentsHash.getAt(i).data.id] = false;
           else
             removeCommentAtIndex(i--);
         }
@@ -283,8 +274,7 @@
 
     // Function to remove a comment, by index
     public function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
-      var deadComment:CommentRenderer = comments.splice(i, 1)[0];
-      commentsByID[deadComment.data.id] = false;
+      var deadComment:CommentRenderer = commentsHash.removeIndex(i)[0];
       if (zombie) zombies[deadComment.data.id] = true;
       deadComment.remove();
     }
