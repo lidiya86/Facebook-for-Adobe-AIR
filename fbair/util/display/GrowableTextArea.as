@@ -67,10 +67,11 @@ package fbair.util.display {
     private function focusIn(event:FocusEvent):void {
       active = true;
       if (text == focusOutText) text = "";
-      // yes.. call much later...
-      callLater(function():void { callLater(function():void {
-        stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
-      });});
+      stage.addEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
+    }
+    private function prepareUp(event:MouseEvent):void {
+      stage.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
+      stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
     }
 
     private function stageDown(event:MouseEvent):void {
