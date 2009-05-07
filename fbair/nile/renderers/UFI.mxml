@@ -184,6 +184,12 @@
 
       // Add this comment to our CommentsRenderer
       commentsRenderer.addComment(event.data, true);
+      commentsRenderer.allCommentsContainer.visible =
+        (data.comments.count > CommentsRenderer.MaxComments);
+
+      // Remove overflow, if any.
+      while (commentsRenderer.comments.length > CommentsRenderer.MaxComments)
+        commentsRenderer.removeCommentAtIndex(0);
     }
   ]]></mx:Script>
 </util:AnimatedCanvas>

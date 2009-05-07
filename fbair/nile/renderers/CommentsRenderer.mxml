@@ -25,6 +25,12 @@
          xmlns:gui="fbair.gui.*"
          creationComplete="creationComplete(event)" >
 
+  <!-- When we first expand we show this while fetching all comments -->
+  <gui:LoadingIndicator width="100%"
+                        id="loadingIndicator"
+                        visible="false"
+                        text="Loading Comments" />
+                               
   <!-- Link to show when we have TONS of comments -->
   <util:AnimatedCanvas width="100%"
                        id="allCommentsContainer"
@@ -42,12 +48,6 @@
                width="100%" />
     </mx:HBox>
   </util:AnimatedCanvas>
-
-  <!-- When we first expand we show this while fetching all comments -->
-  <gui:LoadingIndicator width="100%"
-                        id="loadingIndicator"
-                        visible="false"
-                        text="Loading Comments" />
 
   <!-- This holds the CommentRenderers themselves -->
   <util:AnimatedCanvas id="commentsBoxContainer"
@@ -89,7 +89,7 @@
 
     // comments[0] => Newest
     // comments[comments.length-1] = Oldest
-    private var comments:Vector.<CommentRenderer> =
+    public var comments:Vector.<CommentRenderer> =
       new Vector.<CommentRenderer>();
 
     // All the CommentRenderers, keyed by id
@@ -215,6 +215,7 @@
       var comment:CommentRenderer = event.target as CommentRenderer;
       removeCommentAtIndex(comments.indexOf(comment), true);
       data.comments.count--;
+      allCommentsContainer.visible = (data.comments.count > MaxComments);
     }
 
     // Called when we want to get some comments, yo
@@ -278,7 +279,7 @@
     }
 
     // Function to remove a comment, by index
-    private function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
+    public function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
       var deadComment:CommentRenderer = comments.splice(i, 1)[0];
       commentsByID[deadComment.data.id] = false;
       if (zombie) zombies[deadComment.data.id] = true;
