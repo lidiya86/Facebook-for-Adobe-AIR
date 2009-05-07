@@ -60,7 +60,7 @@
     import fb.FBConnect;
     import fb.FBEvent;
     import fb.util.Output;
-
+    import fbair.gc.Depot;
     import fbair.gui.filters.FilterTab;
 
     import flash.events.Event;
@@ -192,14 +192,14 @@
       // Clear out any old tab cruft
       tabsByID = new Object();
       while (filterTabs.numChildren > 0)
-        filterTabs.removeChildAt(0);
+        Depot.put(filterTabs.removeChildAt(0));
 
       // Update tabcount
       TabCount = tabData.length;
 
       // Add everything
       for each (var tab:Object in tabData) {
-        tabsByID[tab.filter_key] = new FilterTab();
+        tabsByID[tab.filter_key] = Depot.get(FilterTab);
         tabsByID[tab.filter_key].data = tab;
         filterTabs.addChild(tabsByID[tab.filter_key]);
       }
@@ -254,7 +254,7 @@
       TabCount = tabData.length;
 
       // Create new tab
-      tabsByID[key] = new FilterTab();
+      tabsByID[key] = Depot.get(FilterTab);
       tabsByID[key].data = dataByID[key];
       filterTabs.addChild(tabsByID[key]);
 
@@ -281,7 +281,7 @@
       TabCount = tabData.length;
 
       // Remove tab
-      filterTabs.removeChild(tabsByID[key]);
+      Depot.put(filterTabs.removeChild(tabsByID[key]));
       delete tabsByID[key];
 
       // Focus new tab if this was the current
@@ -307,6 +307,8 @@
       // Set new tab, and add to history
       _currentTab = key;
       addToHistory(key);
+      Output.assert(tabsByID[currentTab] != null,
+        "Don't have tab: " + currentTab + " ?!");
       tabsByID[currentTab].data.active = true;
 
       // Focused event

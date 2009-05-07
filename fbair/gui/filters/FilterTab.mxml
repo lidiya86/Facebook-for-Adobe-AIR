@@ -16,15 +16,16 @@
 <!-- This contains our filters tab bar at top of window. -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
+         implements="fbair.gc.Recyclable"
          styleName="{data.active ? 'filterTabActive' :
                     (hovering ? 'filterTabOver' : 'filterTabOut')}"
          height="26"
          width="100%"
          minWidth="46"
          maxWidth="{tabLabelWidth + 50}"
-         creationComplete="creationComplete(event)"
          buttonMode="{!data.active}"
-         click="tabClicked(event)" >
+         click="tabClicked(event)"
+         creationComplete="creationComplete(event)">
   <mx:Metadata>
     [Event(name="deleteClick", type="fb.FBEvent")]
     [Event(name="tabClick", type="fb.FBEvent")]
@@ -76,11 +77,18 @@
     private var tip:IToolTip;
 
     private function creationComplete(event:FlexEvent):void {
-      tabLabelWidth = tabLabel.measureText(data.name).width;
+      if (data)
+        tabLabelWidth = tabLabel.measureText(data.name).width;
 
       addEventListener(MouseEvent.ROLL_OUT, rollOut);
       addEventListener(MouseEvent.ROLL_OVER, rollOver);
       addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
+    }
+
+    override public function set data(new_data:Object):void {
+      super.data = new_data;
+      if (tabLabel)
+        tabLabelWidth = tabLabel.measureText(data.name).width;
     }
 
     private function removedFromStage(event:Event):void {
@@ -119,6 +127,13 @@
         stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
         stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
       }
+    }
+
+    // Save the planet!
+    public function recycle():void {
+      tabLabelWidth = 0;
+      hovering = false;
+      super.data = null;
     }
   ]]></mx:Script>
 </mx:HBox>
