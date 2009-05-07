@@ -67,15 +67,27 @@ package fbair.util.display {
     private function focusIn(event:FocusEvent):void {
       active = true;
       if (text == focusOutText) text = "";
-      stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
+      // yes.. call much later...
+      callLater(function():void { callLater(function():void {
+        stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
+      });});
     }
+
     private function stageDown(event:MouseEvent):void {
+      if (hitTestPoint(event.stageX, event.stageY)) return;
+      stage.addEventListener(MouseEvent.MOUSE_UP, stageUp, true);
+    }
+
+    private function stageUp(event:MouseEvent):void {
+      stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       if (hitTestPoint(event.stageX, event.stageY)) return;
       if (stage.focus && contains(stage.focus))
         stage.focus = null;
     }
-    private function focusOut(event:FocusEvent = null):void {      
+
+    private function focusOut(event:FocusEvent = null):void {
       stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
+      stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       active = (text.length > 0);
     }
 
