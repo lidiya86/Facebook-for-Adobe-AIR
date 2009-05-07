@@ -23,6 +23,7 @@
          xmlns:util="fbair.util.display.*"
          xmlns:fb="fb.display.*"
          xmlns:gui="fbair.gui.*"
+         removed="rendererRemoved(event)"
          creationComplete="creationComplete(event)" >
 
   <!-- When we first expand we show this while fetching all comments -->
@@ -60,14 +61,14 @@
 
   <mx:Script><![CDATA[
     import fb.FBEvent;
-    import fbair.util.HashArray
 
     import fbair.nile.Nile;
-    import fbair.nile.NileContainer;
     import fbair.nile.renderers.CommentRenderer;
     import fbair.nile.renderers.UFI;
     import fbair.util.CommentCache;
+    import fbair.util.HashArray
     import fbair.util.StringUtil;
+    import fbair.gc.Depot;
 
     import mx.events.FlexEvent;
 
@@ -104,6 +105,13 @@
     // On creation, we subscribe to comment remove events
     private function creationComplete(event:FlexEvent):void {
       addEventListener(CommentRenderer.COMMENT_REMOVED, commentRemoved);
+    }
+
+    // When we remove old items from the commentsrenderer
+    //   we want to put them in the depot
+    private function rendererRemoved(event:Event):void {
+      if (event.target is CommentRenderer)
+        Depot.put(event.target);
     }
 
     // "data" in this context is stream.comments
@@ -144,7 +152,7 @@
       if (immune) immunes[commentData.id] = true;
 
       // Create renderer
-      var renderer:CommentRenderer = new CommentRenderer();
+      var renderer:CommentRenderer = Depot.get(CommentRenderer);
       renderer.data = commentData;
 
       // Determine position of comment based on timestamp
@@ -207,7 +215,6 @@
     private function commentRemoved(event:Event):void {
       var comment:CommentRenderer = event.target as CommentRenderer;
       removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id), true);
-      //removeCommentAtIndex(comments.indexOf(comment), true);
       data.comments.count--;
       allCommentsContainer.visible = (data.comments.count > MaxComments);
     }
@@ -250,7 +257,8 @@
         removeCommentAtIndex(0);
 
       // Mark latest update
-      latestUpdate = (commentsHash.length == 0 ? 0 : commentsHash.getAt(0).data.time);
+      latestUpdate = (commentsHash.length == 0 ? 0 :
+        commentsHash.getAt(0).data.time);
     }
 
     // We call this to narrow our comment view down to the group
@@ -295,6 +303,20 @@
       commentsBoxContainer.removeEventListener(AnimatedCanvas.TWEEN_COMPLETE,
                                                hideLoadingIndicator);
       loadingIndicator.visible = false;
+    }
+
+    // Clean up our renderers and prepare us for reuse
+    public function destroy():void {
+      revealed = false;
+      firstPull = true;
+      latestUpdate = 0;
+
+      for (var i:int = 0; i < commentsHash.length; i++)
+        removeCommentAtIndex(i--);
+
+      commentsHash = new HashArray();
+      zombies = new Object();
+      immunes = new Object();
     }
   ]]></mx:Script>
 </mx:VBox>

@@ -188,7 +188,8 @@
         (data.comments.count > CommentsRenderer.MaxComments);
 
       // Remove overflow, if any.
-      while (commentsRenderer.commentsHash.length > CommentsRenderer.MaxComments)
+      while (commentsRenderer.commentsHash.length > 
+        CommentsRenderer.MaxComments)
         commentsRenderer.removeCommentAtIndex(0);
     }
   ]]></mx:Script>

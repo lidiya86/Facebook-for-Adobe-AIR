@@ -17,10 +17,11 @@
 <util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
                      xmlns:gui="fbair.gui.*"
                      xmlns:util="fbair.util.display.*"
+                     implements="fbair.gc.Recyclable"
                      width="100%"
-                     creationComplete="creationComplete(event)"
                      animateOut="true"
-                     animateOnce="true" >
+                     animateOnce="true"
+                     creationComplete="creationComplete(event)" >
   <mx:HBox width="100%"
            styleName="commentRenderer">
 
@@ -65,9 +66,15 @@
     import flash.events.MouseEvent;
 
     import mx.utils.ObjectProxy;
-    
+
     public static const COMMENT_REMOVED:String = "commentRemoved";
     public static const PicSize:int = 28;
+
+    // Constructor
+    private function creationComplete(evt:Event):void {
+      // debug trace
+      profilePic.addEventListener(MouseEvent.CLICK, clickedProfilePic, true);
+    }
 
     // "data" in this context is actually an item in stream.comments.posts
     override public function set data(new_data:Object):void {
@@ -76,7 +83,7 @@
         super.data = null;
         return;
       }
-      
+
       // Proxy our vars, for binding
       super.data = new ObjectProxy(new_data);
 
@@ -101,15 +108,17 @@
         });
     }
 
-    private function creationComplete(evt:Event):void {
-      // debug trace
-      profilePic.addEventListener(MouseEvent.CLICK, clickedProfilePic, true);
-    }
-
+    // Profile pick was clicked, for debugging
     private function clickedProfilePic(event:MouseEvent):void {
       if (!event.shiftKey) return;
       Output.alert(data);
       event.stopImmediatePropagation();
+    }
+
+    // Recycle, kids!
+    public function recycle():void {
+      // We create our own object proxy here, so we need to null it
+      super.data = null;
     }
   ]]></mx:Script>
 </util:AnimatedCanvas>

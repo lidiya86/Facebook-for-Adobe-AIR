@@ -22,7 +22,7 @@
                      xmlns:gui="fbair.gui.*"
                      xmlns:renderer="fbair.nile.renderers.*"
                      xmlns:util="fbair.util.display.*"
-                     implements="fbair.gc.Recyclable" 
+                     implements="fbair.gc.Recyclable"
                      includeInLayout="{false}"
                      minWidth="369"
                      width="100%"
@@ -148,6 +148,12 @@
         content = null;
       }
 
+      // Put UFI back to preview mode
+      ufi.ufiMode = UFI.UFI_PREVIEW;
+
+      // Clean out comments renderer and rest it's shit
+      ufi.commentsRenderer.destroy();
+      
       super.data = null;
     }
 
