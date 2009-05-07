@@ -60,8 +60,10 @@
     import fb.FBConnect;
     import fb.FBEvent;
     import fb.util.Output;
+
     import fbair.gc.Depot;
     import fbair.gui.filters.FilterTab;
+    import fbair.util.HashArray;
 
     import flash.events.Event;
     import flash.events.KeyboardEvent;
@@ -78,11 +80,11 @@
     [Bindable] public static var TabCount:int = 0;
     [Bindable] private var menu:FiltersMenu;
 
-    [Bindable] public var focusHistory:Array = new Array();
-    private var _tabData:ArrayCollection = new ArrayCollection();
+    [Bindable] public var focusHistory:HashArray = new HashArray();
     private var _currentTab:String;
-    private var tabsByID:Object = new Object();
     private var dataByID:Object = new Object();
+
+    private var tabsHash:HashArray = new HashArray();
 
     private function creationComplete(event:FlexEvent):void {
       addEventListener("deleteClick", deleteTabClicked);
@@ -111,7 +113,7 @@
 
     // Keyboard shortcuts
     private function keyDown(event:KeyboardEvent):void {
-      if (tabData.length == 1 || focusManager.getFocus()) return;
+      if (tabsHash.length == 1 || focusManager.getFocus()) return;
 
       // If escape, then close this tab
       if (event.keyCode == Keyboard.ESCAPE) {
@@ -128,18 +130,18 @@
 
       var tmpIndex:int = -1;
       if (event.keyCode == Keyboard.LEFT) {
-        tmpIndex = currentTabIndex - 1;
+        tmpIndex = tabsHash.indexAtKey(currentTab) - 1;
         if (tmpIndex == -1)
-          tmpIndex = tabData.length - 1;
+          tmpIndex = tabsHash.length - 1;
       }
       if (event.keyCode == Keyboard.RIGHT) {
-        tmpIndex = currentTabIndex + 1;
-        if (tmpIndex == tabData.length)
+        tmpIndex = tabsHash.indexAtKey(currentTab) + 1;
+        if (tmpIndex == tabsHash.length)
           tmpIndex = 0;
       }
 
       if (tmpIndex != -1)
-        currentTab = tabData[tmpIndex].filter_key;
+        currentTab = tabsHash.keyAtIndex(tmpIndex);
     }
 
     // Callback on filterTab width to determine if logo displays
@@ -185,24 +187,28 @@
 
     // Data setting
     [Bindable]
-    public function get tabData():ArrayCollection { return _tabData; }
-    public function set tabData(new_tabData:ArrayCollection):void {
-      _tabData = new_tabData;
-
+    public function get tabData():Array {
+      var _tabData:Array = new Array();
+      for each (var item:* in tabsHash)
+        _tabData.push(item.data);
+      return _tabData;
+    }
+    public function set tabData(new_tabData:Array):void {
       // Clear out any old tab cruft
-      tabsByID = new Object();
+      tabsHash = new HashArray();
       while (filterTabs.numChildren > 0)
         Depot.put(filterTabs.removeChildAt(0));
 
-      // Update tabcount
-      TabCount = tabData.length;
-
       // Add everything
-      for each (var tab:Object in tabData) {
-        tabsByID[tab.filter_key] = Depot.get(FilterTab);
-        tabsByID[tab.filter_key].data = tab;
-        filterTabs.addChild(tabsByID[tab.filter_key]);
+      for each (var tab:Object in new_tabData) {
+        var renderer:FilterTab = Depot.get(FilterTab);
+        renderer.data = tab;
+        tabsHash.push(tab.filter_key, renderer);
+        filterTabs.addChild(renderer);
       }
+
+      // Update tabcount
+      TabCount = tabsHash.length;
     }
 
     override public function set data(new_data:Object):void {
@@ -222,7 +228,7 @@
         dataByID[item.filter_key] = item;
 
       // if this is your first launch, we'll give you default feed
-      if (tabData.length == 0)
+      if (tabsHash.length == 0)
         addTab(data[0].filter_key);
     }
 
@@ -238,25 +244,23 @@
     // Tab adding/removing
     public function addTab(key:String):void {
       // if a tab already exists for this filter, focus it.
-      if (tabsByID[key]) {
+      if (tabsHash.hasKey(key)) {
         currentTab = key;
         return;
       }
 
-      // Add tab data
-      tabData.addItem(dataByID[key]);
-
       // Remove staleness
-      while (tabData.length > MaxTabs)
-        removeTab(focusHistory[0]);
-
-      // Update tabCount
-      TabCount = tabData.length;
+      while (tabsHash.length > MaxTabs)
+        removeTab(focusHistory.first());
 
       // Create new tab
-      tabsByID[key] = Depot.get(FilterTab);
-      tabsByID[key].data = dataByID[key];
-      filterTabs.addChild(tabsByID[key]);
+      var renderer:FilterTab = Depot.get(FilterTab);
+      renderer.data = dataByID[key];
+      tabsHash.push(key, renderer);
+      filterTabs.addChild(renderer);
+
+      // Update tabCount
+      TabCount = tabsHash.length;
 
       // Dispatch event of add
       dispatchEvent(new FBEvent("tabAdded", key));
@@ -266,27 +270,24 @@
     }
 
     public function removeTab(key:String):void {
-      if (tabData.length == 1) return;
+      if (tabsHash.length == 1) return;
 
-      Output.assert(tabData.getItemIndex(tabsByID[key].data) != -1,
+      Output.assert(tabsHash.hasKey(key),
         "Trying to remove key not in list?: " + key);
-      Output.assert(focusHistory.indexOf(key) != -1,
+      Output.assert(focusHistory.hasKey(key),
         "Trying to remove key without history?");
 
       // Remove from history
-      removeFromHistory(key);
-
-      // Remove tab data
-      tabData.removeItemAt(tabData.getItemIndex(tabsByID[key].data));
-      TabCount = tabData.length;
+      focusHistory.removeKey(key);
 
       // Remove tab
-      Depot.put(filterTabs.removeChild(tabsByID[key]));
-      delete tabsByID[key];
+      Depot.put(filterTabs.removeChild(tabsHash.removeKey(key)));
 
       // Focus new tab if this was the current
       if (currentTab == key)
-        currentTab = focusHistory[focusHistory.length-1];
+        currentTab = focusHistory.last();
+
+      TabCount = tabsHash.length;
 
       // Removed event
       dispatchEvent(new FBEvent("tabRemoved", key));
@@ -298,38 +299,21 @@
       return _currentTab;
     }
     public function set currentTab(key:String):void {
-      if (currentTab == key) return;
+      if (_currentTab == key) return;
 
       // Disable old tab
-      if (currentTab && tabsByID[currentTab])
-        tabsByID[currentTab].data.active = false;
+      if (tabsHash.hasKey(_currentTab))
+        tabsHash.getAtKey(_currentTab).data.active = false;
 
       // Set new tab, and add to history
       _currentTab = key;
-      addToHistory(key);
-      Output.assert(tabsByID[currentTab] != null,
-        "Don't have tab: " + currentTab + " ?!");
-      tabsByID[currentTab].data.active = true;
+      focusHistory.push(key, key);
+      Output.assert(tabsHash.hasKey(key),
+        "Don't have tab: " + key + " ?!");
+      tabsHash.getAtKey(key).data.active = true;
 
       // Focused event
       dispatchEvent(new FBEvent("tabFocused", key));
-    }
-
-    private function get currentTabIndex():int {
-      for (var i:int = 0; i < tabData.length; i++)
-        if (tabData[i].filter_key == currentTab) return i;
-      return -1;
-    }
-
-    // History
-    private function removeFromHistory(key:String):void {
-      var historyIndex:int = focusHistory.indexOf(key);
-      if (historyIndex != -1) focusHistory.splice(historyIndex, 1);
-    }
-
-    private function addToHistory(key:String):void {
-      removeFromHistory(key);
-      focusHistory.push(key);
     }
   ]]></mx:Script>
 </mx:Canvas>
