@@ -92,7 +92,11 @@
 
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
-
+    private function getLatestUpdate(filter_key:String):int {
+      if (latestUpdates[filter_key]) return latestUpdates[filter_key];
+      else return 0;
+    }
+    
     // Cache of all nile renderer data
     public var dataCache:Object = new Object();
 
@@ -136,17 +140,12 @@
       streamFilters = stream_filters;
       for (var streamFilter:String in streamFilters) {
         Output.assert(dataCache[streamFilter] != null,
-          "Loading streamFilter with no dataCache entry? : " + streamFilter);
+          "Loading streamFilter with no dataCache entry?: " + streamFilter);
         niles[streamFilter] = Depot.get(Nile);
         niles[streamFilter].visible = false;
         niles[streamFilter].data = dataCache[streamFilter];
         nileCanvas.addChild(niles[streamFilter]);
       }
-    }
-
-    private function getLatestUpdate(filter_key:String):int {
-      if (latestUpdates[filter_key]) return latestUpdates[filter_key];
-      else return 0;
     }
 
     // When we remove old items from the nile,
