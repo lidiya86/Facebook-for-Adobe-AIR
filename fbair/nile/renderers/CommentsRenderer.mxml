@@ -60,6 +60,7 @@
 
   <mx:Script><![CDATA[
     import fb.FBEvent;
+    import fbair.util.HashArray
 
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;

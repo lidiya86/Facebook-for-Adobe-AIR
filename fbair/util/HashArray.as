@@ -17,7 +17,7 @@
 // in order to maintain a sorted ordering for iteration but also O(1)
 // search and retrieve time. Keys are unique, adding an item at an existing
 // key overwrites the previous entry
-package fb.util {
+package fbair.util {
   import flash.utils.Proxy;
   import flash.utils.flash_proxy;
 
