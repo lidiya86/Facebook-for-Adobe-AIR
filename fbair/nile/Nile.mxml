@@ -20,10 +20,10 @@
          removed="rendererRemoved(event)" >
   <mx:Script><![CDATA[
     import fb.util.Output;
-    import fb.util.HashArray;
 
     import fbair.gc.Depot;
     import fbair.nile.renderers.NileRenderer;
+    import fbair.util.HashArray;
 
     import flash.events.Event;
     import flash.geom.Point;
