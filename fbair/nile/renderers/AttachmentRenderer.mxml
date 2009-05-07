@@ -66,6 +66,7 @@
 
     import fbair.gc.Depot;
     import fbair.nile.renderers.MediaItem;
+    import fbair.util.HashArray;
     import fbair.util.StringUtil;
 
     import mx.events.FlexEvent;
@@ -75,15 +76,14 @@
     public static const MaxImageHeightMulti:int = 120;
 
     // Our list of media items
-    private var items:Vector.<MediaItem> = new Vector.<MediaItem>();
-    private var itemsBySrc:Object = new Object();
+    public var itemsHash:HashArray = new HashArray();
 
     // When we were created
     private function creationComplete(event:FlexEvent):void {
       // Add any items to display tree that were already set in data
-      for each (var item:MediaItem in items)
+      for each (var item:MediaItem in itemsHash)
         mediaItems.addChild(item);
-      
+
       // Update our dimensions
       updateImageDimensions();
     }
@@ -103,15 +103,15 @@
           updatesBySrc[mediaItem.src] = mediaItem;
 
         // Remove any existent that aren't in this update
-        for (var i:int = 0; i < items.length; i++)
-          if (!updatesBySrc[items[i].data.src])
+        for (var i:int = 0; i < itemsHash.length; i++)
+          if (!updatesBySrc[itemsHash.getAt(i).data.src])
             removeItemAtIndex(i--);
 
         // Add any not already existent
         for each (mediaItem in data.media)
-          if (!itemsBySrc[mediaItem.src])
+          if (!itemsHash.hasKey(mediaItem.src))
             addItem(mediaItem);
-        
+
         // Update our dimensions, if we have a display tree..
         if (mediaItems) updateImageDimensions();
       }
@@ -119,7 +119,7 @@
 
     // Fight global warming!
     public function recycle():void {
-      for (var i:int = 0; i < items.length; i++)
+      for (var i:int = 0; i < itemsHash.length; i++)
         removeItemAtIndex(i--);
     }
 
@@ -137,8 +137,7 @@
       mediaItem.data = item;
 
       // Add to our lists
-      items.push(mediaItem);
-      itemsBySrc[mediaItem.data.src] = mediaItem;
+      itemsHash.push(mediaItem.data.src, mediaItem);
 
       // Add to display tree
       if (mediaItems) mediaItems.addChild(mediaItem);
@@ -146,29 +145,26 @@
 
     // Remove item by index from list
     private function removeItemAtIndex(i:int):void {
-      Output.assert(i >= 0 && i < items.length,
+      Output.assert(i >= 0 && i < itemsHash.length,
         "Invalid removeItemAtIndex: " + i + " from " + this);
       Output.assert(mediaItems != null, "mediaItems is null");
-      Output.assert(mediaItems.contains(items[i]),
-        "Removing item: " + items[i] +
+      Output.assert(mediaItems.contains(itemsHash.getAt(i)),
+        "Removing item: " + itemsHash.getAt(i) +
         " mediaItems doesn't contain? " + this);
-      // Remove from lists
-      var deadItem:MediaItem = items.splice(i, 1)[0];
-      delete itemsBySrc[deadItem.data.src];
 
-      // Remove from display tree
-      mediaItems.removeChild(deadItem);
+      // Remove from list and display tree
+      mediaItems.removeChild(itemsHash.removeIndex(i)[0]);
     }
 
     // Update all our image dimensions
     private function updateImageDimensions():void {
-      for each (var item:MediaItem in items) {
-        item.maxImageHeight = items.length > 1 ?
+      for each (var item:MediaItem in itemsHash) {
+        item.maxImageHeight = itemsHash.length > 1 ?
           MaxImageHeightMulti : MaxImageHeight;
-        item.maxImageWidth = items.length > 1 ?
+        item.maxImageWidth = itemsHash.length > 1 ?
           (width - mediaItems.getStyle('horizontalGap') *
-            (items.length - 1)) /
-          items.length : MaxImageWidth;
+            (itemsHash.length - 1)) /
+          itemsHash.length : MaxImageWidth;
       }
     }
   ]]></mx:Script>
