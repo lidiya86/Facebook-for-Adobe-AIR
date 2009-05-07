@@ -381,8 +381,8 @@
 
     // Called when a filter has been removed
     public function filterRemoved(filter_key:String):void {
-      Output.assert(streamFilters[filter_key],
-        "Removing filter with index -1?: " + filter_key);
+      Output.assert(streamFilters[filter_key] != null,
+        "Removing filter not in streamFilters?: " + filter_key);
       Output.assert(nileCanvas.contains(niles[filter_key]),
         "Removing nile not in display?");
       Output.assert(niles[filter_key] != null,
@@ -399,7 +399,7 @@
 
     // Called when a new filter is selected!
     public function filterSelected(filter_key:String):void {
-      Output.assert(streamFilters[filter_key],
+      Output.assert(streamFilters[filter_key] != null,
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);

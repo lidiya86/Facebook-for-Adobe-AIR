@@ -147,7 +147,6 @@
     private function removeItemAtIndex(i:int):void {
       Output.assert(i >= 0 && i < itemsHash.length,
         "Invalid removeItemAtIndex: " + i + " from " + this);
-      Output.assert(mediaItems != null, "mediaItems is null");
 
       // Remove from list and display tree, if it's even on it
       var deadItem:MediaItem = itemsHash.removeIndex(i)[0];
