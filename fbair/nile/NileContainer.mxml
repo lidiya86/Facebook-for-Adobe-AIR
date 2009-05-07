@@ -280,7 +280,7 @@
       // Determine BigUpdate
       var totalAdditions:int = 0;
       for each (update in dataCache[CurrentFilter])
-        if (!nile.itemsByID[update.post_id])
+        if (!nile.items.hasKey(update.post_id))
           totalAdditions++;
       var bigUpdate:Boolean = (totalAdditions > MaxAnimations);
 

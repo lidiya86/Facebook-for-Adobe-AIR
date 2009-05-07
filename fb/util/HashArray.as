@@ -18,7 +18,6 @@
 // search and retrieve time. Keys are unique, adding an item at an existing
 // key overwrites the previous entry
 package fb.util {
-  import flash.util.Dictionary;
 
   public class HashArray {
 
@@ -31,37 +30,38 @@ package fb.util {
     public function HashArray(listObj:Array = null, fieldName:String = null) {
       list = new Array();
       hash = new Object();
-      if (list && key)
-        addList(listObj, key);
+      if (listObj && fieldName)
+        addList(listObj, fieldName);
     }
 
     // takes a list of objects, adding them to the HashArray with the string
     // at fieldName becoming the key
-    public function addList(listObj:Array, fieldName:String) {
+    public function addList(listObj:Array, fieldName:String):uint {
       for each (var item:Object in listObj)
         push(item[fieldName], item);
+      return length;
     }
 
     // returns the object at index
     public function getAtIndex(index:uint):* {
-      return array[index].obj;
+      return list[index].obj;
     }
 
     // returns the object at key, returns default if it doesn't exist
-    public function getAtKey(key:String, default:* = null):* {
-      if (!hasKey(key)) return default;
+    public function getAtKey(key:String, defaultVal:* = null):* {
+      if (!hasKey(key)) return defaultVal;
       return hash[key].obj;
     }
 
     // returns the position in the array of the item at key
-    public function getIndexAtKey(key:String):uint {
+    public function indexAtKey(key:String):int {
       if (!hasKey(key)) return -1;
       return hash[key].index;
     }
 
     // returns the key of the item at index in the list
-    public function getKeyAtIndex(index:uint):String {
-      return array[index].key;
+    public function keyAtIndex(index:uint):String {
+      return list[index].key;
     }
 
     // returns true if an entry for the key exists
@@ -69,14 +69,30 @@ package fb.util {
       return hash[key] != null;
     }
 
+    public function insertAt(index:uint, key:String, obj:*):uint {
+      if (hasKey(key)) {
+        if (indexAtKey(key) < index)
+          index--;
+        removeKey(key);
+      }
+      var listItem:Object = {obj:obj, key:key};
+      var hashItem:Object = {obj:obj, index:index};
+      list.splice(index, 0, listItem);
+      hash[key] = hashItem;
+      // repair references
+      for (var i:int = index; i < length; i++)
+        hash[list[i].key].index = i;
+      return length;
+    }
+
     // number of objects in the HashArray
     public function get length():uint {
-      return array.length;
+      return list.length;
     }
 
     // removes and returns the last item in the HashArray
     public function pop():* {
-      var item:Object = array.pop();
+      var item:Object = list.pop();
       delete hash[item.key];
       return item.obj;
     }
@@ -96,21 +112,21 @@ package fb.util {
     // removes an item by key
     // returns the new length of the array
     public function removeKey(key:String):uint {
-      return removeIndex(getIndexAtKey(key));
+      return removeIndex(indexAtKey(key));
     }
 
     // removes an item at index, optionally removing a number of items
     // returns the new length of the array
     public function removeIndex(index:uint, count:uint=1):uint {
       var removedItems:Array = list.splice(index, count);
-      for each (item:Object in removedItems)
+      for each (var item:Object in removedItems)
         delete hash[item.key];
       return length;
     }
 
     // removes and returns the first item in the list
     public function shift():* {
-      var item:Object = array.shift();
+      var item:Object = list.shift();
       delete hash[item.key];
       return item.obj;
     }
