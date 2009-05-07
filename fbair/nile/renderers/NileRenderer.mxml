@@ -133,10 +133,7 @@
       super.createChildren();
 
       // If we created content in our data setter then add it now
-      if (content) {
-        content.percentWidth = 100;
-        contentBox.addChild(content);
-      }
+      if (content) contentBox.addChild(content);
     }
 
     // Save the earth, kids!
@@ -257,7 +254,10 @@
 
         // Create correct type of content
         content = Depot.get(AttachmentRenderer);
+        content.percentWidth = 100;
         content.data = data.attachment;
+        
+        if (contentBox) contentBox.addChild(content);
       }
     }
 

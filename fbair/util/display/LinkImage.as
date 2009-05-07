@@ -18,6 +18,8 @@
 // LinkImage is also careful to utilize maxWidth/maxHeight
 //   properly.
 package fbair.util.display {
+  import fb.util.Output;
+
   import fbair.util.StringUtil;
   import fbair.util.display.StubbornImage;
 
@@ -51,7 +53,7 @@ package fbair.util.display {
     //   and set their sizes manually.
     private function imageLoaded(event:Event):void {
       if (explicitMaxWidth && explicitMaxHeight) {
-        var maxAspectRatio:Number = maxWidth / maxHeight;
+        var maxAspectRatio:Number = explicitMaxWidth / explicitMaxHeight;
         if (aspectRatio > maxAspectRatio) {
           boundByWidth()
         } else {
@@ -69,12 +71,12 @@ package fbair.util.display {
     }
 
     private function boundByWidth():void {
-      width = Math.min(contentWidth, maxWidth);
+      width = Math.min(contentWidth, explicitMaxWidth);
       height = width / aspectRatio;
     }
 
     private function boundByHeight():void {
-      height = Math.min(contentHeight, maxHeight);
+      height = Math.min(contentHeight, explicitMaxHeight);
       width = height * aspectRatio;
     }
   }

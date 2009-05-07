@@ -26,7 +26,7 @@ package fbair.gc {
 
     public static function get(type:Class):* {
       if (!pool[type]) pool[type] = new Array();
-      if (pool[type].length == 0) Output.bug("Creating new: " + type);
+      if (pool[type].length == 0) Output.log("Creating new: " + type);
       return (pool[type].length > 0) ? pool[type].pop() : new type();
     }
 

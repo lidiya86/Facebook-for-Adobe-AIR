@@ -88,6 +88,13 @@
       updateImageDimensions();
     }
 
+    // When we remove old items from the attachment renderer
+    //   we want to recycle them
+    private function itemRemoved(event:Event):void {
+      if (event.target is MediaItem)
+        Depot.put(event.target);
+    }
+
     // When we got new data
     override public function set data(new_data:Object):void {
       super.data = new_data;
@@ -121,13 +128,6 @@
     public function recycle():void {
       for (var i:int = 0; i < itemsHash.length; i++)
         removeItemAtIndex(i--);
-    }
-
-    // When we remove old items from the attachment renderer
-    //   we want to recycle them
-    private function itemRemoved(event:Event):void {
-      if (event.target is MediaItem)
-        Depot.put(event.target);
     }
 
     // Add item
