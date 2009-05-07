@@ -140,7 +140,6 @@
       CurrentFilter = null;
       niles = new Object();
       nileCanvas.removeChild(nile);
-      Depot.put(nile);
       nile = null;
 
       // Populate our filters and their niles
@@ -287,11 +286,12 @@
         if (!nile.items.hasKey(update.post_id))
           totalAdditions++;
       var bigUpdate:Boolean = (totalAdditions > MaxAnimations);
-
+      Output.log("Total additions In this update: " + totalAdditions);
+      
       // Determine whether to animate
       Animate = !bigUpdate && longDelay;
 
-      // Set nile data every fucking where
+      // Set nile data everywhere
       for (filterKey in dataCache)
         if (niles[filterKey])
           niles[filterKey].data = dataCache[filterKey];
@@ -396,7 +396,6 @@
       // Remove nile itself
       if (nile == niles[filter_key]) nile = null;
       nileCanvas.removeChild(niles[filter_key]);
-      Depot.put(niles[filter_key]);
       delete niles[filter_key];
 
       // Remove from filters
@@ -409,7 +408,7 @@
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);
-
+      
       // Select this filter only if not active, and show what we have
       if (CurrentFilter != filter_key) {
         CurrentFilter = filter_key;
@@ -421,6 +420,7 @@
         nile = niles[filter_key];
         boundNile();
         nile.visible = true;
+        Output.log("Now showing key: " + filter_key + " with nile: " + nile);
       }
     }
 

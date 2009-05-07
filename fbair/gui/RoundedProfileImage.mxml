@@ -47,7 +47,7 @@
       if (new_profile_id == profileID) return;
       _profileID = new_profile_id;
 
-      // Fuck bogus profile ids
+      // Screw bogus profile ids
       if (!profileID || profileID == "0" || profileID == "null") {
         return;
       }

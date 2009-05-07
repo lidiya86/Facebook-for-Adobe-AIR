@@ -58,7 +58,7 @@ package fb.util {
       debugStream.close();
     }
 
-    // Assert the fucker
+    // Assert the thing which is not profane
     public static function assert(assertion:Boolean, ... rest):void {
       if (!assertion) for each (var item:* in rest) error(item);
     }

@@ -78,7 +78,6 @@ package fb.net {
     }
 
     private function success(event:Event):void {
-      Output.log("JSON Return:", event.target.data);
       if (event.target.data.indexOf("<") != 0) {
         var eventData:* = JSON.decode(event.target.data);
         if (eventData.constructor == Object && eventData.error_code) {
@@ -91,6 +90,7 @@ package fb.net {
           urlMonitor.start();
         }
         else {
+          Output.log("JSON Loaded: ", eventData);
           urlMonitor.stop();
           dispatchEvent(new FBEvent(FBEvent.SUCCESS, eventData));
         }

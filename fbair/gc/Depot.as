@@ -26,15 +26,16 @@ package fbair.gc {
 
     public static function get(type:Class):* {
       if (!pool[type]) pool[type] = new Array();
-      if (pool[type].length == 0) Output.bug("Creating new: " + type);
+      if (pool[type].length == 0) Output.log("Creating new: " + type);
       return (pool[type].length > 0) ? pool[type].pop() : new type();
     }
 
     public static function put(item:*):void {
-      if (item is Recyclable) item.recycle();
-
       Output.assert(pool[item.constructor],
         "Putting an item in the pool we never got?: " + item);
+
+      if (item is Recyclable) item.recycle();
+      Output.log("Recycling: " + item);
 
       pool[item.constructor].push(item);
     }
