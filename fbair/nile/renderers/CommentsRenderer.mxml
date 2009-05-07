@@ -30,7 +30,7 @@
                         id="loadingIndicator"
                         visible="false"
                         text="Loading Comments" />
-                               
+
   <!-- Link to show when we have TONS of comments -->
   <util:AnimatedCanvas width="100%"
                        id="allCommentsContainer"
@@ -204,7 +204,7 @@
             loadingIndicator.immediateVisible = true;
             commentsBoxContainer.addEventListener(AnimatedCanvas.TWEEN_COMPLETE,
                                                   hideLoadingIndicator);
-            fetchComments(); 
+            fetchComments();
           }
         }
       }
