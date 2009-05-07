@@ -23,7 +23,6 @@
          xmlns:util="fbair.util.display.*"
          xmlns:fb="fb.display.*"
          xmlns:gui="fbair.gui.*"
-         removed="rendererRemoved(event)"
          creationComplete="creationComplete(event)" >
 
   <!-- When we first expand we show this while fetching all comments -->
@@ -56,7 +55,8 @@
                        animateIn="false"
                        animateOnce="true" >
     <mx:VBox id="commentsBox"
-             width="100%" />
+             width="100%" 
+             removed="rendererRemoved(event)" />
   </util:AnimatedCanvas>
 
   <mx:Script><![CDATA[
