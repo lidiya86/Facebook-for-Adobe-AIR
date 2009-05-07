@@ -96,7 +96,7 @@
       if (latestUpdates[filter_key]) return latestUpdates[filter_key];
       else return 0;
     }
-    
+
     // Cache of all nile renderer data
     public var dataCache:Object = new Object();
 
@@ -354,37 +354,24 @@
       Output.assert(niles[filter_key] == null,
         "Adding filter_key with nile we had?:" + filter_key);
 
-      // So truly add it
-      if (!streamFilters[filter_key]) {
-        Output.assert(niles[filter_key] == null,
-          "We have no streamfilter but a nile?: " + filter_key);
+      // Put in streamfilters
+      streamFilters[filter_key] = true;
 
-        streamFilters[filter_key] = true;
-        CurrentFilter = filter_key;
+      // Create a new nile, and add it
+      niles[filter_key] = Depot.get(Nile);
+      nile = niles[filter_key];
+      nileCanvas.addChild(nile);
 
-        // If there's a nile in the canvas, remove it
-        if (nile) nile.visible = false;
-
-        // Create a new nile, and add it
-        niles[filter_key] = Depot.get(Nile);
-        nile = niles[filter_key];
-        nileCanvas.addChild(nile);
-
-        // poll baby!
-        FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-          "Loading Stream"));
-        poll();
-      }
-      // Or maybe just point shit
-      else filterSelected(filter_key);
+      // poll baby!
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT, 
+        "Loading Stream"));
+      poll();
     }
 
     // Called when a filter has been removed
     public function filterRemoved(filter_key:String):void {
       Output.assert(streamFilters[filter_key] != null,
         "Removing filter not in streamFilters?: " + filter_key);
-      Output.assert(nileCanvas.contains(niles[filter_key]),
-        "Removing nile not in display?");
       Output.assert(niles[filter_key] != null,
         "Removing filter that had no nile?: " + filter_key);
 
