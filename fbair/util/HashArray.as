@@ -19,11 +19,11 @@
 // key overwrites the previous entry
 package fbair.util {
   import flash.net.registerClassAlias;
-  import flash.utils.IExternalizable;
   import flash.utils.IDataInput;
   import flash.utils.IDataOutput;
-  import flash.utils.flash_proxy;
+  import flash.utils.IExternalizable;
   import flash.utils.Proxy;
+  import flash.utils.flash_proxy;
 
   public class HashArray extends Proxy implements IExternalizable {
 

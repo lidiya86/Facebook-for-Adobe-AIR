@@ -454,6 +454,7 @@
     private function boundNile(event:Event = null):void {
       var cur_nile:Nile = (event && (event.target is Nile) ?
         Nile(event.target) : nile);
+      if (!cur_nile) return;
       cur_nile.y = Math.min(0, cur_nile.y);
       if (cur_nile.height < nileCanvas.height) {
         cur_nile.y = 0;
