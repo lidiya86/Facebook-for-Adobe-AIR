@@ -41,10 +41,11 @@
     import fb.FBConnect;
     import fb.FBEvent;
     import fb.net.JSONLoader;
+    import fb.util.Output;
 
+    import fbair.gc.Depot;
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
-    import fb.util.Output;
 
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -73,7 +74,7 @@
     [Bindable] public static var CurrentFilter:String = "nf";
 
     // All our niles, keyed by filter_key
-    private var niles:Object = {"nf":(new Nile())};
+    private var niles:Object = {"nf":(Depot.get(Nile))};
 
     // Our current nile
     [Bindable] private var nile:Nile = niles["nf"];
@@ -139,6 +140,7 @@
       CurrentFilter = null;
       niles = new Object();
       nileCanvas.removeChild(nile);
+      Depot.put(nile);
       nile = null;
 
       // Populate our filters and their niles
@@ -146,7 +148,7 @@
       for each (var streamFilter:String in streamFilters) {
         Output.assert(dataCache[streamFilter] != null,
           "Loading streamFilter with no dataCache entry? : " + streamFilter);
-        niles[streamFilter] = new Nile();
+        niles[streamFilter] = Depot.get(Nile);
         niles[streamFilter].visible = false;
         nileCanvas.addChild(niles[streamFilter]);
       }
@@ -156,8 +158,10 @@
     //   we have to be sure to remove any event listeners from any persistent
     //   objects or it won't get garbage collected
     private function nileRemoved(event:Event):void {
-      if (event.target is Nile)
+      if (event.target is Nile) {
         event.target.removeEventListener(Event.RESIZE, boundNile);
+        Depot.put(event.target);
+      }
       removeMouseWheel(event.target);
     }
     private function removeMouseWheel(displayObject:*):void {
@@ -366,7 +370,7 @@
         if (nile) nile.visible = false;
 
         // Create a new nile, and add it
-        niles[filter_key] = new Nile();
+        niles[filter_key] = Depot.get(Nile);
         nile = niles[filter_key];
         nileCanvas.addChild(nile);
 
@@ -392,6 +396,7 @@
       // Remove nile itself
       if (nile == niles[filter_key]) nile = null;
       nileCanvas.removeChild(niles[filter_key]);
+      Depot.put(niles[filter_key]);
       delete niles[filter_key];
 
       // Remove from filters

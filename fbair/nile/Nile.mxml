@@ -17,6 +17,7 @@
      It polls the server and creates NileRenderers off the results. -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
          width="100%"
+         implements="fbair.gc.Recyclable"
          removed="rendererRemoved(event)" >
   <mx:Script><![CDATA[
     import fb.util.Output;
@@ -179,6 +180,17 @@
       if (!topRenderer) return;
       var newPoint:Point = topRenderer.contentToGlobal(new Point(0, 0));
       y += topRendererPoint.y - newPoint.y;
+    }
+    
+    // Al Gore loves us!
+    public function recycle():void {
+      // Remove all stories
+      for (var i:int = 0; i < items.length; i++)
+        removeStoryAtIndex(i--);
+        
+      // Clear our top renderer
+      topRenderer = null;
+      if (changeWatcher) changeWatcher.unwatch();
     }
   ]]></mx:Script>
 </mx:VBox>
