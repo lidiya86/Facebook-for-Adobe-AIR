@@ -359,8 +359,8 @@
 
       // Create a new nile, and add it
       niles[filter_key] = Depot.get(Nile);
-      nile = niles[filter_key];
-      nileCanvas.addChild(nile);
+      niles[filter_key].visible = false;
+      nileCanvas.addChild(niles[filter_key]);
 
       // poll baby!
       FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT, 
