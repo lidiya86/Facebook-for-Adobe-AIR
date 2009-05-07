@@ -44,11 +44,6 @@ package fb.util {
       return length;
     }
 
-    // returns the object at key
-    override flash_proxy function getProperty(name:*):* {
-      return getAtKey(name);
-    }
-
     // returns the object at index
     public function getAt(index:uint):* {
       return list[index].obj;
@@ -60,10 +55,9 @@ package fb.util {
       return hash[key].obj;
     }
 
-    // returns the position in the array of the item at key
-    public function indexAtKey(key:String):int {
-      if (!hasKey(key)) return -1;
-      return hash[key].index;
+    // returns the object at key
+    override flash_proxy function getProperty(name:*):* {
+      return getAtKey(name);
     }
 
     // returns the key of the item at index in the list
@@ -74,6 +68,12 @@ package fb.util {
     // returns true if an entry for the key exists
     public function hasKey(key:String):Boolean {
       return hash[key] != null;
+    }
+
+    // returns the position in the array of the item at key
+    public function indexAtKey(key:String):int {
+      if (!hasKey(key)) return -1;
+      return hash[key].index;
     }
 
     public function insertAt(index:uint, key:String, obj:*):uint {
@@ -131,15 +131,8 @@ package fb.util {
       return length;
     }
 
-    // removes an item by key
-    // returns the removed item
-    public function removeKey(key:String):* {
-      var removed:Array = removeIndex(indexAtKey(key));
-      return removed[0];
-    }
-
     // removes an item at index, optionally removing a number of items
-    // returns the new length of the array
+    // returns an array of the removed items
     public function removeIndex(index:uint, count:uint=1):Array {
       var removedItems:Array = list.splice(index, count);
       var removed:Array = new Array();
@@ -148,6 +141,13 @@ package fb.util {
         removed.push(item.obj);
       }
       return removed;
+    }
+
+    // removes an item by key
+    // returns the removed item
+    public function removeKey(key:String):* {
+      var removed:Array = removeIndex(indexAtKey(key));
+      return removed[0];
     }
 
     // we'll treat this as a push operation for key value pairs
