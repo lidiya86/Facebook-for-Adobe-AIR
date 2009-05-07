@@ -25,14 +25,12 @@ package fbair.gc {
     private static var pool:Dictionary = new Dictionary();
 
     public static function get(type:Class):* {
-      return new type(); // hack
       if (!pool[type]) pool[type] = new Array();
       if (pool[type].length == 0) Output.bug("Creating new: " + type);
       return (pool[type].length > 0) ? pool[type].pop() : new type();
     }
 
     public static function put(item:*):void {
-      return; // hack
       if (item is Recyclable) item.recycle();
 
       Output.assert(pool[item.constructor],
