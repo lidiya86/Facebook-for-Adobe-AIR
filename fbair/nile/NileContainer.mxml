@@ -349,7 +349,7 @@
 
     // Called when new filter has added to tab bar
     public function filterAdded(filter_key:String):void {
-      Output.assert(streamFilters[filter_key],
+      Output.assert(streamFilters[filter_key] == null,
         "Adding filter_key that we already had?: " + filter_key);
       Output.assert(niles[filter_key] == null,
         "Adding filter_key with nile we had?:" + filter_key);
