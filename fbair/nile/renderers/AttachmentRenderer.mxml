@@ -151,7 +151,7 @@
 
       // Remove from list and display tree, if it's even on it
       var deadItem:MediaItem = itemsHash.removeIndex(i)[0];
-      if (mediaItems.contains(deadItem))
+      if (mediaItems && mediaItems.contains(deadItem))
         mediaItems.removeChild(deadItem);
     }
 
