@@ -87,7 +87,6 @@
       addEventListener("deleteClick", deleteTabClicked);
       addEventListener("tabClick", tabClicked);
     }
-
     private function addedToStage(event:Event):void {
       stage.addEventListener(KeyboardEvent.KEY_DOWN, keyDown);
     }

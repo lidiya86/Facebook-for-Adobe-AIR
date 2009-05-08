@@ -184,14 +184,15 @@
     // Called only once when initialization is complete.
     public function beginPolling():void {
       if (FBConnect.status != FBConnect.Connected) return;
-
-      // This is called when we're done authorizing.
-      // But we may not have a nile yet if we haven't
-      // gotten any filter data from the filtersbar...
-      if (nile) {
-        poll();
-        nile.visible = true;
-      }
+      
+      // If we don't have a nile yet, then wait for filter events
+      if (!nile) return;
+      
+      // Let's do this thing...
+      FBConnect.dispatcher.dispatchEvent(
+        new FBEvent(FBEvent.ALERT, "Loading Stream"));
+      poll();
+      nile.visible = true;
     }
 
     // Called on a loop to fetch new entries from the stream
@@ -282,7 +283,7 @@
         if (nile && !nile.items.hasKey(update.post_id))
           totalAdditions++;
       var bigUpdate:Boolean = (totalAdditions > MaxAnimations);
-      Output.log("Total additions In this update: " + totalAdditions);
+      Output.log("Total additions in this update: " + totalAdditions);
 
       // Determine whether to animate
       Animate = !bigUpdate && longDelay;
@@ -362,10 +363,12 @@
       niles[filter_key].visible = false;
       nileCanvas.addChild(niles[filter_key]);
 
-      // poll baby!
-      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT, 
-        "Loading Stream"));
-      poll();
+      // poll baby
+      if (FBConnect.status == FBConnect.Connected) {
+        FBConnect.dispatcher.dispatchEvent(
+          new FBEvent(FBEvent.ALERT, "Loading Stream"));
+        poll();
+      }
     }
 
     // Called when a filter has been removed

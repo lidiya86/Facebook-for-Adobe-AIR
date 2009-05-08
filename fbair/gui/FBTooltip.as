@@ -15,8 +15,9 @@
  */
 // Gives you tips about tools
 package fbair.gui {
-  import fb.util.MathUtil;
   import fb.util.FlexUtil;
+  import fb.util.MathUtil;
+  import fb.util.Output;
 
   import flash.display.DisplayObject;
   import flash.display.GraphicsPathCommand;
