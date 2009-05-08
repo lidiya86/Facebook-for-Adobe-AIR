@@ -404,6 +404,7 @@
       nile = niles[filter_key];
       boundNile();
       Output.log("Now showing key: " + filter_key + " with nile: " + nile);
+      
       // We may not have authed yet, so don't show unless we have
       if (FBConnect.status == FBConnect.Connected) nile.visible = true;
     }
