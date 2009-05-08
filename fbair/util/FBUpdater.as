@@ -55,7 +55,7 @@ package fbair.util {
       if (versionFile.exists) {
         var versionStream:FileStream = new FileStream();
         versionStream.open(versionFile, FileMode.READ);
-        var previousVersion:String =
+        previousVersion =
           versionStream.readUTFBytes(versionStream.bytesAvailable);
         versionStream.close();
       } else previousVersion = "0";
