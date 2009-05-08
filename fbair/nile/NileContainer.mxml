@@ -182,9 +182,8 @@
 
     // Called only once when initialization is complete.
     public function beginPolling():void {
+      // We need to have a nile AND be authed
       if (FBConnect.status != FBConnect.Connected) return;
-      
-      // If we don't have a nile yet, then wait for filter events
       if (!nile) return;
       
       // Let's do this thing...
@@ -392,21 +391,21 @@
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);
-
+      Output.assert(CurrentFilter != filter_key,
+        "Selecting filter that's already current?!");
+        
       // Select this filter only if not active, and show what we have
-      if (CurrentFilter != filter_key) {
-        CurrentFilter = filter_key;
+      CurrentFilter = filter_key;
 
-        // Remove old nile
-        if (nile) nile.visible = false;
+      // Remove old nile
+      if (nile) nile.visible = false;
 
-        // Select new main nile
-        nile = niles[filter_key];
-        boundNile();
-        Output.log("Now showing key: " + filter_key + " with nile: " + nile);
-        // We may not have authed yet, so don't show unless we have
-        if (FBConnect.status == FBConnect.Connected) nile.visible = true;
-      }
+      // Select new main nile
+      nile = niles[filter_key];
+      boundNile();
+      Output.log("Now showing key: " + filter_key + " with nile: " + nile);
+      // We may not have authed yet, so don't show unless we have
+      if (FBConnect.status == FBConnect.Connected) nile.visible = true;
     }
 
     // Called when the nile scrollbar has moved, and we need to move
