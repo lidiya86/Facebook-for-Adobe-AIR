@@ -148,9 +148,12 @@
       // Put UFI back to preview mode
       ufi.ufiMode = UFI.UFI_PREVIEW;
 
-      // Clean out comments renderer and rest it's shit
+      // Clean out comments renderer
       ufi.commentsRenderer.destroy();
 
+      // Unbind commentBox.active
+      ufi.commentBox.unbind();
+      
       super.data = null;
     }
 

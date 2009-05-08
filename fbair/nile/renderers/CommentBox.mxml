@@ -78,7 +78,7 @@
     }
 
     // Watcher setups
-    private function unbind():void {
+    public function unbind():void {
       if (dataWatcher) dataWatcher.unwatch();
       if (activeWatcher) activeWatcher.unwatch();
       bound = false;
