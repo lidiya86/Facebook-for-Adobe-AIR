@@ -61,8 +61,8 @@
     import fb.util.MathUtil;
     import fb.util.Output;
 
-    import fbair.gui.filters.FiltersBar;
     import fbair.gui.FBTooltip;
+    import fbair.gui.filters.FiltersBar;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -70,7 +70,7 @@
 
     import mx.core.IToolTip;
     import mx.events.FlexEvent;
-    import mx.managers.ToolTipManager;
+    import mx.utils.ObjectProxy;
 
     [Bindable] private var hovering:Boolean = false;
     [Bindable] private var tabLabelWidth:int = 0;
@@ -86,7 +86,11 @@
     }
 
     override public function set data(new_data:Object):void {
-      super.data = new_data;
+      Output.assert(new_data != null,
+        "Setting null data on FilterTab?: " + this);
+
+      super.data = new ObjectProxy(new_data);
+
       if (tabLabel)
         tabLabelWidth = tabLabel.measureText(data.name).width;
     }

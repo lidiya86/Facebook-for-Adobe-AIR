@@ -70,9 +70,9 @@
     import flash.ui.Keyboard;
 
     import mx.binding.utils.BindingUtils;
+    import mx.collections.ArrayCollection;
     import mx.events.FlexEvent;
     import mx.managers.PopUpManager;
-    import mx.utils.ObjectProxy;
 
     public static const MaxTabs:int = 7;
 
@@ -81,6 +81,7 @@
 
     [Bindable] private var menu:FiltersMenu;
     private var _currentTab:String;
+    private var _tabData:ArrayCollection = new ArrayCollection();
     private var tabsHash:HashArray = new HashArray();
 
     private function creationComplete(event:FlexEvent):void {
@@ -183,20 +184,18 @@
 
     // Data setting
     [Bindable]
-    public function get tabData():Array {
-      var _tabData:Array = new Array();
-      for each (var item:* in tabsHash)
-        _tabData.push(item.data);
-      return _tabData;
-    }
-    public function set tabData(new_tabData:Array):void {
-      // Clear out any old tab cruft
-      tabsHash = new HashArray();
-      while (filterTabs.numChildren > 0)
-        Depot.put(filterTabs.removeChildAt(0));
-
+    public function get tabData():ArrayCollection { return _tabData; }
+    public function set tabData(new_tabData:ArrayCollection):void {
+      Output.assert(tabData.length == 0,
+        "Setting tabData when already initialized?!");
+      Output.assert(filterTabs.numChildren == 0,
+        "Setting tabData when already have children?!");
+      Output.assert(tabsHash.length == 0,
+        "Setting tabData when already have tabsHash data?!");
+        
       // Add everything
-      for each (var tab:Object in new_tabData) {
+      _tabData = new_tabData;
+      for each (var tab:Object in tabData) {
         var renderer:FilterTab = Depot.get(FilterTab);
         renderer.data = tab;
         tabsHash.push(tab.filter_key, renderer);
@@ -240,7 +239,8 @@
 
       // Create new tab
       var renderer:FilterTab = Depot.get(FilterTab);
-      renderer.data = new ObjectProxy(data.getAtKey(key));
+      renderer.data = data.getAtKey(key);
+      tabData.addItem(data.getAtKey(key));
       tabsHash.push(key, renderer);
       filterTabs.addChild(renderer);
 
@@ -266,7 +266,9 @@
       focusHistory.removeKey(key);
 
       // Remove tab
-      Depot.put(filterTabs.removeChild(tabsHash.removeKey(key)));
+      var deadRenderer:FilterTab = tabsHash.removeKey(key);
+      tabData.removeItemAt(tabData.getItemIndex(deadRenderer.data));
+      Depot.put(filterTabs.removeChild(deadRenderer));
 
       // Focus new tab if this was the current
       if (currentTab == key)
@@ -287,8 +289,8 @@
       if (_currentTab == key) return;
 
       // Disable old tab
-      if (tabsHash.hasKey(_currentTab))
-        tabsHash.getAtKey(_currentTab).data.active = false;
+      if (tabsHash.hasKey(currentTab))
+        tabsHash.getAtKey(currentTab).data.active = false;
 
       // Set new tab, and add to history
       _currentTab = key;

@@ -32,7 +32,7 @@ package fbair.util {
   import flash.utils.ByteArray;
 
   public class FBUpdater {
-    private static const version:Number = 0.744;
+    private static const version:Number = 0.745;
 
     private static const InfoURL:String = FBDialog.FacebookURL +
       "/fbair/fbair_version.php";
@@ -40,14 +40,16 @@ package fbair.util {
     private static const VersionFile:String = "Preferences/version.txt";
 
     private static var checkedForNewVersion:Boolean = false;
-    private static var newest_version:Number;
+    private static var newestVersion:Number = -1;
+    private static var previousVersion:String;
     private static var stream:URLStream = new URLStream();
     private static var bytes:ByteArray = new ByteArray();
 
-    private static var _firstRun:Boolean;
     // Whether or not this is our first run post-update
     public static function firstRun():Boolean {
-      if (_firstRun) return _firstRun;
+      if (previousVersion)
+        return (previousVersion != String(version));
+
       var versionFile:File = File.applicationStorageDirectory
         .resolvePath(VersionFile);
       if (versionFile.exists) {
@@ -56,9 +58,10 @@ package fbair.util {
         var previousVersion:String =
           versionStream.readUTFBytes(versionStream.bytesAvailable);
         versionStream.close();
-        _firstRun = (previousVersion != String(version));
-      } else _firstRun = true;
-      return _firstRun;
+      } else previousVersion = "0";
+      Output.assert(!firstRun(), "It's our first run on version: " + version 
+        + " from " + previousVersion);
+      return firstRun();
     }
 
     // Saves our version number to a file for checking later
@@ -95,8 +98,8 @@ package fbair.util {
     // At this point we can check to see if we're out of date
     private static function versionDataLoaded(event:Event):void {
       var xml:XML = new XML(event.target.data);
-      newest_version = xml.version;
-      if (newest_version > version) {
+      newestVersion = xml.version;
+      if (newestVersion > version) {
         stream.addEventListener(Event.COMPLETE, newVersionLoaded);
         stream.addEventListener(IOErrorEvent.IO_ERROR, errorOccurred);
         stream.load(new URLRequest(xml.url));
@@ -123,7 +126,7 @@ package fbair.util {
     private static function fileClosed(event:Event):void {
       var updater:Updater = new Updater();
       var file:File = File.desktopDirectory.resolvePath(FileName);
-      updater.update(file, String(newest_version));
+      updater.update(file, String(newestVersion));
     }
 
     // Called if we failed to load something somewhere and we don't care
