@@ -22,7 +22,7 @@ package fb.util {
   import mx.controls.Alert;
 
   public class Output {
-    private static var verbose:Boolean = true;
+    private static var verbose:Boolean = false;
     private static var debugFile:File =
       File.desktopDirectory.resolvePath("air_debug.txt");
     private static var debugStream:FileStream = new FileStream();
