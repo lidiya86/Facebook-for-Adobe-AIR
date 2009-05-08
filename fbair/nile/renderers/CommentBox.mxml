@@ -77,8 +77,13 @@
       bind();
     }
 
+    // Unbind shit for reuse
+    public function destroy():void {
+      unbind();
+    }
+    
     // Watcher setups
-    public function unbind():void {
+    private function unbind():void {
       if (dataWatcher) dataWatcher.unwatch();
       if (activeWatcher) activeWatcher.unwatch();
       bound = false;

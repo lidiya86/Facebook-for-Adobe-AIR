@@ -178,6 +178,16 @@
       super.data = new_data;
     }
 
+    // Reset us for reuse
+    public function destroy():void {
+      // Back to preview mode
+      ufiMode = UFI.UFI_PREVIEW;
+      
+      // Destroy our parts
+      commentsRenderer.destroy();
+      commentBox.destroy();
+    }
+    
     // Called when we just successfully commented
     private function commented(event:FBEvent):void {
       data.comments.count++;

@@ -145,15 +145,10 @@
         content = null;
       }
 
-      // Put UFI back to preview mode
-      ufi.ufiMode = UFI.UFI_PREVIEW;
-
-      // Clean out comments renderer
-      ufi.commentsRenderer.destroy();
-
-      // Unbind commentBox.active
-      ufi.commentBox.unbind();
+      // Clear out the ufi
+      ufi.destroy();
       
+      // No more data!
       super.data = null;
     }
 
