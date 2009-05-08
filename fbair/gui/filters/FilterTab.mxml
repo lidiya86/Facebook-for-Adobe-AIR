@@ -93,6 +93,7 @@
 
     private function removedFromStage(event:Event):void {
       stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
+      stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
     }
 
     private function tabClicked(event:Event):void {
@@ -123,10 +124,8 @@
       hovering = false;
       FBTooltip.hide();
 
-      if (stage) {
-        stage.removeEventListener(Event.MOUSE_LEAVE, rollOut);
+      if (stage)
         stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMove);
-      }
     }
 
     // Save the planet!

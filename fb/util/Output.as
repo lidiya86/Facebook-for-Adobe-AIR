@@ -17,6 +17,7 @@ package fb.util {
   import flash.filesystem.File;
   import flash.filesystem.FileMode;
   import flash.filesystem.FileStream;
+  import flash.utils.getTimer;
 
   import mx.controls.Alert;
 
@@ -30,26 +31,29 @@ package fb.util {
     // Trace
     public static function log(... rest):void {
       if (!verbose) return;
+      loggedItems.push("Log Time: " + getTimer());
       for each (var item:* in rest)
         loggedItems.push(item);
     }
 
     // Trace no matter what
     public static function bug(... rest):void {
+      loggedItems.push("Bug Time: " + getTimer());
       for each (var item:* in rest) {
         loggedItems.push(item);
         trace(pretty(item));
       }
     }
-    
+
     // Trace error no matter what
     public static function error(... rest):void {
+      loggedItems.push("Error Time: " + getTimer());
       for each (var item:* in rest) {
         loggedItems.push(item);
         trace(pretty(item));
       }
     }
-    
+
     // File shit
     public static function logDump():void {
       debugStream.open(debugFile, FileMode.WRITE);

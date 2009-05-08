@@ -139,11 +139,10 @@
       // Populate our filters and their niles
       streamFilters = stream_filters;
       for (var streamFilter:String in streamFilters) {
-        Output.assert(dataCache[streamFilter] != null,
-          "Loading streamFilter with no dataCache entry?: " + streamFilter);
         niles[streamFilter] = Depot.get(Nile);
         niles[streamFilter].visible = false;
-        niles[streamFilter].data = dataCache[streamFilter];
+        if (dataCache[streamFilter])
+          niles[streamFilter].data = dataCache[streamFilter];
         nileCanvas.addChild(niles[streamFilter]);
       }
     }
