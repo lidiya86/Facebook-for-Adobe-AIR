@@ -22,6 +22,8 @@ package fbair.util.display {
 
   public class AnimatedCanvas extends Canvas {
 
+    [Bindable] public static var Animate:Boolean = false;
+
     public static const TWEEN_COMPLETE:String = "tweenComplete";
 
     // animates if true
@@ -86,6 +88,13 @@ package fbair.util.display {
     override public function set visible(to:Boolean):void {
       if (super.visible == to) return;
 
+      if (to && measuredHeight) hasBeenVisible = true;
+
+      if (!Animate) {
+        immediateVisible = to;
+        return;
+      }
+
       _visible = to;
 
       if (to == true) {
@@ -125,6 +134,11 @@ package fbair.util.display {
         hasBeenVisible = true;
       }
 
+      if (!Animate) {
+        managedHeight = super.measuredHeight = to;
+        return;
+      }
+
       if (super.measuredHeight == to && managedHeight == to) return;
 
       if (allowSetHeight) {
@@ -155,6 +169,7 @@ package fbair.util.display {
     }
 
     private function tweenFrame(event:Event):void {
+      trace("tweening: "+this);
       var isGrowing:Boolean = managedHeight < super.measuredHeight;
       var targetV:Number = (super.measuredHeight - managedHeight) * speed;
       velocity += (targetV - velocity) * gain;

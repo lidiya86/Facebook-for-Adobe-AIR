@@ -46,6 +46,7 @@
     import fbair.gc.Depot;
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
+    import fbair.util.display.AnimatedCanvas;
 
     import flash.display.DisplayObjectContainer;
     import flash.events.Event;
@@ -109,16 +110,13 @@
     // Time since our last update
     private var updateTime:Number = 0;
 
-    // Whether on not to animate yo shit this time.
-    [Bindable] public static var Animate:Boolean = false;
-
     // Initializing..
     private function creationComplete(event:FlexEvent):void {
       // Pay attention to window resizing for the scrollbar
       Application.application.addEventListener(
         FlexNativeWindowBoundsEvent.WINDOW_RESIZE, boundNile);
 
-      // Liston to our polling timer
+      // Listen to our polling timer
       pollingTimer.addEventListener(TimerEvent.TIMER, poll);
 
       // Listen to bubbling story_deleted messages
@@ -227,8 +225,10 @@
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
       data = event.data;
-      if (dataCache[CurrentFilter])
+      if (dataCache[CurrentFilter]) {
+        AnimatedCanvas.Animate = true;
         FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
+      }
     }
 
     // Setting our massive container data (massive, baby, that's what she said)
@@ -284,7 +284,7 @@
       Output.log("Total additions in this update: " + totalAdditions);
 
       // Determine whether to animate
-      Animate = !bigUpdate && longDelay;
+      AnimatedCanvas.Animate = !bigUpdate && longDelay;
 
       // Set nile data everywhere
       for (filterKey in dataCache)
@@ -320,7 +320,6 @@
       // Mark immune, then give to NewsFeed and CurrentFilter
       // NileRenderers own their data with logic so each
       //   has to get it's own deep copy via ObjectUtil.copy
-      Animate = true;
       immunes[storyData.post_id] = true;
       nile.addStory(ObjectUtil.copy(storyData));
       if (niles["nf"] && niles["nf"] != nile)
@@ -341,7 +340,6 @@
       zombies[deadRenderer.data.post_id] = true;
 
       // Remove from all niles
-      Animate = true;
       for each (var cur_nile:Nile in niles)
         cur_nile.removeStoryByID(deadRenderer.data.post_id);
     }
