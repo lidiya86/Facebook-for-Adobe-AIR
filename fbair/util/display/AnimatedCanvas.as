@@ -15,6 +15,7 @@
  */
 // Animating Canvas
 package fbair.util.display {
+  import flash.display.DisplayObject;
   import flash.events.Event;
 
   import mx.containers.Canvas;
@@ -90,7 +91,7 @@ package fbair.util.display {
 
       if (to && measuredHeight) hasBeenVisible = true;
 
-      if (!Animate) {
+      if (!Animate || !shouldAnimate()) {
         immediateVisible = to;
         return;
       }
@@ -134,7 +135,7 @@ package fbair.util.display {
         hasBeenVisible = true;
       }
 
-      if (!Animate) {
+      if (!Animate || !shouldAnimate()) {
         managedHeight = super.measuredHeight = to;
         return;
       }
@@ -179,6 +180,15 @@ package fbair.util.display {
         endAnimation();
       }
       invalidateSize();
+    }
+
+    private function shouldAnimate():Boolean {
+      if (!stage) return false;
+      var elder:DisplayObject = parent;
+      do {
+        if (!elder.visible) return false;
+      } while (elder = elder.parent);
+      return true;
     }
 
   }
