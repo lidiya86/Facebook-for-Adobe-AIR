@@ -44,6 +44,9 @@ package fbair.util.display {
 
     // animate speed. 0 is stopped and 1 is immediate
     [Bindable] public var gain:Number = 0.30;
+    
+    // number of frames animated so far
+    private var frameNum:int = 0;
 
     private var velocity:Number = 0;
     private var _visible:Boolean = true;
@@ -155,12 +158,14 @@ package fbair.util.display {
     public function startAnimation():void {
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = true;
+      frameNum = 0;
     }
 
     public function endAnimation():void {
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = false;
       managedHeight = super.measuredHeight;
+      invalidateSize();
       velocity = 0;
       allowSetHeight = true;
       if (animateOnce) {
@@ -170,7 +175,11 @@ package fbair.util.display {
     }
 
     private function tweenFrame(event:Event):void {
-      trace("tweening: "+this);
+      // Sanity check for runaway animations
+      if (frameNum++ > 20) {
+        endAnimation();
+        return;
+      }
       var isGrowing:Boolean = managedHeight < super.measuredHeight;
       var targetV:Number = (super.measuredHeight - managedHeight) * speed;
       velocity += (targetV - velocity) * gain;
