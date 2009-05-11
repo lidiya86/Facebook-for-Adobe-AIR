@@ -93,7 +93,6 @@
         FBUpdater.deleteInstallationFile();
       // Load old data only if we didn't just autoupdate
       //   Between updates our data model might change...
-      /*
       else {
         Output.log("Loading nile/filter cached data");
 
@@ -124,7 +123,6 @@
           filtersBar.currentTab = filtersData.currentTab;
         }
       }
-      */
 
       // We want to listen to changes to status or permissions,
       //   so let's add event listeners for both.
