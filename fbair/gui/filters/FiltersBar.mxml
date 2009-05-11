@@ -78,9 +78,8 @@
     public static const MaxTabs:int = 7;
 
     [Bindable] public static var TabCount:int = 0;
-    [Bindable] public var focusHistory:HashArray = new HashArray();
-
     [Bindable] private var menu:FiltersMenu;
+    [Bindable] public var focusHistory:HashArray = new HashArray();
     private var _currentTab:String;
     private var _tabData:ArrayCollection = new ArrayCollection();
     private var tabsHash:HashArray = new HashArray();
@@ -248,7 +247,7 @@
 
       // Remove staleness
       while (tabsHash.length > MaxTabs)
-        removeTab(focusHistory.first());
+        removeTab(focusHistory.first(), false);
 
       // Create new tab
       var renderer:FilterTab = Depot.get(FilterTab);
@@ -267,7 +266,7 @@
       currentTab = key;
     }
 
-    public function removeTab(key:String):void {
+    public function removeTab(key:String, selectNew:Boolean = true):void {
       if (tabsHash.length == 1) return;
 
       Output.assert(tabsHash.hasKey(key),
@@ -284,8 +283,8 @@
       Depot.put(filterTabs.removeChild(deadRenderer));
 
       // Focus new tab if this was the current
-      if (currentTab == key)
-        currentTab = focusHistory.last();
+      if (selectNew && currentTab == key)
+        currentTab = focusHistory.pop();
 
       TabCount = tabsHash.length;
 
@@ -299,7 +298,7 @@
       return _currentTab;
     }
     public function set currentTab(key:String):void {
-      if (_currentTab == key) return;
+      if (currentTab == key) return;
 
       // Disable old tab
       if (tabsHash.hasKey(currentTab))
