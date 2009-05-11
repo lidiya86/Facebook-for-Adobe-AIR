@@ -85,6 +85,10 @@
       addEventListener(Event.REMOVED_FROM_STAGE, removedFromStage);
     }
 
+    public function get labelObscured():Boolean {
+      return tabLabelWidth > tabLabel.width;
+    }
+    
     override public function set data(new_data:Object):void {
       Output.assert(new_data != null,
         "Setting null data on FilterTab?: " + this);
@@ -112,8 +116,7 @@
 
     private function rollOver(event:MouseEvent):void {
       hovering = true;
-      if (tabLabelWidth > tabLabel.width)
-        FBTooltip.show(data.name, this);
+      if (labelObscured) FBTooltip.show(data.name, this);
 
       stage.addEventListener(Event.MOUSE_LEAVE, rollOut);
       stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMove);

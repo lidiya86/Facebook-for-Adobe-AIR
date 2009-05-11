@@ -62,6 +62,7 @@
     import fb.util.Output;
 
     import fbair.gc.Depot;
+    import fbair.gui.FBTooltip;
     import fbair.gui.filters.FilterTab;
     import fbair.util.HashArray;
 
@@ -145,6 +146,11 @@
         if (tmpIndex >= tabsHash.length) tmpIndex = tabsHash.length - 1;
         else if (tmpIndex < 0) tmpIndex = 0;
         currentTab = tabsHash.keyAtIndex(tmpIndex);
+        var currentRenderer:FilterTab = tabsHash.getAtKey(currentTab);
+        if (currentRenderer.labelObscured)
+          FBTooltip.flash(tabData[tmpIndex].name, currentRenderer);
+        else
+          FBTooltip.hide();
       }
     }
 

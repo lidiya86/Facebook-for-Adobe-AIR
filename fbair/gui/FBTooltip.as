@@ -17,40 +17,56 @@
 package fbair.gui {
   import fb.util.FlexUtil;
   import fb.util.MathUtil;
-  import fb.util.Output;
 
   import flash.display.DisplayObject;
   import flash.display.GraphicsPathCommand;
+  import flash.events.TimerEvent;
   import flash.geom.Point;
+  import flash.utils.Timer;
 
   import mx.controls.Text;
   import mx.core.Application;
   import mx.managers.PopUpManager;
 
   public class FBTooltip extends Text {
+    private static const ArrowSize:Number = 4;
+    private static const FlashTime:int = 500;
 
-    public static const ArrowSize:Number = 4;
-
-    public static var instance:FBTooltip = new FBTooltip();
+    private static var instance:FBTooltip = new FBTooltip();
     private var arrowOffset:Number = 0;
+    private var flashTimer:Timer = new Timer(FlashTime);
 
     public function FBTooltip() {
       if (instance) throw new Error("FBTooltip is a Singleton");
+      flashTimer.addEventListener(TimerEvent.TIMER, _hide)
     }
 
     public static function hide():void {
-      instance.visible = false;
-      instance.text = "";
+      instance._hide();
+    }
+    private function _hide(event:TimerEvent = null):void {
+      flashTimer.stop();
+      visible = false;
+      text = "";
+    }
+
+    // shows the tooltip for a brief period before hiding it
+    public static function flash(txt:String, at:*, below:Boolean = true):void {
+      instance._flash(txt, at, below);
+    }
+    private function _flash(txt:String, at:*, below:Boolean = true):void {
+      _show(txt, at, below);
+      flashTimer.start();
     }
 
     // shows a tooltip at a point or under a display object
     public static function show(txt:String, at:*, below:Boolean = true):void {
       instance._show(txt, at, below);
     }
-
     private function _show(txt:String, at:*, below:Boolean):void {
       if (text == txt) return;
-
+      flashTimer.stop();
+      
       // add to display tree
       if (!stage) {
         PopUpManager.addPopUp(this, Application.application as Application);
