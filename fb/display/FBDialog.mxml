@@ -59,7 +59,7 @@
     private static const MINIMUM_HEIGHT:int = 8;
 
     public static const FacebookURL:String =
-      "http://www.dev.facebook.com";
+      "http://www.facebook.com";
     public static const NextPath:String = FacebookURL +
       "/connect/login_success.html";
 
@@ -116,6 +116,9 @@
       // Cache away our result
       result = a_result;
 
+      // No longer care about timeouts
+      reloadTimer.stop();
+      
       // Remove ourselves from display
       close();
 

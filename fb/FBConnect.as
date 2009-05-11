@@ -22,6 +22,7 @@ package fb {
   import fb.display.FBAuthDialog;
   import fb.display.FBDialog;
   import fb.display.FBPermDialog;
+  import fb.net.JSONLoader;
   import fb.net.RedirectTester;
   import fb.util.Output;
 
@@ -210,8 +211,9 @@ package fb {
 
       dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
         "Validating Session Key"));
-      var loggedIn:EventDispatcher =
+      var loggedIn:JSONLoader =
         FBAPI.callMethod("users.getLoggedInUser");
+      loggedIn.retry = false; // Only try once here, we're watching failure...
       loggedIn.addEventListener(FBEvent.SUCCESS, gotLoggedInUser);
       loggedIn.addEventListener(FBEvent.FAILURE, noLoggedInUser);
     }

@@ -33,14 +33,18 @@ package fb.net {
   // it's own COMPLETE in a JSON.decode then dispatch a
   // FBEvent.SUCCESS with the JSON data.
   public class JSONLoader extends URLLoader {
+    public var retry:Boolean = true;
+    
     private static const MaxAttempts:int = 3;
     private var attempts:int = 0;
 
     private var request:URLRequest;
     private var urlMonitor:URLMonitor;
 
-    public function JSONLoader(new_request:URLRequest = null) {
+    public function JSONLoader(new_request:URLRequest = null,
+                               new_retry:Boolean = true) {
       request = new_request;
+      retry = new_retry;
       addEventListener(Event.COMPLETE, success);
       addEventListener(IOErrorEvent.IO_ERROR, error);
       addEventListener(SecurityErrorEvent.SECURITY_ERROR, error);
@@ -62,6 +66,7 @@ package fb.net {
     }
     
     public function reload():void {
+      if (!retry) return;
       Output.error("Reloading JSON: " + request.url);
       load(request);
     }
