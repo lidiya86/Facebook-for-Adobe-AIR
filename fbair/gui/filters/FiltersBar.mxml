@@ -192,7 +192,7 @@
         "Setting tabData when already have children?!");
       Output.assert(tabsHash.length == 0,
         "Setting tabData when already have tabsHash data?!");
-        
+
       // Add everything
       _tabData = new_tabData;
       for each (var tab:Object in tabData) {
@@ -204,6 +204,13 @@
 
       // Update tabcount
       TabCount = tabsHash.length;
+    }
+
+    // Get the index of data item in tabData by key
+    private function tabIndexByKey(key:String):int {
+      for (var i:int = 0; i < tabData.length; i++)
+        if (tabData[i].filter_key == key) return i;
+      return -1;
     }
 
     override public function set data(new_data:Object):void {
@@ -267,7 +274,7 @@
 
       // Remove tab
       var deadRenderer:FilterTab = tabsHash.removeKey(key);
-      tabData.removeItemAt(tabData.getItemIndex(deadRenderer.data));
+      tabData.removeItemAt(tabIndexByKey(key));
       Depot.put(filterTabs.removeChild(deadRenderer));
 
       // Focus new tab if this was the current
