@@ -279,8 +279,8 @@
       focusHistory.removeKey(key);
 
       // Remove tab
-      var deadRenderer:FilterTab = tabsHash.removeKey(key);
       tabData.removeItemAt(tabsHash.indexAtKey(key));
+      var deadRenderer:FilterTab = tabsHash.removeKey(key);
       Depot.put(filterTabs.removeChild(deadRenderer));
 
       // Focus new tab if this was the current
