@@ -70,7 +70,7 @@
     private static const MouseWheelSize:int = 16;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
-    private static const SlideDuration:int = 200; // Milliseconds per renderer
+    private static const SlideDuration:int = 300; // Milliseconds per renderer
     private static var SlideSpeed:Number; // Pixels per millisecond
 
     // Our current filter
@@ -477,25 +477,26 @@
       if (focusManager.getFocus()) return;
 
       // Determine where we're going
-      var curDest:NileRenderer = destRenderer;
+      var oldDest:NileRenderer = destRenderer;
+      var newDest:NileRenderer;
       if (event.keyCode == Keyboard.UP)
-        destRenderer = curDest ? nile.getPrevious(curDest) : nile.topRenderer;
+        newDest = oldDest ? nile.getPrevious(oldDest) : nile.topRenderer;
       else if (event.keyCode == Keyboard.DOWN)
-        destRenderer = curDest ? nile.getNext(curDest) : nile.nextToTopRenderer;
-
+        newDest = oldDest ? nile.getNext(oldDest) : nile.nextToTopRenderer;
+      
       // Nothing changed...
-      if (destRenderer == curDest) return;
+      if (newDest == oldDest) return;
 
-      // If we have a destination...
-      if (destRenderer) {
+      // If we have a new destination...
+      if (newDest) {
+        destRenderer = newDest;
+        
         // Update our speed
         SlideSpeed = Math.abs(destRenderer.y + nile.y) / SlideDuration;
 
         // Slide if not already sliding
-        if (!curDest) startSliding();
+        if (!oldDest) startSliding();
       }
-      // If no destination, then end it
-      else stopSliding();
     }
 
     // Start sliding!
@@ -525,12 +526,14 @@
       // Determine distance to travel
       var orig_y:Number = nile.y;
       var travel_y:Number = slide_duration * SlideSpeed;
-
+      
+      // Travel
       if (destRenderer.y + nile.y < 0)
         nile.y += Math.min(travel_y, Math.abs(destRenderer.y + nile.y));
       else if (destRenderer.y + nile.y > 0)
         nile.y -= Math.min(travel_y, Math.abs(destRenderer.y + nile.y));
 
+      // Make sure we didn't overjump things, and re-mark topRenderer
       boundNile();
       nile.markTopRenderer();
 
