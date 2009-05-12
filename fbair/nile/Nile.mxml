@@ -183,6 +183,18 @@
       }
     }
 
+    // Return the renderer before/after the given one
+    public function getNext(renderer:NileRenderer):NileRenderer {
+      var idx:int = items.indexAtKey(renderer.data.post_id);
+      if (idx == items.length - 1) return null;
+      else return items.getAt(idx+1);
+    }
+    public function getPrevious(renderer:NileRenderer):NileRenderer {
+      var idx:int = items.indexAtKey(renderer.data.post_id);
+      if (idx == 0) return null;
+      else return items.getAt(idx-1);
+    }
+
     // This function returns the scroller to the marked topRenderer
     public function returnTopRenderer(event:Event):void {
       if (!topRenderer) return;
@@ -195,7 +207,7 @@
       if (items.length == 0) return null;
       if (topRenderer) {
         if (topRendererIndex < items.length - 1) {
-          var nextRenderer:NileRenderer = 
+          var nextRenderer:NileRenderer =
             items.getAt(topRendererIndex + 1);
           // If next renderer is at the very top,
           //   then skip it and go with the one after it...

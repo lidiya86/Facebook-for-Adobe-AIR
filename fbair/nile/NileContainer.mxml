@@ -53,6 +53,7 @@
     import flash.events.KeyboardEvent;
     import flash.events.MouseEvent;
     import flash.ui.Keyboard;
+    import flash.utils.getTimer;
 
     import mx.collections.ArrayCollection;
     import mx.collections.Sort;
@@ -69,7 +70,8 @@
     private static const MouseWheelSize:int = 16;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
-    private static const SlideSpeed:int = 20;
+    private static const SlideDuration:int = 200; // Milliseconds per renderer
+    private static var SlideSpeed:Number; // Pixels per millisecond
 
     // Our current filter
     [Bindable] public static var CurrentFilter:String;
@@ -92,7 +94,9 @@
     private var immunes:Object = new Object();
 
     // Renderer we're sliding to during keyboard motion
+    //   and time when last slide started
     private var destRenderer:NileRenderer;
+    private var slideTime:int = 0;
 
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
@@ -472,25 +476,37 @@
       // If a textfield has focus, then nevermind!
       if (focusManager.getFocus()) return;
 
-      stopSliding();
+      // Determine where we're going
+      var curDest:NileRenderer = destRenderer;
       if (event.keyCode == Keyboard.UP)
-        destRenderer = nile.topRenderer;
+        destRenderer = curDest ? nile.getPrevious(curDest) : nile.topRenderer;
       else if (event.keyCode == Keyboard.DOWN)
-        destRenderer = nile.nextToTopRenderer;
-      Output.bug("Dest renderer is: " + destRenderer);
-      startSliding();
+        destRenderer = curDest ? nile.getNext(curDest) : nile.nextToTopRenderer;
+
+      // Nothing changed...
+      if (destRenderer == curDest) return;
+
+      // If we have a destination...
+      if (destRenderer) {
+        // Update our speed
+        SlideSpeed = Math.abs(destRenderer.y + nile.y) / SlideDuration;
+
+        // Slide if not already sliding
+        if (!curDest) startSliding();
+      }
+      // If no destination, then end it
+      else stopSliding();
     }
 
     // Start sliding!
     private function startSliding():void {
       if (!destRenderer) return;
-      Output.bug("started sliding");
+      slideTime = getTimer();
       addEventListener(Event.ENTER_FRAME, slide);
     }
 
     // Stop Sliding!
     private function stopSliding():void {
-      Output.bug("stopped sliding");
       removeEventListener(Event.ENTER_FRAME, slide);
       destRenderer = null;
     }
@@ -502,19 +518,24 @@
       Output.assert(nile != null,
         "Sliding with no nile?!");
 
+      // Determine time since last slide call
+      var slide_duration:int = getTimer() - slideTime;
+      slideTime = getTimer();
+
+      // Determine distance to travel
       var orig_y:Number = nile.y;
-      
+      var travel_y:Number = slide_duration * SlideSpeed;
+
       if (destRenderer.y + nile.y < 0)
-        nile.y += Math.min(SlideSpeed, Math.abs(destRenderer.y + nile.y));
+        nile.y += Math.min(travel_y, Math.abs(destRenderer.y + nile.y));
       else if (destRenderer.y + nile.y > 0)
-        nile.y -= Math.min(SlideSpeed, Math.abs(destRenderer.y + nile.y));
+        nile.y -= Math.min(travel_y, Math.abs(destRenderer.y + nile.y));
 
       boundNile();
       nile.markTopRenderer();
 
       // If we've made no progress or we're at our destination, then stop
-      if (orig_y == nile.y ||
-          destRenderer.y + nile.y == 0) stopSliding();
+      if (orig_y == nile.y || destRenderer.y + nile.y == 0) stopSliding();
     }
   ]]></mx:Script>
 </mx:HBox>
