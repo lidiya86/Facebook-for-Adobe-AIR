@@ -19,9 +19,10 @@ package fb {
 
   import fb.FBConnect;
   import fb.FBEvent;
-  import fb.util.Output;
   import fb.net.FBPost;
   import fb.net.JSONLoader;
+  import fb.util.Output;
+  import fb.util.StringUtil;
 
   import flash.events.Event;
   import flash.events.EventDispatcher;
@@ -138,13 +139,13 @@ package fb {
       urlArgs['session_key'] = FBConnect.session.key;
 
       var argsArray:Array = new Array();
-      for(var arg:String in urlArgs) {
+      for (var arg:String in urlArgs) {
         var val:* = urlArgs[arg];
         argsArray.push(arg + "=" + val);
       }
       argsArray.sort();
       var hashString:String = argsArray.join("") + FBConnect.session.secret;
-      urlArgs['sig'] = MD5.hash(hashString);
+      urlArgs['sig'] = MD5.hash(StringUtil.toUTF8(hashString));
 
       return urlArgs;
     }

@@ -101,7 +101,7 @@
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;
     import fbair.util.ProfileCache;
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
 
     import flash.events.Event;
     import flash.events.MouseEvent;

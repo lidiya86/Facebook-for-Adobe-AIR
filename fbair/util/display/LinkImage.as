@@ -20,7 +20,7 @@
 package fbair.util.display {
   import fb.util.Output;
 
-  import fbair.util.StringUtil;
+  import fb.util.StringUtil;
   import fbair.util.display.StubbornImage;
 
   import flash.events.Event;

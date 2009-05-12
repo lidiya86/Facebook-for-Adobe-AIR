@@ -36,7 +36,7 @@
   <mx:Script><![CDATA[
     import fbair.nile.Nile;
     import fbair.util.ProfileCache;
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
 
     import fb.FBEvent;
 

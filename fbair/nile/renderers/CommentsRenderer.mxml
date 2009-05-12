@@ -67,7 +67,7 @@
     import fbair.nile.renderers.UFI;
     import fbair.util.CommentCache;
     import fbair.util.HashArray
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
     import fbair.gc.Depot;
 
     import mx.events.FlexEvent;
