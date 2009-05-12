@@ -142,8 +142,8 @@
 
       // Time to select the desired tab
       if (!isNaN(tmpIndex)) {
-        if (tmpIndex >= tabsHash.length) tmpIndex = tabsHash.length - 1;
-        else if (tmpIndex < 0) tmpIndex = 0;
+        if (tmpIndex >= tabsHash.length) tmpIndex = 0;
+        else if (tmpIndex < 0) tmpIndex = tabsHash.length - 1;
         currentTab = tabsHash.keyAtIndex(tmpIndex);
         var currentRenderer:FilterTab = tabsHash.getAtKey(currentTab);
         if (currentRenderer.labelObscured)
