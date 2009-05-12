@@ -40,6 +40,7 @@
     // This is the entry of the nile that's at the of our view port
     //   if we get new data we reposition to keep this on top.
     public var topRenderer:NileRenderer;
+    private var topRendererIndex:int = -1;
     private var topRendererPoint:Point;
     private var changeWatcher:ChangeWatcher;
 
@@ -154,20 +155,27 @@
 
     // This function marks what our current top renderer is
     public function markTopRenderer():void {
+      // Optimization to keep the same renderer and just update our point
       if (topRenderer &&
+          items.getAt(topRendererIndex) == topRenderer &&
           topRenderer.y + y < 0 &&
           topRenderer.y + y + topRenderer.height > 0) {
         topRendererPoint = topRenderer.contentToGlobal(new Point(0, 0));
         return;
       }
 
+      // No more watching the old renderer
       if (changeWatcher) changeWatcher.unwatch();
 
+      // Get our new top renderer, or none if none
       topRenderer = null;
+      topRendererIndex = -1;
       for (var i:int = 0; i < items.length && items.getAt(i).y + y < 0; i++)
-        topRenderer = items.getAt(i);
+        topRendererIndex = i;
+      if (topRendererIndex != -1)
+        topRenderer = items.getAt(topRendererIndex);
 
-      // If at the very top, then we don't mark a topRenderer
+      // If at the top, then topRenderer == null...
       if (topRenderer) {
         topRendererPoint = topRenderer.contentToGlobal(new Point(0, 0));
         changeWatcher = ChangeWatcher.watch(topRenderer, "y",
@@ -182,6 +190,26 @@
       y += topRendererPoint.y - newPoint.y;
     }
 
+    // Return renderer after topRenderer
+    public function get nextToTopRenderer():NileRenderer {
+      if (items.length == 0) return null;
+      if (topRenderer) {
+        if (topRendererIndex < items.length - 1) {
+          var nextRenderer:NileRenderer = 
+            items.getAt(topRendererIndex + 1);
+          // If next renderer is at the very top,
+          //   then skip it and go with the one after it...
+          if (nextRenderer.y + y == 0) {
+            if (topRendererIndex < items.length - 2)
+              return items.getAt(topRendererIndex + 2);
+            else return null;
+          } else return nextRenderer;
+        } else return null;
+      } else {
+        if (items.length >= 1) return items.getAt(1);
+        else return null;
+      }
+    }
     // Al Gore loves us!
     public function recycle():void {
       // Remove all stories

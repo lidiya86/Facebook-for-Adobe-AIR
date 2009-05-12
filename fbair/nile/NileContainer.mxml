@@ -67,9 +67,9 @@
     private static const MinAnimationDelay:int = 5000;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
-    private static const ArrowClickSize:int = 32;
     private static const MaxEntries:int = 50;
     private static const MaxAnimations:int = 3;
+    private static const SlideSpeed:int = 20;
 
     // Our current filter
     [Bindable] public static var CurrentFilter:String;
@@ -90,6 +90,9 @@
     // List of story-ids we just created
     //   We hold on once to make sure a quick refresh doesn't delete.
     private var immunes:Object = new Object();
+
+    // Renderer we're sliding to during keyboard motion
+    private var destRenderer:NileRenderer;
 
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
@@ -183,7 +186,7 @@
       // We need to have a nile AND be authed
       if (FBConnect.status != FBConnect.Connected) return;
       if (!nile) return;
-      
+
       // Let's do this thing...
       FBConnect.dispatcher.dispatchEvent(
         new FBEvent(FBEvent.ALERT, "Loading Stream"));
@@ -375,7 +378,10 @@
         "Removing filter that had no nile?: " + filter_key);
 
       // Remove nile itself
-      if (nile == niles[filter_key]) nile = null;
+      if (nile == niles[filter_key]) {
+        stopSliding();
+        nile = null;
+      }
       nileCanvas.removeChild(niles[filter_key]);
       delete niles[filter_key];
 
@@ -391,18 +397,19 @@
         "Selecting filter with no nile?: " + filter_key);
       Output.assert(CurrentFilter != filter_key,
         "Selecting filter that's already current?!");
-        
+
       // Select this filter only if not active, and show what we have
       CurrentFilter = filter_key;
 
-      // Remove old nile
+      // Remove old nile, and stop any sliding
+      stopSliding();
       if (nile) nile.visible = false;
 
       // Select new main nile
       nile = niles[filter_key];
       boundNile();
       Output.log("Now showing key: " + filter_key + " with nile: " + nile);
-      
+
       // We may not have authed yet, so don't show unless we have
       if (FBConnect.status == FBConnect.Connected) nile.visible = true;
     }
@@ -410,6 +417,9 @@
     // Called when the nile scrollbar has moved, and we need to move
     //   the nile itself to keep pace.
     private function scrollNile(event:ScrollEvent = null):void {
+      // No fucking sliding now
+      stopSliding();
+
       // Move the nile position
       nile.y = -scrollBar.scrollPosition;
 
@@ -462,14 +472,49 @@
       // If a textfield has focus, then nevermind!
       if (focusManager.getFocus()) return;
 
-      if (event.keyCode == Keyboard.UP) {
-        nile.y += ArrowClickSize;
-        boundNile();
-      }
-      else if (event.keyCode == Keyboard.DOWN) {
-        nile.y -= ArrowClickSize;
-        boundNile();
-      }
+      stopSliding();
+      if (event.keyCode == Keyboard.UP)
+        destRenderer = nile.topRenderer;
+      else if (event.keyCode == Keyboard.DOWN)
+        destRenderer = nile.nextToTopRenderer;
+      Output.bug("Dest renderer is: " + destRenderer);
+      startSliding();
+    }
+
+    // Start sliding!
+    private function startSliding():void {
+      if (!destRenderer) return;
+      Output.bug("started sliding");
+      addEventListener(Event.ENTER_FRAME, slide);
+    }
+
+    // Stop Sliding!
+    private function stopSliding():void {
+      Output.bug("stopped sliding");
+      removeEventListener(Event.ENTER_FRAME, slide);
+      destRenderer = null;
+    }
+
+    // Called once a frame during slide!
+    private function slide(event:Event = null):void {
+      Output.assert(destRenderer != null,
+        "Sliding with no destRenderer?!");
+      Output.assert(nile != null,
+        "Sliding with no nile?!");
+
+      var orig_y:Number = nile.y;
+      
+      if (destRenderer.y + nile.y < 0)
+        nile.y += Math.min(SlideSpeed, Math.abs(destRenderer.y + nile.y));
+      else if (destRenderer.y + nile.y > 0)
+        nile.y -= Math.min(SlideSpeed, Math.abs(destRenderer.y + nile.y));
+
+      boundNile();
+      nile.markTopRenderer();
+
+      // If we've made no progress or we're at our destination, then stop
+      if (orig_y == nile.y ||
+          destRenderer.y + nile.y == 0) stopSliding();
     }
   ]]></mx:Script>
 </mx:HBox>
