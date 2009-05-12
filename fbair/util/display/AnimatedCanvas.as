@@ -15,6 +15,8 @@
  */
 // Animating Canvas
 package fbair.util.display {
+  import fb.util.Output;
+
   import flash.display.DisplayObject;
   import flash.events.Event;
 
@@ -156,12 +158,14 @@ package fbair.util.display {
     }
 
     public function startAnimation():void {
+      Output.bug("Starting animation: " + this);
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = true;
       frameNum = 0;
     }
 
     public function endAnimation():void {
+      Output.bug("Ending animation: " + this);
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = false;
       managedHeight = super.measuredHeight;
@@ -176,7 +180,8 @@ package fbair.util.display {
 
     private function tweenFrame(event:Event):void {
       // Sanity check for runaway animations
-      if (frameNum++ > 20) {
+      if (frameNum++ > 64) {
+        Output.error("Runaway animation in: " + this);
         endAnimation();
         return;
       }
