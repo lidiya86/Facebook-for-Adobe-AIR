@@ -158,14 +158,12 @@ package fbair.util.display {
     }
 
     public function startAnimation():void {
-      Output.bug("Starting animation: " + this);
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = true;
       frameNum = 0;
     }
 
     public function endAnimation():void {
-      Output.bug("Ending animation: " + this);
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = false;
       managedHeight = super.measuredHeight;
