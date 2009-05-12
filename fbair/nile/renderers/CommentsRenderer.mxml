@@ -181,7 +181,6 @@
     // Called when we're revealing the commentsrenderer
     public function reveal():void {
       if (revealed) return;
-      trace("revealed? "+revealed);
       revealed = true;
 
       // If we have more than max, then display link
