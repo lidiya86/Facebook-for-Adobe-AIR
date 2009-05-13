@@ -91,10 +91,10 @@ package fbair.util.display {
 
     public function remove(immediately:Boolean = false):void {
       if (animateOut && hasBeenVisible && !immediately && isVisible()) {
-        animate = true;
-        measuredHeight = 0;
-        allowSetHeight = false;
         alpha = 0.3;
+        animate = true;
+        allowSetHeight = false;
+        super.measuredHeight = 0;
         startAnimation();
         addEventListener(TWEEN_COMPLETE, removeCanvas);
       } else {
