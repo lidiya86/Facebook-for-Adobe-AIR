@@ -232,10 +232,14 @@
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
       data = event.data;
-      if (dataCache[CurrentFilter]) {
-        AnimatedCanvas.Animate = true;
-        FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
-      }
+      if (dataCache[CurrentFilter])
+        addEventListener(Event.ENTER_FRAME, afterUpdatesReturned);
+    }
+
+    private function afterUpdatesReturned(event:Event):void {
+      removeEventListener(Event.ENTER_FRAME, afterUpdatesReturned);
+      AnimatedCanvas.Animate = true;
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
     }
 
     // Setting our massive container data (massive, baby, that's what she said)
@@ -483,14 +487,14 @@
         newDest = oldDest ? nile.getPrevious(oldDest) : nile.topRenderer;
       else if (event.keyCode == Keyboard.DOWN)
         newDest = oldDest ? nile.getNext(oldDest) : nile.nextToTopRenderer;
-      
+
       // Nothing changed...
       if (newDest == oldDest) return;
 
       // If we have a new destination...
       if (newDest) {
         destRenderer = newDest;
-        
+
         // Update our speed
         SlideSpeed = Math.abs(destRenderer.y + nile.y) / SlideDuration;
 
@@ -526,7 +530,7 @@
       // Determine distance to travel
       var orig_y:Number = nile.y;
       var travel_y:Number = slide_duration * SlideSpeed;
-      
+
       // Travel
       if (destRenderer.y + nile.y < 0)
         nile.y += Math.min(travel_y, Math.abs(destRenderer.y + nile.y));

@@ -69,13 +69,9 @@
 
       <!-- We place the stream entry's content in this canvas if it has any
            ex:  Photo, Album, Link, Video, etc -->
-      <util:AnimatedCanvas width="100%"
-                           id="contentBox"
-                           styleName="contentBox"
-                           animateIn="false"
-                           animate="{data.filter_key ==
-                             NileContainer.CurrentFilter}" >
-      </util:AnimatedCanvas>
+      <mx:Canvas width="100%"
+                 id="contentBox"
+                 styleName="contentBox" />
 
       <!-- This is the row of action links we can take for this stream entry.
            The two defaults are Like and Comment... -->
@@ -147,7 +143,7 @@
 
       // Clear out the ufi
       ufi.destroy();
-      
+
       // No more data!
       super.data = null;
     }
@@ -254,7 +250,7 @@
         content = Depot.get(AttachmentRenderer);
         content.percentWidth = 100;
         content.data = data.attachment;
-        
+
         if (contentBox) contentBox.addChild(content);
       }
     }

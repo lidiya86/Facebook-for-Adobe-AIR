@@ -65,11 +65,12 @@ package fbair.util.display {
     private var hasBeenVisible:Boolean = false;
 
     public function AnimatedCanvas() {
-      addEventListener(FlexEvent.CREATION_COMPLETE, creationComplete);
+      addEventListener(Event.ADDED_TO_STAGE, addedToStage);
     }
-    private function creationComplete(event:FlexEvent):void {
-      animate = animateIn;
-      if (animateIn) {
+
+    private function addedToStage(event:Event):void {
+      animate = animateIn && Animate;
+      if (animate) {
         managedHeight = 0;
         measuredHeight = super.measuredHeight;
       }
@@ -105,7 +106,7 @@ package fbair.util.display {
     [Bindable]
     override public function get visible():Boolean { return _visible; }
     override public function set visible(to:Boolean):void {
-      if (super.visible == to) return;
+      if (_visible == to) return;
 
       if (to && measuredHeight) hasBeenVisible = true;
 
@@ -116,18 +117,18 @@ package fbair.util.display {
 
       _visible = to;
 
-      if (to == true) {
-        creationComplete(null);
-        immediateVisible = to;
+      if (_visible && animateIn) {
+        immediateVisible = true;
+        animate = true;
+        managedHeight = 0;
+        measuredHeight = super.measuredHeight;
+      } else if (animateOut && hasBeenVisible) {
+        animate = true;
+        measuredHeight = 0;
+        allowSetHeight = false;
+        addEventListener(TWEEN_COMPLETE, hideCanvas);
       } else {
-        if (animateOut && hasBeenVisible) {
-          animate = true;
-          measuredHeight = 0;
-          allowSetHeight = false;
-          addEventListener(TWEEN_COMPLETE, hideCanvas);
-        } else {
-          immediateVisible = to;
-        }
+        immediateVisible = to;
       }
     }
 
