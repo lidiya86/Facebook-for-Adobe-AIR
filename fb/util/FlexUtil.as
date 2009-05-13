@@ -51,14 +51,5 @@ package fb.util {
       if (obj is InteractiveObject && !(obj is TextArea))
         (obj as InteractiveObject).tabEnabled = false;
     }
-
-    public static function isVisible(obj:DisplayObject):Boolean {
-      if (!obj.stage) return false;
-      var elder:DisplayObject = obj.parent;
-      do {
-        if (!elder.visible) return false;
-      } while (elder = elder.parent);
-      return true;
-    }
   }
 }

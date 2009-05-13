@@ -34,10 +34,20 @@ package fbair.util.display {
     [Bindable] public var animate:Boolean = true;
 
     // should animate from 0 when created
-    [Bindable] public var animateIn:Boolean = true;
+    [Bindable] public var _animateIn:Boolean = true;
+    public function get animateIn():Boolean { return _animateIn; }
+    public function set animateIn(to:Boolean):void {
+//      trace("setting animateIn on "+this);
+      _animateIn = to;
+    }
 
     // should animate to 0 when destroyed
-    [Bindable] public var animateOut:Boolean = false;
+    [Bindable] public var _animateOut:Boolean = false;
+    public function get animateOut():Boolean { return _animateOut; }
+    public function set animateOut(to:Boolean):void {
+//      trace("setting animateOut on "+this);
+      _animateOut = to;
+    }
 
     // subsequent resize operations are immediate
     [Bindable] public var animateOnce:Boolean = false;
@@ -71,20 +81,21 @@ package fbair.util.display {
     }
 
     private function addedToStage(event:Event):void {
-      animate = animateIn && Animate && FlexUtil.isVisible(this);
+      trace("added to stage "+this+" animateIn:"+animateIn+" Animate:"+Animate+" isVisible:"+isVisible());
+      animate = animateIn && Animate && isVisible();
       if (animate) {
         managedHeight = 0;
-        measuredHeight = super.measuredHeight;
+        startAnimation();
       }
     }
 
     public function remove(immediately:Boolean = false):void {
-      if (animateOut && hasBeenVisible &&
-          !immediately && FlexUtil.isVisible(this)) {
+      if (animateOut && hasBeenVisible && !immediately && isVisible()) {
         animate = true;
         measuredHeight = 0;
         allowSetHeight = false;
         alpha = 0.3;
+        startAnimation();
         addEventListener(TWEEN_COMPLETE, removeCanvas);
       } else {
         removeCanvas();
@@ -110,28 +121,26 @@ package fbair.util.display {
     override public function get visible():Boolean { return _visible; }
     override public function set visible(to:Boolean):void {
       if (visible == to) return;
-
-      if (to && measuredHeight) hasBeenVisible = true;
-
-      if (!Animate || !FlexUtil.isVisible(this)) {
-        immediateVisible = to;
-        return;
-      }
-
       _visible = to;
 
-      if (visible && animateIn) {
+      if (visible) {
+        if (measuredHeight) hasBeenVisible = true;
         immediateVisible = true;
-        animate = true;
-        managedHeight = 0;
-        measuredHeight = super.measuredHeight;
-      } else if (animateOut && hasBeenVisible) {
-        animate = true;
-        measuredHeight = 0;
-        allowSetHeight = false;
-        addEventListener(TWEEN_COMPLETE, hideCanvas);
+        if (Animate && animateIn && isVisible()) {
+          animate = true;
+          managedHeight = 0;
+          startAnimation();
+        }
       } else {
-        immediateVisible = to;
+        if (Animate && animateOut && hasBeenVisible && isVisible()) {
+          animate = true;
+          allowSetHeight = false;
+          super.measuredHeight = 0;
+          startAnimation();
+          addEventListener(TWEEN_COMPLETE, hideCanvas);
+        } else {
+          immediateVisible = false;
+        }
       }
     }
 
@@ -145,36 +154,32 @@ package fbair.util.display {
     }
 
     override public function set measuredHeight(to:Number):void {
+      if (to == 0) return;
       if (visible) hasBeenVisible = true;
-
-      if (!allowSetHeight) return;
-
-      if (!Animate || !FlexUtil.isVisible(this)) {
-        managedHeight = super.measuredHeight = to;
-        return;
-      }
-
-      if (super.measuredHeight == to && managedHeight == to) return;
+      if ((super.measuredHeight == to && managedHeight == to) ||
+          !allowSetHeight) return;
 
       super.measuredHeight = to;
-      if (animate) startAnimation();
-      else managedHeight = to;
+      if (isAnimating) return;
+
+      if (!animate || !Animate || !isVisible())
+        managedHeight = to;
+      else
+        startAnimation();
     }
 
     public function startAnimation():void {
       if (isAnimating) return;
-      isAnimating = true;
+      clipContent = isAnimating = true;
       addEventListener(Event.ENTER_FRAME, tweenFrame);
-      clipContent = true;
       frameNum = 0;
       isGrowing = managedHeight < super.measuredHeight;
     }
 
     public function endAnimation():void {
       if (!isAnimating) return;
-      isAnimating = false;
+      clipContent = isAnimating = false;
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
-      clipContent = false;
       managedHeight = super.measuredHeight;
       allowSetHeight = true;
       velocity = 0;
@@ -195,6 +200,16 @@ package fbair.util.display {
         endAnimation();
       }
       invalidateSize();
+    }
+
+    public function isVisible():Boolean {
+      trace("isVisible? "+this);
+      if (!stage) return false;
+      var elder:DisplayObject = parent;
+      do {
+        if (!elder.visible) return false;
+      } while (elder = elder.parent);
+      return true;
     }
   }
 }

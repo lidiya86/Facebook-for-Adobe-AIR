@@ -162,6 +162,7 @@
 
     // this override determines if the animation should occur first
     override public function set visible(to:Boolean):void {
+      if (super.visible == to) return;
       animateIn = !data.commentBoxActive &&
         data.filter_key == NileContainer.CurrentFilter;
       animateOut = UFI.count(data) == 0 &&
