@@ -232,10 +232,8 @@
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
       data = event.data;
-      if (dataCache[CurrentFilter]) {
-        AnimatedCanvas.Animate = true;
+      if (dataCache[CurrentFilter])
         FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
-      }
     }
 
     // Setting our massive container data (massive, baby, that's what she said)

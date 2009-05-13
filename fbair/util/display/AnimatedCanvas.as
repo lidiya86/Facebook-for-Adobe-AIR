@@ -61,7 +61,7 @@ package fbair.util.display {
     }
 
     public function remove(immediately:Boolean = false):void {
-      if (animateOut && hasBeenVisible && shouldAnimate && !immediately) {
+      if (animateOut && hasBeenVisible && !immediately) {
         animate = true;
         measuredHeight = 0;
         allowSetHeight = false;
@@ -96,7 +96,7 @@ package fbair.util.display {
 
       if (to && measuredHeight) hasBeenVisible = true;
 
-      if (!Animate || !shouldAnimate) {
+      if (!Animate) {
         immediateVisible = to;
         return;
       }
@@ -107,7 +107,7 @@ package fbair.util.display {
         creationComplete(null);
         immediateVisible = to;
       } else {
-        if (animateOut && hasBeenVisible && shouldAnimate) {
+        if (animateOut && hasBeenVisible) {
           animate = true;
           measuredHeight = 0;
           allowSetHeight = false;
@@ -136,25 +136,20 @@ package fbair.util.display {
     }
 
     override public function set measuredHeight(to:Number):void {
-      if (visible) {
-        hasBeenVisible = true;
-      }
+      if (visible) hasBeenVisible = true;
 
-      if (!Animate || !shouldAnimate) {
+      if (!allowSetHeight) return;
+      
+      if (!Animate) {
         managedHeight = super.measuredHeight = to;
         return;
       }
 
       if (super.measuredHeight == to && managedHeight == to) return;
 
-      if (allowSetHeight) {
-        super.measuredHeight = to;
-        if (animate) {
-          startAnimation();
-        } else {
-          managedHeight = to;
-        }
-      }
+      super.measuredHeight = to;
+      if (animate) startAnimation();
+      else managedHeight = to;
     }
 
     public function startAnimation():void {
@@ -167,12 +162,10 @@ package fbair.util.display {
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = false;
       managedHeight = super.measuredHeight;
-      invalidateSize();
-      velocity = 0;
       allowSetHeight = true;
-      if (animateOnce) {
-        animate = false;
-      }
+      velocity = 0;
+      if (animateOnce) animate = false;
+      invalidateSize();
       dispatchEvent(new Event(TWEEN_COMPLETE));
     }
 
@@ -183,24 +176,11 @@ package fbair.util.display {
         endAnimation();
         return;
       }
-      var isGrowing:Boolean = managedHeight < super.measuredHeight;
       var targetV:Number = (super.measuredHeight - managedHeight) * speed;
       velocity += (targetV - velocity) * gain;
       managedHeight += velocity;
-      if ((isGrowing && (managedHeight >= super.measuredHeight)) ||
-          (!isGrowing && (managedHeight <= super.measuredHeight))) {
-        endAnimation();
-      }
+      if (Math.abs(managedHeight - super.measuredHeight) < 2) endAnimation();
       invalidateSize();
-    }
-
-    private function get shouldAnimate():Boolean {
-      if (!stage) return false;
-      var elder:DisplayObject = parent;
-      do {
-        if (!elder.visible) return false;
-      } while (elder = elder.parent);
-      return true;
     }
   }
 }
