@@ -81,7 +81,6 @@ package fbair.util.display {
     }
 
     private function addedToStage(event:Event):void {
-      trace("added to stage "+this+" animateIn:"+animateIn+" Animate:"+Animate+" isVisible:"+isVisible());
       animate = animateIn && Animate && isVisible();
       if (animate) {
         managedHeight = 0;
