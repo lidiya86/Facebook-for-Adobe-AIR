@@ -60,8 +60,8 @@ package fbair.util.display {
       addEventListener(FlexEvent.CREATION_COMPLETE, creationComplete);
     }
 
-    public function remove():void {
-      if (animateOut && hasBeenVisible) {
+    public function remove(immediately:Boolean = false):void {
+      if (animateOut && hasBeenVisible && shouldAnimate && !immediately) {
         animate = true;
         measuredHeight = 0;
         allowSetHeight = false;
@@ -72,7 +72,7 @@ package fbair.util.display {
       }
     }
 
-    public function removeCanvas(evt:Event = null):void {
+    private function removeCanvas(evt:Event = null):void {
       removeEventListener(TWEEN_COMPLETE, removeCanvas);
       alpha = 1;
       if (parent) parent.removeChild(this);
@@ -96,7 +96,7 @@ package fbair.util.display {
 
       if (to && measuredHeight) hasBeenVisible = true;
 
-      if (!Animate || !shouldAnimate()) {
+      if (!Animate || !shouldAnimate) {
         immediateVisible = to;
         return;
       }
@@ -107,7 +107,7 @@ package fbair.util.display {
         creationComplete(null);
         immediateVisible = to;
       } else {
-        if (animateOut && hasBeenVisible) {
+        if (animateOut && hasBeenVisible && shouldAnimate) {
           animate = true;
           measuredHeight = 0;
           allowSetHeight = false;
@@ -140,7 +140,7 @@ package fbair.util.display {
         hasBeenVisible = true;
       }
 
-      if (!Animate || !shouldAnimate()) {
+      if (!Animate || !shouldAnimate) {
         managedHeight = super.measuredHeight = to;
         return;
       }
@@ -194,7 +194,7 @@ package fbair.util.display {
       invalidateSize();
     }
 
-    private function shouldAnimate():Boolean {
+    private function get shouldAnimate():Boolean {
       if (!stage) return false;
       var elder:DisplayObject = parent;
       do {
@@ -202,6 +202,5 @@ package fbair.util.display {
       } while (elder = elder.parent);
       return true;
     }
-
   }
 }

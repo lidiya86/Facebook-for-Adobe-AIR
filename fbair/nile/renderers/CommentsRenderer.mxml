@@ -287,8 +287,7 @@
                                          immediately:Boolean = false):void {
       var deadComment:CommentRenderer = commentsHash.removeIndex(i)[0];
       if (zombie) zombies[deadComment.data.id] = true;
-      if (immediately) deadComment.removeCanvas();
-      else deadComment.remove();
+      deadComment.remove(immediately);
     }
 
     // We call this to remove any zombies from an array
@@ -316,7 +315,7 @@
       latestUpdate = 0;
 
       for (var i:int = 0; i < commentsHash.length; i++)
-        removeCommentAtIndex(i--);
+        removeCommentAtIndex(i--, false, true);
 
       commentsHash = new HashArray();
       zombies = new Object();
