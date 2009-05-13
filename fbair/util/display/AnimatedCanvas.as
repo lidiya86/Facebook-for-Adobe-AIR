@@ -109,7 +109,7 @@ package fbair.util.display {
     [Bindable]
     override public function get visible():Boolean { return _visible; }
     override public function set visible(to:Boolean):void {
-      if (_visible == to) return;
+      if (visible == to) return;
 
       if (to && measuredHeight) hasBeenVisible = true;
 
@@ -120,7 +120,7 @@ package fbair.util.display {
 
       _visible = to;
 
-      if (_visible && animateIn) {
+      if (visible && animateIn) {
         immediateVisible = true;
         animate = true;
         managedHeight = 0;
