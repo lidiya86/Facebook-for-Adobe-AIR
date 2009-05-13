@@ -27,8 +27,10 @@
                      minWidth="369"
                      width="100%"
                      animate="false"
-                     animateIn="{data.filter_key == NileContainer.CurrentFilter}"
-                     animateOut="{data.filter_key == NileContainer.CurrentFilter}"
+                     animateIn="{data.filter_key ==
+                       NileContainer.CurrentFilter}"
+                     animateOut="{data.filter_key ==
+                       NileContainer.CurrentFilter}"
                      animateOnce="true"
                      creationComplete="creationComplete(event)" >
 
@@ -71,7 +73,8 @@
                            id="contentBox"
                            styleName="contentBox"
                            animateIn="false"
-                           animate="{data.filter_key == NileContainer.CurrentFilter}" >
+                           animate="{data.filter_key ==
+                             NileContainer.CurrentFilter}" >
       </util:AnimatedCanvas>
 
       <!-- This is the row of action links we can take for this stream entry.
