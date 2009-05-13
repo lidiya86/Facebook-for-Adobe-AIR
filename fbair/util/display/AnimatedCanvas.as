@@ -46,7 +46,7 @@ package fbair.util.display {
 
     // animate speed. 0 is stopped and 1 is immediate
     [Bindable] public var gain:Number = 0.30;
-    
+
     // number of frames animated so far
     private var frameNum:int = 0;
 
@@ -58,6 +58,13 @@ package fbair.util.display {
 
     public function AnimatedCanvas() {
       addEventListener(FlexEvent.CREATION_COMPLETE, creationComplete);
+    }
+    private function creationComplete(event:FlexEvent):void {
+      animate = animateIn;
+      if (animateIn) {
+        managedHeight = 0;
+        measuredHeight = super.measuredHeight;
+      }
     }
 
     public function remove(immediately:Boolean = false):void {
@@ -123,14 +130,6 @@ package fbair.util.display {
       immediateVisible = false;
     }
 
-    private function creationComplete(event:FlexEvent):void {
-      animate = animateIn;
-      if (animateIn) {
-        managedHeight = 0;
-        measuredHeight = super.measuredHeight;
-      }
-    }
-
     override public function get measuredHeight():Number {
       return managedHeight;
     }
@@ -139,7 +138,7 @@ package fbair.util.display {
       if (visible) hasBeenVisible = true;
 
       if (!allowSetHeight) return;
-      
+
       if (!Animate) {
         managedHeight = super.measuredHeight = to;
         return;
