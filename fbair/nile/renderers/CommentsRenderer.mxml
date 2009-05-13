@@ -55,20 +55,20 @@
                        animateIn="false"
                        animateOnce="true" >
     <mx:VBox id="commentsBox"
-             width="100%" 
+             width="100%"
              removed="rendererRemoved(event)" />
   </util:AnimatedCanvas>
 
   <mx:Script><![CDATA[
+    import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.StringUtil;
 
-    import fbair.nile.Nile;
+    import fbair.gc.Depot;
     import fbair.nile.renderers.CommentRenderer;
     import fbair.nile.renderers.UFI;
     import fbair.util.CommentCache;
     import fbair.util.HashArray
-    import fb.util.StringUtil;
-    import fbair.gc.Depot;
 
     import mx.events.FlexEvent;
 
@@ -125,7 +125,6 @@
       if (!data) return;
 
       // If the comments renderer is visible, then we should update
-      //   the comments or collapse to preview mode
       if (revealed) {
         // If we have more than max, then display link and remove
         allCommentsContainer.visible = (data.comments.count > MaxComments);
@@ -242,6 +241,10 @@
       // If comments isn't an Array, then there are no comments
       if (!(newComments is Array)) newComments = new Array();
       var commentsArray:Array = newComments.slice(0, MaxComments);
+
+      // Some more comments may have happened during this period of fetching
+      //   so update our data.comments.count
+      data.comments.count = Math.max(commentsArray.length, data.comments.count);
 
       // If we have any zombies, they need to be counted out
       removeZombies(commentsArray);
