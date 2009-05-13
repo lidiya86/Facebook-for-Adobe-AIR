@@ -20,6 +20,7 @@ package fb.util {
   import mx.core.UIComponent;
   import mx.skins.ProgrammaticSkin;
 
+  import flash.display.DisplayObject;
   import flash.display.InteractiveObject;
 
   public class FlexUtil {
@@ -49,6 +50,15 @@ package fb.util {
       // We don't want tab enabled for anything but text
       if (obj is InteractiveObject && !(obj is TextArea))
         (obj as InteractiveObject).tabEnabled = false;
+    }
+
+    public static function isVisible(obj:DisplayObject):Boolean {
+      if (!obj.stage) return false;
+      var elder:DisplayObject = obj.parent;
+      do {
+        if (!elder.visible) return false;
+      } while (elder = elder.parent);
+      return true;
     }
   }
 }

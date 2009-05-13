@@ -16,6 +16,7 @@
 // Animating Canvas
 package fbair.util.display {
   import fb.util.Output;
+  import fb.util.FlexUtil;
 
   import flash.display.DisplayObject;
   import flash.events.Event;
@@ -58,6 +59,7 @@ package fbair.util.display {
     //   in case we accelerate past our target, we still know when to stop
     private var isGrowing:Boolean;
 
+    private var isAnimating:Boolean = false;
     private var velocity:Number = 0;
     private var _visible:Boolean = true;
     private var managedHeight:Number = 0;
@@ -69,7 +71,7 @@ package fbair.util.display {
     }
 
     private function addedToStage(event:Event):void {
-      animate = animateIn && Animate;
+      animate = animateIn && Animate && FlexUtil.isVisible(this);
       if (animate) {
         managedHeight = 0;
         measuredHeight = super.measuredHeight;
@@ -77,7 +79,8 @@ package fbair.util.display {
     }
 
     public function remove(immediately:Boolean = false):void {
-      if (animateOut && hasBeenVisible && !immediately) {
+      if (animateOut && hasBeenVisible &&
+          !immediately && FlexUtil.isVisible(this)) {
         animate = true;
         measuredHeight = 0;
         allowSetHeight = false;
@@ -110,7 +113,7 @@ package fbair.util.display {
 
       if (to && measuredHeight) hasBeenVisible = true;
 
-      if (!Animate) {
+      if (!Animate || !FlexUtil.isVisible(this)) {
         immediateVisible = to;
         return;
       }
@@ -146,7 +149,7 @@ package fbair.util.display {
 
       if (!allowSetHeight) return;
 
-      if (!Animate) {
+      if (!Animate || !FlexUtil.isVisible(this)) {
         managedHeight = super.measuredHeight = to;
         return;
       }
@@ -159,6 +162,8 @@ package fbair.util.display {
     }
 
     public function startAnimation():void {
+      if (isAnimating) return;
+      isAnimating = true;
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = true;
       frameNum = 0;
@@ -166,6 +171,8 @@ package fbair.util.display {
     }
 
     public function endAnimation():void {
+      if (!isAnimating) return;
+      isAnimating = false;
       removeEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = false;
       managedHeight = super.measuredHeight;
