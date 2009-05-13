@@ -47,8 +47,16 @@ package fbair.util.display {
     // animate speed. 0 is stopped and 1 is immediate
     [Bindable] public var gain:Number = 0.30;
 
+    // epsilon is a very small value, we use it in this case when we're
+    //   'close enough' to the target value to end the animation
+    private var epsilon:Number = 0.1;
+
     // number of frames animated so far
     private var frameNum:int = 0;
+
+    // we maintain this to know if we were animating larger or smaller so that
+    //   in case we accelerate past our target, we still know when to stop
+    private var isGrowing:Boolean;
 
     private var velocity:Number = 0;
     private var _visible:Boolean = true;
@@ -153,6 +161,7 @@ package fbair.util.display {
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       clipContent = true;
       frameNum = 0;
+      isGrowing = managedHeight < super.measuredHeight;
     }
 
     public function endAnimation():void {
@@ -167,16 +176,16 @@ package fbair.util.display {
     }
 
     private function tweenFrame(event:Event):void {
-      // Sanity check for runaway animations
-      if (frameNum++ > 64) {
-        Output.error("Runaway animation in: " + this);
-        endAnimation();
-        return;
-      }
+      Output.assert(frameNum++ < 64, "Runaway animation in: " + this);
+
       var targetV:Number = (super.measuredHeight - managedHeight) * speed;
       velocity += (targetV - velocity) * gain;
       managedHeight += velocity;
-      if (Math.abs(managedHeight - super.measuredHeight) < 2) endAnimation();
+
+      if ((isGrowing && (managedHeight + epsilon >= super.measuredHeight)) ||
+          (!isGrowing && (managedHeight - epsilon <= super.measuredHeight))) {
+        endAnimation();
+      }
       invalidateSize();
     }
   }
