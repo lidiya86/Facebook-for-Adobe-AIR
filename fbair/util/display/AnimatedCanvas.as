@@ -90,9 +90,7 @@ package fbair.util.display {
       return super.visible;
     }
     public function set immediateVisible(to:Boolean):void {
-      if (to == true) {
-        hasBeenVisible = true;
-      }
+      if (to == true) hasBeenVisible = true;
       super.includeInLayout = super.visible = _visible = to;
     }
 
