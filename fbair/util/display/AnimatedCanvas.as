@@ -68,11 +68,11 @@ package fbair.util.display {
         alpha = 0.3;
         addEventListener(TWEEN_COMPLETE, removeCanvas);
       } else {
-        removeCanvas(null);
+        removeCanvas();
       }
     }
 
-    private function removeCanvas(evt:Event):void {
+    public function removeCanvas(evt:Event = null):void {
       removeEventListener(TWEEN_COMPLETE, removeCanvas);
       alpha = 1;
       if (parent) parent.removeChild(this);

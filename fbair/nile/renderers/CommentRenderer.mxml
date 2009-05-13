@@ -101,6 +101,7 @@
       // Call the server and delete our comment
       FBAPI.callMethod("stream.removeComment", {comment_id:data.id})
         .addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
+          // Dispatch that we're deleted, biotch
           dispatchEvent(new Event(COMMENT_REMOVED, true));
         });
     }
@@ -114,6 +115,9 @@
 
     // Recycle, kids!
     public function recycle():void {
+      // Re-enable our delete button for recycling
+      commentDeleteButton.enabled = true;
+
       // We create our own object proxy here, so we need to null it
       super.data = null;
     }

@@ -282,10 +282,13 @@
     }
 
     // Function to remove a comment, by index
-    public function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
+    public function removeCommentAtIndex(i:int,
+                                         zombie:Boolean = false,
+                                         immediately:Boolean = false):void {
       var deadComment:CommentRenderer = commentsHash.removeIndex(i)[0];
       if (zombie) zombies[deadComment.data.id] = true;
-      deadComment.remove();
+      if (immediately) deadComment.removeCanvas();
+      else deadComment.remove();
     }
 
     // We call this to remove any zombies from an array
