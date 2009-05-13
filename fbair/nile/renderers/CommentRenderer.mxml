@@ -60,7 +60,7 @@
     import fb.util.Output;
 
     import fbair.util.ProfileCache;
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
     import fbair.util.TimeUtil;
 
     import flash.events.MouseEvent;

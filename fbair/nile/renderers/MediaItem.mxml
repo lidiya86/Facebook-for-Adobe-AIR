@@ -46,7 +46,7 @@
   <mx:Script><![CDATA[
     import fb.util.Output;
 
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
 
     private static const PhotoType:String = "photo";
     private static const VideoType:String = "video";

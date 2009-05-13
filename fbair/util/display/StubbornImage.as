@@ -20,7 +20,7 @@ package fbair.util.display {
   import air.net.URLMonitor;
 
   import fb.util.Output;
-  import fbair.util.StringUtil;
+  import fb.util.StringUtil;
 
   import flash.events.Event;
   import flash.events.IOErrorEvent;

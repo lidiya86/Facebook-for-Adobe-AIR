@@ -67,7 +67,7 @@
     import fbair.gc.Depot;
     import fbair.nile.renderers.MediaItem;
     import fbair.util.HashArray;
-    import fbair.util.StringUtil;
+    import fb.util.StringUtil;
 
     import mx.events.FlexEvent;
 
