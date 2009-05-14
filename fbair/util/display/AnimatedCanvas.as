@@ -22,6 +22,7 @@ package fbair.util.display {
   import flash.events.Event;
 
   import mx.containers.Canvas;
+  import mx.core.UIComponent;
   import mx.events.FlexEvent;
 
   public class AnimatedCanvas extends Canvas {
@@ -34,20 +35,10 @@ package fbair.util.display {
     [Bindable] public var animate:Boolean = true;
 
     // should animate from 0 when created
-    [Bindable] public var _animateIn:Boolean = true;
-    public function get animateIn():Boolean { return _animateIn; }
-    public function set animateIn(to:Boolean):void {
-//      trace("setting animateIn on "+this);
-      _animateIn = to;
-    }
+    [Bindable] public var animateIn:Boolean = true;
 
     // should animate to 0 when destroyed
-    [Bindable] public var _animateOut:Boolean = false;
-    public function get animateOut():Boolean { return _animateOut; }
-    public function set animateOut(to:Boolean):void {
-//      trace("setting animateOut on "+this);
-      _animateOut = to;
-    }
+    [Bindable] public var animateOut:Boolean = false;
 
     // subsequent resize operations are immediate
     [Bindable] public var animateOnce:Boolean = false;
@@ -81,15 +72,15 @@ package fbair.util.display {
     }
 
     private function addedToStage(event:Event):void {
-      animate = animateIn && Animate && isVisible();
+      animate = animateIn && Animate && super.visible && isVisible();
       if (animate) {
         managedHeight = 0;
         startAnimation();
       }
     }
 
-    public function remove(immediately:Boolean = false):void {
-      if (animateOut && hasBeenVisible && !immediately && isVisible()) {
+    public function remove():void {
+      if (animateOut && hasBeenVisible && isVisible()) {
         alpha = 0.3;
         animate = true;
         allowSetHeight = false;
@@ -102,9 +93,12 @@ package fbair.util.display {
     }
 
     private function removeCanvas(evt:Event = null):void {
+      Output.assert(parent != null, "Calling remove, but has no parent? "+this);
       removeEventListener(TWEEN_COMPLETE, removeCanvas);
       alpha = 1;
-      if (parent) parent.removeChild(this);
+      var p:UIComponent = parent as UIComponent;
+      p.removeChild(this);
+      p.invalidateSize();
     }
 
     [Bindable]
@@ -202,8 +196,7 @@ package fbair.util.display {
     }
 
     public function isVisible():Boolean {
-      trace("isVisible? "+this);
-      if (!stage) return false;
+      if (!stage || !super.visible) return false;
       var elder:DisplayObject = parent;
       do {
         if (!elder.visible) return false;

@@ -214,7 +214,7 @@
     // Called when a comment has been deleted by the user
     private function commentRemoved(event:Event):void {
       var comment:CommentRenderer = event.target as CommentRenderer;
-      removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id), true);
+      removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id));
       data.comments.count--;
       allCommentsContainer.visible = (data.comments.count > MaxComments);
     }
@@ -286,11 +286,10 @@
 
     // Function to remove a comment, by index
     public function removeCommentAtIndex(i:int,
-                                         zombie:Boolean = false,
-                                         immediately:Boolean = false):void {
+                                         zombie:Boolean = false):void {
       var deadComment:CommentRenderer = commentsHash.removeIndex(i)[0];
       if (zombie) zombies[deadComment.data.id] = true;
-      deadComment.remove(immediately);
+      deadComment.remove();
     }
 
     // We call this to remove any zombies from an array
@@ -318,7 +317,7 @@
       latestUpdate = 0;
 
       for (var i:int = 0; i < commentsHash.length; i++)
-        removeCommentAtIndex(i--, false, true);
+        removeCommentAtIndex(i--, false);
 
       commentsHash = new HashArray();
       zombies = new Object();

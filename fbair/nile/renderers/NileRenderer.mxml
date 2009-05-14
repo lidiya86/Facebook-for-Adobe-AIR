@@ -27,10 +27,7 @@
                      minWidth="369"
                      width="100%"
                      animate="false"
-                     animateIn="{data.filter_key ==
-                       NileContainer.CurrentFilter}"
-                     animateOut="{data.filter_key ==
-                       NileContainer.CurrentFilter}"
+                     animateOut="true"
                      animateOnce="true"
                      creationComplete="creationComplete(event)" >
 
