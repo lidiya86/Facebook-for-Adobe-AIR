@@ -33,11 +33,11 @@
 
   </mx:HBox>
   <mx:Script><![CDATA[
-    import fbair.nile.Nile;
-    import fbair.util.ProfileCache;
+    import fb.FBEvent;
     import fb.util.StringUtil;
 
-    import fb.FBEvent;
+    import fbair.nile.Nile;
+    import fbair.util.ProfileCache;
 
     // Total explicit names provided (friends + others)
     private var totalNames:int = 0;

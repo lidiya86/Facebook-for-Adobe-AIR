@@ -24,12 +24,15 @@ package fbair.util.display {
   import mx.core.UIComponent;
   import mx.events.FlexEvent;
 
+  [Event(name="tweenComplete", type="flash.events.Event")]
+  [Event(name="tweenStarting", type="flash.events.Event")]    
   public class AnimatedCanvas extends Canvas {
 
     [Bindable] public static var Animate:Boolean = false;
 
     public static const TWEEN_COMPLETE:String = "tweenComplete";
-
+    public static const TWEEN_STARTING:String = "tweenStarting";
+    
     // animates if true
     [Bindable] public var animate:Boolean = true;
 
@@ -166,6 +169,7 @@ package fbair.util.display {
       addEventListener(Event.ENTER_FRAME, tweenFrame);
       frameNum = 0;
       isGrowing = managedHeight < super.measuredHeight;
+      dispatchEvent(new Event(TWEEN_STARTING));
     }
 
     public function endAnimation():void {

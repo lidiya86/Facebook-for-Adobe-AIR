@@ -213,7 +213,7 @@
       }
 
       // Ok NOW that everything is proxied, we set our data, by merging it
-      super.data = FlexUtil.merge(data, new ObjectProxy(new_data));
+      super.data = new ObjectProxy(new_data);
       if (!data) return;
 
       // Get name of our actor, to build message text, if not already built
