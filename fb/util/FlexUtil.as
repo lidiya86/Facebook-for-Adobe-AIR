@@ -54,6 +54,7 @@ package fb.util {
     // Checks the values of other, and merges them
     //   into orig only if not ==.
     public static function merge(orig:*, other:*):* {
+//      trace("merging: "+orig+" with "+other);
       // If either is null, then go w/ the other
       if (other == null) return orig;
       if (orig == null) return other;
@@ -73,15 +74,26 @@ package fb.util {
           other is String)
         return other;
 
+      // Merge arrays, destructively favoring other
+      if (orig is Array && other is Array) {
+        for (var i:int = 0; i < Math.min(orig.length, other.length); i++)
+          orig[i] = merge(orig[i], other[i]);
+        if (other.length < orig.length)
+          orig.splice(other.length, orig.length - other.length);
+        else if (other.length > orig.length)
+          orig.splice(orig.length, 0, other.slice(orig.length));
+        return orig;
+      }
+
       // If different types, go with other
       if (orig.constructor != other.constructor) return other;
 
       // Merge the pieces, additively
-      var entry:String;
+      var entry:*;
       for (entry in orig)
         orig[entry] = merge(orig[entry], other[entry]);
-      for (entry in other)
-        orig[entry] = merge(orig[entry], other[entry]);
+      for (entry in other) if (!orig[entry])
+        orig[entry] = other[entry];
       return orig;
     }
   }

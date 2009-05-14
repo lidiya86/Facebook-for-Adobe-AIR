@@ -25,7 +25,8 @@
   <mx:VBox id="filterMenuItems"
            styleName="filterMenuItems" >
 
-    <mx:VBox width="100%" >
+    <mx:VBox id="visibleFilterMenuItems"
+             width="100%" >
       <mx:Repeater id="rp"
                    dataProvider="{visibleItems}"
                    recycleChildren="true" >
@@ -95,7 +96,10 @@
     }
 
     private function stageClicked(event:MouseEvent):void {
-      if (filterMenuItems.hitTestPoint(event.stageX, event.stageY)) return;
+      if (filterMenuItems.hitTestPoint(event.stageX, event.stageY) &&
+          !(!showExtendedItems &&
+           hiddenFilterMenuItems.hitTestPoint(event.stageX, event.stageY)))
+        return;
       hide();
     }
 
