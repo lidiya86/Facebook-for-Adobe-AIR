@@ -241,9 +241,6 @@
             data.attachment.media[i] = new
               ObjectProxy(data.attachment.media[i]);
           }
-//          data.attachment.media = new ArrayCollection(data.attachment.media);
-        } else {
-//          data.attachment.media = new ArrayCollection();
         }
 
         // Create correct type of content
