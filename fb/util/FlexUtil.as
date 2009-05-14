@@ -24,7 +24,6 @@ package fb.util {
   import mx.core.ScrollPolicy;
 
   public class FlexUtil {
-
     public static function getStyle(obj:*, ... styles):* {
       if (!styles || styles.length == 0) return null;
       for (var i:int = 0; i < styles.length-1; i++)
@@ -54,31 +53,36 @@ package fb.util {
 
     // Checks the values of other, and merges them
     //   into orig only if not ==.
-    public static function merge(orig:Object, other:Object):Object {
-      if (!orig || orig.constructor != other.constructor) return other;
+    public static function merge(orig:*, other:*):* {
+      // If either is null, then go w/ the other
+      if (other == null) return orig;
+      if (orig == null) return other;
 
-      if (orig is String ||
+      // If orig is primitive, then check against it
+      if (orig is Number ||
           orig is Boolean ||
-          orig is Number ||
-          orig is uint ||
-          orig is int) {
-        if (orig == other) return orig;
-        else return other;
+          orig is String) {
+        if (orig != other) return other;
+        else return orig;
       }
 
-      if (orig is Object) {
-        var entry:String;
-        for (entry in orig)
-          if (other[entry] && orig[entry] != other[entry])
-            orig[entry] = other[entry];
-        for (entry in other)
-          if (!orig[entry] || orig[entry] != other[entry])
-            orig[entry] = other[entry];
-        return orig;
-      }
+      // If other is primitive and orig wasn't,
+      //   then go with other.
+      if (other is Number ||
+          other is Boolean ||
+          other is String)
+        return other;
 
-      Output.assert("WTF Type is in merge?: " + orig);
-      return null;
+      // If different types, go with other
+      if (orig.constructor != other.constructor) return other;
+
+      // Merge the pieces, additively
+      var entry:String;
+      for (entry in orig)
+        orig[entry] = merge(orig[entry], other[entry]);
+      for (entry in other)
+        orig[entry] = merge(orig[entry], other[entry]);
+      return orig;
     }
   }
 }

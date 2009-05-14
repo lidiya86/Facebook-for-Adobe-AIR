@@ -88,9 +88,7 @@ package fb.util {
       if (item is String)
         return "\"" + item + "\"\n";
       if (item is Boolean ||
-          item is Number ||
-          item is uint ||
-          item is int)
+          item is Number)
         return String(item) + "\n";
 
       if (item is Object) {
