@@ -132,6 +132,7 @@
     public function recycle():void {
       for (var i:int = 0; i < itemsHash.length; i++)
         removeItemAtIndex(i--);
+      numMediaItems = 0;
     }
 
     // Add item
