@@ -83,7 +83,8 @@
       <!-- These renderers show the Likes and Comments for this entry -->
       <renderer:LikesRenderer id="likesRenderer"
                               width="100%"
-                              data="{data}" />
+                              data="{data}"
+                              animateIn="{hasBeenRevealed}" />
 
       <renderer:CommentsRenderer id="commentsRenderer"
                                  width="100%"
@@ -123,6 +124,8 @@
     public static const UFI_PREVIEW:int = 1;
     public static const UFI_DETAIL:int = 2;
 
+    [Bindable] public var hasBeenRevealed:Boolean = false;
+
     private var _ufiMode:int = UFI_PREVIEW;
 
     // Given a data object, returns the ufi_count
@@ -138,7 +141,7 @@
       if (_ufiMode == to) return;
       _ufiMode = to;
 
-      switch (_ufiMode) {
+      switch (ufiMode) {
         case UFI_PREVIEW :
           fadeOut.play([ufiDetail]);
           ufiPreview.visible = true;
@@ -158,6 +161,19 @@
           ufiDetail.visible = true;
           break;
       }
+
+      if (!hasBeenRevealed)
+        addEventListener(Event.ENTER_FRAME, wasJustRevealed);
+    }
+
+    // After the very first reveal:
+    //   Next frame: it's children are added (thank flex for this)
+    //   Following frame: we update hasBeenRevealed for future behavior
+    private var fc:int = 0;
+    private function wasJustRevealed(event:Event):void {
+      if (fc++ < 2) return;
+      removeEventListener(Event.ENTER_FRAME, wasJustRevealed);
+      hasBeenRevealed = true;
     }
 
     // this override determines if the animation should occur first
@@ -183,6 +199,7 @@
     public function destroy():void {
       // Back to preview mode
       ufiMode = UFI.UFI_PREVIEW;
+      hasBeenRevealed = false;
 
       // Destroy our parts
       commentsRenderer.destroy();

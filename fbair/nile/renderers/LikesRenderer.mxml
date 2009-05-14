@@ -17,7 +17,6 @@
      There's exactly one of these in every NileRenderer -->
 <util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
                      xmlns:util="fbair.util.display.*"
-                     animateIn="true"
                      animateOut="true"
                      animateOnce="true" >
 
