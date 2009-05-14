@@ -21,15 +21,34 @@
     [Event(name="itemClick", type="fb.FBEvent")]
   </mx:Metadata>
 
-  <mx:VBox id="filterMenuItems"
-           styleName="filterMenuItems" >
-    <mx:Repeater id="rp"
-                 dataProvider="{data}"
-                 recycleChildren="true" >
-      <filters:FiltersMenuItem data="{rp.currentItem}"
-                               width="100%"
-                               mouseUp="itemClicked(event)" />
-    </mx:Repeater>
+  <mx:VBox styleName="filterMenuItems" >
+
+    <mx:VBox>
+      <mx:Repeater id="rp"
+                   dataProvider="{visibleItems}"
+                   recycleChildren="true" >
+        <filters:FiltersMenuItem data="{rp.currentItem}"
+                                 width="100%"
+                                 mouseUp="itemClicked(event)" />
+      </mx:Repeater>
+    </mx:VBox>
+
+    <mx:Label id="moreBtn"
+              text="MOORE!?"
+              click="moreClicked(event)" />
+
+    <mx:VBox id="hiddenFilterMenuItems"
+             visible="false"
+             includeInLayout="false" >
+      <mx:Repeater id="hiddenrp"
+                   dataProvider="{invisibleItems}"
+                   recycleChildren="true" >
+        <filters:FiltersMenuItem data="{hiddenrp.currentItem}"
+                                 width="100%"
+                                 mouseUp="itemClicked(event)" />
+      </mx:Repeater>
+    </mx:VBox>
+
   </mx:VBox>
 
   <mx:Image id="filterMenuButtonDown"
@@ -42,11 +61,23 @@
     import mx.collections.ArrayCollection;
     import mx.utils.ObjectProxy;
 
+    [Bindable] private var visibleItems:ArrayCollection;
+    [Bindable] private var invisibleItems:ArrayCollection;
+
     override public function set data(new_data:Object):void {
-      var collection:ArrayCollection = new ArrayCollection();
-      for each (var item:Object in new_data)
-        collection.addItem(new ObjectProxy(item));
-      super.data = collection;
+      visibleItems = new ArrayCollection();
+      invisibleItems = new ArrayCollection();
+      for each (var item:Object in new_data) {
+        if (item.is_visible)
+          visibleItems.addItem(new ObjectProxy(item));
+        else
+          invisibleItems.addItem(new ObjectProxy(item));
+      }
+    }
+
+    private function moreClicked(event:Event):void {
+      moreBtn.visible = moreBtn.includeInLayout = false;
+      hiddenFilterMenuItems.visible = hiddenFilterMenuItems.includeInLayout = true;
     }
 
     private function itemClicked(event:Event):void {
