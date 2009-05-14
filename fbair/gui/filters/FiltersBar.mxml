@@ -161,26 +161,11 @@
     // Button click callbacks
     private function menuItemClicked(event:FBEvent):void {
       addTab(event.data);
-      hideMenu();
+      menu.hide();
     }
 
     private function menuButtonClicked(event:MouseEvent):void {
-      showMenu();
-    }
-
-    // Menu visibility
-    public function showMenu():void {
-      menu.visible = true;
-      stage.addEventListener(MouseEvent.CLICK, stageClicked, true);
-    }
-
-    public function hideMenu():void {
-      menu.visible = false;
-      stage.removeEventListener(MouseEvent.CLICK, stageClicked, true);
-    }
-
-    private function stageClicked(event:MouseEvent):void {
-      hideMenu();
+      menu.show();
     }
 
     // Filter fetching

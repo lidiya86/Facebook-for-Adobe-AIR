@@ -16,14 +16,16 @@
 <!-- This contains our list of filters in a menu -->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
            xmlns:filters="fbair.gui.filters.*"
+           xmlns:util="fbair.util.display.*"
            mouseEnabled="false" >
   <mx:Metadata>
     [Event(name="itemClick", type="fb.FBEvent")]
   </mx:Metadata>
 
-  <mx:VBox styleName="filterMenuItems" >
+  <mx:VBox id="filterMenuItems"
+           styleName="filterMenuItems" >
 
-    <mx:VBox>
+    <mx:VBox width="100%" >
       <mx:Repeater id="rp"
                    dataProvider="{visibleItems}"
                    recycleChildren="true" >
@@ -33,13 +35,17 @@
       </mx:Repeater>
     </mx:VBox>
 
-    <mx:Label id="moreBtn"
-              text="MOORE!?"
-              click="moreClicked(event)" />
+    <util:LinkLabel id="moreBtn"
+                    styleName="moreBtn"
+                    text="More"
+                    visible="{!showExtendedItems}"
+                    includeInLayout="{!showExtendedItems}"
+                    mouseUp="showExtendedItems = true" />
 
     <mx:VBox id="hiddenFilterMenuItems"
-             visible="false"
-             includeInLayout="false" >
+             visible="{showExtendedItems}"
+             includeInLayout="{showExtendedItems}"
+             width="100%" >
       <mx:Repeater id="hiddenrp"
                    dataProvider="{invisibleItems}"
                    recycleChildren="true" >
@@ -64,6 +70,8 @@
     [Bindable] private var visibleItems:ArrayCollection;
     [Bindable] private var invisibleItems:ArrayCollection;
 
+    [Bindable] public var showExtendedItems:Boolean = false;
+
     override public function set data(new_data:Object):void {
       visibleItems = new ArrayCollection();
       invisibleItems = new ArrayCollection();
@@ -75,9 +83,20 @@
       }
     }
 
-    private function moreClicked(event:Event):void {
-      moreBtn.visible = moreBtn.includeInLayout = false;
-      hiddenFilterMenuItems.visible = hiddenFilterMenuItems.includeInLayout = true;
+    public function show():void {
+      visible = true;
+      stage.addEventListener(MouseEvent.CLICK, stageClicked, true);
+    }
+
+    public function hide():void {
+      visible = false;
+      showExtendedItems = false;
+      stage.removeEventListener(MouseEvent.CLICK, stageClicked, true);
+    }
+
+    private function stageClicked(event:MouseEvent):void {
+      if (filterMenuItems.hitTestPoint(event.stageX, event.stageY)) return;
+      hide();
     }
 
     private function itemClicked(event:Event):void {

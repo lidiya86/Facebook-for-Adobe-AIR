@@ -71,6 +71,11 @@
   borderSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
 }
 
+.moreBtn {
+  paddingLeft: 22;
+  fontSize: 9;
+}
+
 .tabDeleteButton {
   upSkin: Embed(source='../assets/delete_dark.png');
   disabledSkin: Embed(source='../assets/delete_dark_over.png');
