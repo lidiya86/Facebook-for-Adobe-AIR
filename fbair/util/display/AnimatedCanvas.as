@@ -16,7 +16,6 @@
 // Animating Canvas
 package fbair.util.display {
   import fb.util.Output;
-  import fb.util.FlexUtil;
 
   import flash.display.DisplayObject;
   import flash.events.Event;
