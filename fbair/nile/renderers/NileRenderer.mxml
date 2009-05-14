@@ -89,15 +89,15 @@
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.FlexUtil;
     import fb.util.MathUtil;
     import fb.util.Output;
+    import fb.util.StringUtil;
 
     import fbair.gc.Depot;
     import fbair.gui.StylePrefs;
     import fbair.nile.Nile;
-    import fbair.nile.NileContainer;
     import fbair.util.ProfileCache;
-    import fb.util.StringUtil;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -183,7 +183,6 @@
     }
 
     // Called when we want to begin commenting or end commenting.
-    // This just displays/hides the comment text area.
     private function commentClicked(event:Event):void {
       data.commentBoxActive = true;
       ufi.ufiMode = UFI.UFI_DETAIL;
@@ -213,8 +212,8 @@
         }
       }
 
-      // Ok NOW that everything is proxied, we set our data
-      super.data = new ObjectProxy(new_data);
+      // Ok NOW that everything is proxied, we set our data, by merging it
+      super.data = FlexUtil.merge(data, new ObjectProxy(new_data));
       if (!data) return;
 
       // Get name of our actor, to build message text, if not already built

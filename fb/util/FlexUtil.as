@@ -51,5 +51,34 @@ package fb.util {
       if (obj is InteractiveObject && !(obj is TextArea))
         (obj as InteractiveObject).tabEnabled = false;
     }
+
+    // Checks the values of other, and merges them
+    //   into orig only if not ==.
+    public static function merge(orig:Object, other:Object):Object {
+      if (!orig || orig.constructor != other.constructor) return other;
+
+      if (orig is String ||
+          orig is Boolean ||
+          orig is Number ||
+          orig is uint ||
+          orig is int) {
+        if (orig == other) return orig;
+        else return other;
+      }
+
+      if (orig is Object) {
+        var entry:String;
+        for (entry in orig)
+          if (other[entry] && orig[entry] != other[entry])
+            orig[entry] = other[entry];
+        for (entry in other)
+          if (!orig[entry] || orig[entry] != other[entry])
+            orig[entry] = other[entry];
+        return orig;
+      }
+
+      Output.assert("WTF Type is in merge?: " + orig);
+      return null;
+    }
   }
 }

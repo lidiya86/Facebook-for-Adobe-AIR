@@ -64,7 +64,7 @@
     import fbair.util.TimeUtil;
 
     import flash.events.MouseEvent;
-
+    import fb.util.FlexUtil;
     import mx.utils.ObjectProxy;
 
     public static const COMMENT_REMOVED:String = "commentRemoved";
@@ -81,8 +81,8 @@
       Output.assert(new_data != null,
         "Setting null data on CommentRenderer?: " + this);
 
-      // Proxy our vars, for binding
-      super.data = new ObjectProxy(new_data);
+      // Proxy our vars, for binding, and merge too
+      super.data = FlexUtil.merge(data, new ObjectProxy(new_data));
 
       // Fetch the profile data for this user.
       ProfileCache.getProfile(data.fromid).addEventListener(
