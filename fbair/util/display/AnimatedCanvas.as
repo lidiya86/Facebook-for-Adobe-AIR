@@ -72,7 +72,7 @@ package fbair.util.display {
     }
 
     private function addedToStage(event:Event):void {
-      animate = animateIn && Animate && super.visible && isVisible();
+      animate = animateIn && Animate && isVisible();
       if (animate) {
         managedHeight = 0;
         startAnimation();
