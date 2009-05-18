@@ -68,7 +68,8 @@
            ex:  Photo, Album, Link, Video, etc -->
       <mx:Canvas width="100%"
                  id="contentBox"
-                 styleName="contentBox" />
+                 styleName="contentBox"
+                 creationComplete="contentBoxCreated(event)" />
 
       <!-- This is the row of action links we can take for this stream entry.
            The two defaults are Like and Comment... -->
@@ -122,13 +123,6 @@
       profilePic.addEventListener(MouseEvent.CLICK, clickedProfilePic, true);
     }
 
-    override protected function createChildren():void {
-      super.createChildren();
-
-      // If we created content in our data setter then add it now
-      if (content) contentBox.addChild(content);
-    }
-
     // Save the earth, kids!
     public function recycle():void {
       if (content) {
@@ -143,6 +137,11 @@
 
       // No more data!
       super.data = null;
+    }
+
+    // When content box is created, we add content if there
+    private function contentBoxCreated(event:FlexEvent):void {
+      if (content) contentBox.addChild(content);
     }
 
     private function clickedProfilePic(event:MouseEvent):void {
@@ -242,10 +241,12 @@
         // Create correct type of content
         content = Depot.get(AttachmentRenderer);
         content.percentWidth = 100;
-        content.data = data.attachment;
 
         if (contentBox) contentBox.addChild(content);
       }
+
+      // Update content's data
+      if (content) content.data = data.attachment;
     }
 
     // Called when we've fetched profile data about actor.

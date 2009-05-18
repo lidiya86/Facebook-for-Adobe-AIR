@@ -23,10 +23,10 @@
                   url="{url}" />
 
   <mx:Script><![CDATA[
+    import fb.FBEvent;
+
     import fbair.util.ProfileCache;
     import fbair.util.display.LinkImage;
-
-    import fb.FBEvent;
 
     import mx.controls.Image;
     import mx.core.UIComponent;
