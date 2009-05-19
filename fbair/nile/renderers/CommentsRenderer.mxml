@@ -60,8 +60,8 @@
   </util:AnimatedCanvas>
 
   <mx:Script><![CDATA[
-    import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.Output;
     import fb.util.StringUtil;
 
     import fbair.gc.Depot;
@@ -70,6 +70,8 @@
     import fbair.util.CommentCache;
     import fbair.util.HashArray
 
+    import mx.binding.utils.BindingUtils;
+    import mx.binding.utils.ChangeWatcher;
     import mx.events.FlexEvent;
 
     // Max number we want to show before we permalink
@@ -89,6 +91,9 @@
     // This allows us to only fetch "new" comments each time.
     private var latestUpdate:int = 0;
 
+    // Watches when our count has changed, to refetch
+    private var countWatcher:ChangeWatcher;
+    
     // comments[0] => Newest
     // comments[comments.length-1] = Oldest
     // All the CommentRenderers, keyed by id
@@ -112,29 +117,6 @@
     private function rendererRemoved(event:Event):void {
       if (event.target is CommentRenderer)
         Depot.put(event.target);
-    }
-
-    // "data" in this context is stream.comments
-    override public function set data(new_data:Object):void {
-      // Mark our current count
-      var oldCount:int = -1;
-      if (data) oldCount = data.comments.count;
-
-      // Update data
-      super.data = new_data;
-      if (!data) return;
-
-      // If the comments renderer is visible, then we should update
-      if (revealed) {
-        // If we have more than max, then display link and remove
-        allCommentsContainer.visible = (data.comments.count > MaxComments);
-
-        // if we're setting data to a revealed state, then this isn't the
-        //   first time we've tried to load in data.
-        firstPull = false;
-        if (data.comments.count != oldCount)
-          fetchComments();
-      }
     }
 
     // Creates new CommentRenderer and adds to display
@@ -209,6 +191,12 @@
           }
         }
       }
+      
+      // Now lets bind to the count to see when to refetch
+      if (countWatcher) countWatcher.unwatch();
+      countWatcher = BindingUtils.bindSetter(function(new_count:int):void {
+        fetchComments();
+      }, data, ["comments", "count"]);
     }
 
     // Called when a comment has been deleted by the user
@@ -224,8 +212,7 @@
       if (!revealed || fetchingComments) return;
       fetchingComments = true;
 
-      CommentCache.getComments(data.post_id,
-                               latestUpdate)
+      CommentCache.getComments(data.post_id, latestUpdate)
         .addEventListener(CommentCache.COMMENTS_FETCHED, commentsFetched);
     }
 
@@ -263,6 +250,9 @@
       // Mark latest update
       latestUpdate = (commentsHash.length == 0 ? 0 :
         commentsHash.getAt(0).data.time);
+        
+      // Not the first anymore
+      firstPull = false;
     }
 
     // We call this to narrow our comment view down to the group
@@ -319,6 +309,7 @@
       for (var i:int = 0; i < commentsHash.length; i++)
         removeCommentAtIndex(i--, false);
 
+      if (countWatcher) countWatcher.unwatch();
       commentsHash = new HashArray();
       zombies = new Object();
       immunes = new Object();
