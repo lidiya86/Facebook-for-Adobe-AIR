@@ -41,6 +41,10 @@ package fbair.util {
   //     });
   public class CommentCache {
     public static const COMMENTS_FETCHED:String = "commentFetched";
+    public static const COMMENT_CREATED:String = "commentCreated";
+
+    // We dispatch events thru here to any globally interested party
+    public static var dispatcher:EventDispatcher = new EventDispatcher();
 
     // How long before comment data is stale
     private static const CommentLifeSpan:int = 25000;
@@ -94,7 +98,7 @@ package fbair.util {
 
       FBAPI.callMethod("fql.query", {
         query:"select post_id, id, fromid, text, time from comment " +
-          "where " + requested_ids.join(" or ")  + " " +
+          "where " + requested_ids.join(" or ") + " " +
           "order by time desc"
       }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
         // Mark our time for freshness

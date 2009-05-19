@@ -24,7 +24,8 @@
                      animateOnce="true"
                      visible="{data.likes.count > 0 ||
                                data.comments.count > 0 ||
-                               data.commentBoxActive}" >
+                               data.commentBoxActive}"
+                     creationComplete="creationComplete(event)" >
 
   <!-- We use these fades when replacing the preview with the renderer -->
   <mx:Fade id="fadeOut"
@@ -94,7 +95,6 @@
       <mx:HBox width="100%" >
         <renderer:CommentBox id="commentBox"
                              width="100%"
-                             commented="commented(event)"
                              data="{data}" />
         <mx:Canvas>
           <mx:Button id="shrinkUFIButton"
@@ -120,15 +120,19 @@
 
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;
+    import fbair.util.CommentCache;
     import fbair.util.display.AnimatedCanvas;
 
     import flash.events.Event;
+
+    import mx.events.FlexEvent;
+    import mx.utils.ObjectUtil;
 
     public static const UFI_PREVIEW:int = 1;
     public static const UFI_DETAIL:int = 2;
 
     [Bindable] public var ufiRevealed:Boolean = false;
-    
+
     private var _ufiMode:int = UFI_PREVIEW;
 
     // Given a data object, returns the ufi_count
@@ -138,12 +142,19 @@
              + (data.commentBoxActive ? 1 : 0);
     }
 
+    // Constructor
+    private function creationComplete(event:FlexEvent):void {
+      CommentCache.dispatcher.addEventListener(
+        CommentCache.COMMENT_CREATED,
+        commentCreated);
+    }
+
     [Bindable]
     public function get ufiMode():int { return _ufiMode; }
     public function set ufiMode(to:int):void {
       if (_ufiMode == to) return;
       _ufiMode = to;
-      
+
       switch (ufiMode) {
         case UFI_PREVIEW :
           fadeOut.play([ufiDetail]);
@@ -196,11 +207,14 @@
     }
 
     // Called when we just successfully commented
-    private function commented(event:FBEvent):void {
+    private function commentCreated(event:FBEvent):void {
+      if (event.data.post_id != data.post_id) return;
+      
+      // Iterate our comment count
       data.comments.count++;
 
       // Add this comment to our CommentsRenderer
-      commentsRenderer.addComment(event.data, true);
+      commentsRenderer.addComment(ObjectUtil.copy(event.data), true);
       commentsRenderer.allCommentsContainer.visible =
         (data.comments.count > CommentsRenderer.MaxComments);
 

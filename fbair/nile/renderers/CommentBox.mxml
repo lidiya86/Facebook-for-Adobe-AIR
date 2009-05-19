@@ -17,12 +17,8 @@
      We hide and show this box to create new comments -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:gui="fbair.gui.*"
-         xmlns:util="fbair.util.display.*" 
+         xmlns:util="fbair.util.display.*"
          creationComplete="creationComplete(event)" >
-
-  <mx:Metadata>
-    [Event(name="commented", type="fb.FBEvent")]
-  </mx:Metadata>
 
   <!-- Picture of you, buddy! -->
   <gui:RoundedProfileImage profileID="{FBConnect.session.uid}"
@@ -54,6 +50,8 @@
     import fb.FBEvent;
     import fb.util.Output;
 
+    import fbair.util.CommentCache;
+
     import flash.events.Event;
 
     import mx.binding.utils.BindingUtils;
@@ -81,7 +79,7 @@
     public function destroy():void {
       unbind();
     }
-    
+
     // Watcher setups
     private function unbind():void {
       if (dataWatcher) dataWatcher.unwatch();
@@ -117,12 +115,14 @@
     // Called when our comment has been submitted to server
     private function commentSubmitted(event:FBEvent):void {
       // Dispatch our event
-      dispatchEvent(new FBEvent("commented", {
-        fromid:FBConnect.session.uid,
-        id:event.data,
-        text:commentInput.text,
-        time:(new Date().time / 1000)
-      }));
+      CommentCache.dispatcher.dispatchEvent(
+        new FBEvent(CommentCache.COMMENT_CREATED, {
+          fromid:FBConnect.session.uid,
+          id:event.data,
+          text:commentInput.text,
+          time:(new Date().time / 1000),
+          post_id:data.post_id
+        }));
 
       // Re-enable input, but deactivate
       data.commentBoxActive = false;
