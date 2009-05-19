@@ -20,11 +20,6 @@ package fbair.util {
   import flash.utils.ByteArray;
 
   public class Preferences {
-    public static const LOAD:String = "loadPreferences";
-    public static const UNLOAD:String = "unloadPreferences";
-
-    public static var dispatcher:EventDispatcher = new EventDispatcher();
-
     public static function getPreference(prefName:String):Object {
       var bytes:ByteArray = EncryptedLocalStore.getItem(prefName);
       if (!bytes) return null;

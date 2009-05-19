@@ -94,8 +94,8 @@
       // If we just updated, let's delete our autoupdate file
       if (FBUpdater.firstRun())
         FBUpdater.deleteInstallationFile();
-      // Load old data only if we didn't just autoupdate
-      //   Between updates our data model might change...
+      // Load FiltersBar and NileContainer here, since they need
+      //   parental supervision to keep things in order...
       else {
         Output.log("Loading nile/filter cached data");
 
@@ -108,7 +108,8 @@
 
         // If we have tabs data, hit it up
         var filtersData:Object = Preferences.getPreference("filters");
-        if (filtersData && filtersData.data &&
+        if (filtersData &&
+            filtersData.data &&
             filtersData.data.length > 0) {
           Output.assert(nileCache != null,
             "We have a filter cache but not a nile cache?!");
