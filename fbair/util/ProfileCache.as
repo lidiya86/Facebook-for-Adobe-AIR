@@ -24,7 +24,6 @@ package fbair.util {
   import flash.events.EventDispatcher;
 
   import mx.core.Application;
-  import mx.events.FlexEvent;
 
   // This class holds a reference to all the data about
   //   any profile-id we've fetched.
@@ -67,22 +66,12 @@ package fbair.util {
     // So that we can batch-request them at end of frame
     private static var queuedRequests:Object = new Object;
 
-    // Initializing
-    private static var initialized:Boolean = initialize();
-    private static function initialize():Boolean {
-      Application.application.addEventListener(FlexEvent.INITIALIZE,
-        opening);
-      Application.application.addEventListener(Event.CLOSING,
-        closing);
-      return true;
-    }
-
     // Laod preferences
-    private static function opening(event:FlexEvent):void {
+    public static function opening():void {
       if (!FBUpdater.firstRun()) {
         Output.log("Loading profile cache");
 
-        var profileCache:Object = ApplicationBase.getPreference("profileCache");
+        var profileCache:Object = Preferences.getPreference("profileCache");
         if (profileCache) cache = profileCache;
       }
     }
@@ -177,8 +166,8 @@ package fbair.util {
     }
 
     // Save preferences at end
-    private static function closing(event:Event):void {
-      ApplicationBase.setPreference("profileCache", cache);
+    public static function closing():void {
+      Preferences.setPreference("profileCache", cache);
     }
   }
 }

@@ -58,10 +58,10 @@
   <mx:Script><![CDATA[
     import fb.FBConnect;
     import fb.FBEvent;
-
-    import fbair.gui.StylePrefs;
-    import fbair.util.FBUpdater;
     import fb.util.Output;
+
+    import fbair.util.FBUpdater;
+    import fbair.util.Preferences;
     import fbair.util.ProfileCache;
 
     import flash.events.Event;
@@ -81,12 +81,15 @@
       composer.enabled = false;
 
       // If we have stored session data, let's pull it in
-      var windowData:Object = getPreference("window");
+      var windowData:Object = Preferences.getPreference("window");
       if (windowData) {
         nativeWindow.x = windowData.x;
         nativeWindow.y = windowData.y;
         nativeWindow.height = windowData.height;
       }
+      
+      // Trigger the load of anything else preferences wise
+      ProfileCache.opening();
 
       // If we just updated, let's delete our autoupdate file
       if (FBUpdater.firstRun())
@@ -97,14 +100,14 @@
         Output.log("Loading nile/filter cached data");
 
         // If we have cached renderer data, hit it up
-        var nileCache:Object = ApplicationBase.getPreference("nileCache");
+        var nileCache:Object = Preferences.getPreference("nileCache");
         if (nileCache) {
           nileContainer.dataCache = nileCache;
           nileContainer.updateMetadata();
         }
 
         // If we have tabs data, hit it up
-        var filtersData:Object = ApplicationBase.getPreference("filters");
+        var filtersData:Object = Preferences.getPreference("filters");
         if (filtersData && filtersData.data &&
             filtersData.data.length > 0) {
           Output.assert(nileCache != null,
@@ -239,20 +242,23 @@
 
     // Called when the app is ending and we want to save some data
     private function closing(event:Event):void {
-      setPreference("window", {
+      Preferences.setPreference("window", {
         x:nativeWindow.x,
         y:nativeWindow.y,
         height:nativeWindow.height
       });
 
-      setPreference("filters", {
+      Preferences.setPreference("filters", {
         data:filtersBar.data,
         tabData:filtersBar.tabData,
         focusHistory:filtersBar.focusHistory,
         currentTab:filtersBar.currentTab
       });
 
-      setPreference("nileCache", nileContainer.dataCache);
+      Preferences.setPreference("nileCache", nileContainer.dataCache);
+
+      // External preference holders
+      ProfileCache.closing();
     }
   ]]></mx:Script>
 </app:ApplicationBase>

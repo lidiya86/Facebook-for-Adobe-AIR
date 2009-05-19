@@ -17,6 +17,8 @@
 package fbair.gui {
   import fb.util.Output;
 
+  import fbair.util.Preferences;
+
   import flash.events.Event;
   import flash.filesystem.File;
 
@@ -47,7 +49,7 @@ package fbair.gui {
     
     // Load preferences
     private static function opening(event:FlexEvent):void {
-      var styleData:Object = ApplicationBase.getPreference("styles");
+      var styleData:Object = Preferences.getPreference("styles");
 
       // Set size
       if (styleData) setSizeStyle(styleData.sizeStyle);
@@ -76,7 +78,7 @@ package fbair.gui {
 
     // Save preferences when done
     private static function closing(event:Event):void {
-      ApplicationBase.setPreference("styles", {
+      Preferences.setPreference("styles", {
         sizeStyle:sizeStyle
       });
     }

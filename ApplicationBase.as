@@ -14,14 +14,12 @@
   limitations under the License.
  */
 package {
-  import fb.util.Output;
   import fb.util.FlexUtil;
+  import fb.util.Output;
 
-  import flash.data.EncryptedLocalStore;
   import flash.events.Event;
   import flash.events.KeyboardEvent;
   import flash.ui.Keyboard;
-  import flash.utils.ByteArray;
 
   import mx.core.WindowedApplication;
 
@@ -49,20 +47,6 @@ package {
     private function keyDown(event:KeyboardEvent):void {
       if (event.commandKey && event.keyCode == Keyboard.D)
         Output.logDump();
-    }
-
-    // We manage locally stored preferences with these functions
-    public static function getPreference(prefName:String):Object {
-      var bytes:ByteArray = EncryptedLocalStore.getItem(prefName);
-      if (!bytes) return null;
-      return bytes.readObject();
-    }
-
-    public static function setPreference(prefName:String,
-                                         prefObject:Object):void {
-      var bytes:ByteArray = new ByteArray();
-      bytes.writeObject(prefObject);
-      EncryptedLocalStore.setItem(prefName, bytes);
     }
   }
 }
