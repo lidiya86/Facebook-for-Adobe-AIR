@@ -103,9 +103,8 @@
     import flash.events.Event;
     import flash.events.MouseEvent;
 
-    import mx.collections.ArrayCollection;
     import mx.core.Application;
-    import mx.core.Container;
+    import mx.events.FlexEvent;
     import mx.utils.ObjectProxy;
 
     public static const STORY_REMOVED:String = "storyRemoved";
@@ -241,7 +240,8 @@
         // Create correct type of content
         content = Depot.get(AttachmentRenderer);
         content.percentWidth = 100;
-
+        
+        // Add to content box
         if (contentBox) contentBox.addChild(content);
       }
 

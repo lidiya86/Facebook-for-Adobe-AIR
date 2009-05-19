@@ -63,11 +63,11 @@
 
   <mx:Script><![CDATA[
     import fb.util.Output;
+    import fb.util.StringUtil;
 
     import fbair.gc.Depot;
     import fbair.nile.renderers.MediaItem;
     import fbair.util.HashArray;
-    import fb.util.StringUtil;
 
     import mx.events.FlexEvent;
 
@@ -98,65 +98,51 @@
 
     // When we got new data
     override public function set data(new_data:Object):void {
+      // We only set once per recycle, so don't care about news...
+      if (data) return;
       super.data = new_data;
 
-      // If no data, then recycle
-      if (!data) recycle();
-      else {
-        var mediaItem:Object;
+      // Add any not already existent
+      for each (var item:Object in data.media) {
+        // Create the item
+        var mediaItem:MediaItem = Depot.get(MediaItem);
+        mediaItem.data = item;
 
-        // Organize new items by src
-        var updatesBySrc:Object = new Object();
-        for each (mediaItem in data.media)
-          updatesBySrc[mediaItem.src] = mediaItem;
+        // Add to our list
+        itemsHash.push(mediaItem.data.src, mediaItem);
 
-        // Remove any existent that aren't in this update
-        for (var i:int = 0; i < itemsHash.length; i++)
-          if (!updatesBySrc[itemsHash.getAt(i).data.src])
-            removeItemAtIndex(i--);
+        // Add to display tree
+        if (mediaItems) mediaItems.addChild(mediaItem);
+      }
 
-        // Add any not already existent
-        for each (mediaItem in data.media)
-          if (!itemsHash.hasKey(mediaItem.src))
-            addItem(mediaItem);
-
-        // update the number of media items we have
-        numMediaItems = data.media.length;
+      // update the number of media items we have
+      numMediaItems = data.media.length;
 
         // Update our dimensions, if we have a display tree..
-        if (mediaItems) updateImageDimensions();
-      }
+      if (mediaItems) updateImageDimensions();
     }
 
     // Fight global warming!
     public function recycle():void {
-      for (var i:int = 0; i < itemsHash.length; i++)
-        removeItemAtIndex(i--);
-      numMediaItems = 0;
-    }
+      Output.assert(mediaItems != null,
+        "Recycling an attachment renderer that never created?" + this);
 
-    // Add item
-    private function addItem(item:Object):void {
-      // Create the item
-      var mediaItem:MediaItem = Depot.get(MediaItem);
-      mediaItem.data = item;
-
-      // Add to our list
-      itemsHash.push(mediaItem.data.src, mediaItem);
-
-      // Add to display tree
-      if (mediaItems) mediaItems.addChild(mediaItem);
-    }
-
-    // Remove item by index from list
-    private function removeItemAtIndex(i:int):void {
-      Output.assert(i >= 0 && i < itemsHash.length,
-        "Invalid removeItemAtIndex: " + i + " from " + this);
-
-      // Remove from list and display tree, if it's even on it
-      var deadItem:MediaItem = itemsHash.removeIndex(i)[0];
-      if (mediaItems && mediaItems.contains(deadItem))
+      // Remove all media items
+      while (itemsHash.length > 0) {
+        var deadItem:MediaItem = itemsHash.removeIndex(0)[0];
+        Output.assert(mediaItems.contains(deadItem),
+          "Removing item not in mediaItems?" + deadItem);
         mediaItems.removeChild(deadItem);
+      }
+
+      // Reset media items to 0
+      numMediaItems = 0;
+
+      // Clear itemsHash too
+      itemsHash = new HashArray();
+
+      // Data to null!
+      super.data = null;
     }
 
     // Update all our image dimensions
