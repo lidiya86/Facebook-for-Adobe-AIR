@@ -95,7 +95,8 @@ package fbair.util.display {
     }
 
     private function removeCanvas(evt:Event = null):void {
-      Output.assert(parent != null, "Calling remove, but has no parent? "+this);
+      Output.assert(parent != null,
+        "Calling remove, but has no parent? " + this);
       removeEventListener(TWEEN_COMPLETE, removeCanvas);
       alpha = 1;
       var p:UIComponent = parent as UIComponent;
