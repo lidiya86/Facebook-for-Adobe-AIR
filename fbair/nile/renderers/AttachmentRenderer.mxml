@@ -130,9 +130,8 @@
       // Remove all media items
       while (itemsHash.length > 0) {
         var deadItem:MediaItem = itemsHash.removeIndex(0)[0];
-        Output.assert(mediaItems.contains(deadItem),
-          "Removing item not in mediaItems?" + deadItem);
-        mediaItems.removeChild(deadItem);
+        if (mediaItems && mediaItems.contains(deadItem))
+          mediaItems.removeChild(deadItem);
       }
 
       // Reset media items to 0

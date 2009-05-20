@@ -58,8 +58,10 @@ package fbair.util {
     private static var queuedRequests:Object = new Object;
 
     // Whether we have fresh comments for a given id
-    public static function hasFreshComments(post_id:String):Boolean {
+    public static function hasFreshComments(post_id:String,
+                                            comment_count:int):Boolean {
       return commentCache[post_id] &&
+        commentCache[post_id].length == comment_count &&
         (new Date()).time - fetchTime < CommentLifeSpan;
     }
 

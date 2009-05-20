@@ -210,18 +210,27 @@
     private function commentCreated(event:FBEvent):void {
       if (event.data.post_id != data.post_id) return;
       
-      // Iterate our comment count
+      // Get a copy of our data
+      var commentData:Object = ObjectUtil.copy(event.data);
+      
+      // Iterate our comment count, and put in comment_list
       data.comments.count++;
+      if (data.comments.count == 1)
+        data.comments.comment_list = [commentData];
+      else
+        data.comments.comment_list.push(commentData);
 
+      // Mark this as immune for next go around
+      commentsRenderer.markImmune(commentData);
+      
       // Add this comment to our CommentsRenderer
-      commentsRenderer.addComment(ObjectUtil.copy(event.data), true);
-      commentsRenderer.allCommentsContainer.visible =
-        (data.comments.count > CommentsRenderer.MaxComments);
+      commentsRenderer.addComment(commentData);
 
       // Remove overflow, if any.
-      while (commentsRenderer.commentsHash.length >
-        CommentsRenderer.MaxComments)
-        commentsRenderer.removeCommentAtIndex(0);
+      commentsRenderer.removeExcessComments();
+      
+      // Mark latest update
+      commentsRenderer.markLatestUpdate();
     }
   ]]></mx:Script>
 </util:AnimatedCanvas>

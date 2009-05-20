@@ -75,7 +75,7 @@
     import mx.events.FlexEvent;
 
     // Max number we want to show before we permalink
-    public static const MaxComments:int = 6;
+    private static const MaxComments:int = 6;
 
     // Tracks whether we've been revealed and are getting ALL comments
     private var revealed:Boolean = false;
@@ -93,11 +93,11 @@
 
     // Watches when our count has changed, to refetch
     private var countWatcher:ChangeWatcher;
-    
+
     // comments[0] => Newest
     // comments[comments.length-1] = Oldest
     // All the CommentRenderers, keyed by id
-    public var commentsHash:HashArray = new HashArray();
+    private var commentsHash:HashArray = new HashArray();
 
     // List of comment-ids we have absolutely deleted
     //   We hold on to make sure a quick refresh doesn't revive them.
@@ -119,23 +119,23 @@
         Depot.put(event.target);
     }
 
+    // Marks an id as immune to the next deletion round
+    public function markImmune(commentData:Object):void {
+      immunes[commentData.id] = true;
+    }
+
     // Creates new CommentRenderer and adds to display
     // commentData => {fromid:int, text:String}
-    public function addComment(commentData:Object,
-                               immune:Boolean = false,
-                               firstBatch:Boolean = false):void {
-      if (commentsHash.hasKey(commentData.id)) return;
+    public function addComment(commentData:Object):void {
+      if (!revealed || commentsHash.hasKey(commentData.id)) return;
 
       // Pass on our can_remove var
       commentData.can_remove = data.comments.can_remove;
 
-      // Mark in immunity if immune
-      if (immune) immunes[commentData.id] = true;
-
       // Create renderer
       var renderer:CommentRenderer = Depot.get(CommentRenderer);
       renderer.data = commentData;
-      renderer.animateIn = !firstBatch;
+      renderer.animateIn = !firstPull;
 
       // Determine position of comment based on timestamp
       var entry_position:int = 0;
@@ -164,22 +164,19 @@
       if (revealed) return;
       revealed = true;
 
-      // If we have more than max, then display link
-      allCommentsContainer.visible = (data.comments.count > MaxComments);
-
       // Ok we need to check how many stories we have, and if we need more
       if (data.comments.count <= 3) {
         loadingIndicator.visible = false;
         commentsBoxContainer.animateIn = false;
 
-        populateComments(data.comments.posts);
+        populateComments(data.comments.comment_list);
       } else {
         commentsBoxContainer.visible = false;
         commentsBoxContainer.animateIn = true;
 
         if (data.comments.count > 0) {
           // If data is already in the cache, then just show it
-          if (CommentCache.hasFreshComments(data.post_id))
+          if (CommentCache.hasFreshComments(data.post_id, data.comments.count))
             commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
               CommentCache.commentCache[data.post_id]));
           // Fetch data, and show loader
@@ -191,11 +188,22 @@
           }
         }
       }
-      
+
       // Now lets bind to the count to see when to refetch
       if (countWatcher) countWatcher.unwatch();
       countWatcher = BindingUtils.bindSetter(function(new_count:int):void {
-        fetchComments();
+        if (new_count <= 0) return;
+        if (new_count <= 3) populateComments(data.comments.comment_list);
+        else {
+          if (CommentCache.hasFreshComments(data.post_id, data.comments.count))
+            commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
+              CommentCache.commentCache[data.post_id]));
+          else
+            fetchComments();
+        }
+
+        // If we have more than max, then display link
+        allCommentsContainer.visible = (new_count > MaxComments);
       }, data, ["comments", "count"]);
     }
 
@@ -204,7 +212,6 @@
       var comment:CommentRenderer = event.target as CommentRenderer;
       removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id));
       data.comments.count--;
-      allCommentsContainer.visible = (data.comments.count > MaxComments);
     }
 
     // Called when we want to get some comments, yo
@@ -224,6 +231,7 @@
       populateComments(event.data);
     }
 
+    // Populate our comments with given array
     private function populateComments(newComments:*):void {
       // If comments isn't an Array, then there are no comments
       if (!(newComments is Array)) newComments = new Array();
@@ -238,21 +246,31 @@
 
       // Add our comments
       for each (var newComment:Object in commentsArray)
-        addComment(newComment, false, firstPull);
+        addComment(newComment);
 
       // Remove extraneous comments
       removeAllCommentsExcept(commentsArray);
 
       // Remove overflow, if any.
-      while (commentsHash.length > MaxComments)
-        removeCommentAtIndex(0);
+      removeExcessComments();
 
       // Mark latest update
-      latestUpdate = (commentsHash.length == 0 ? 0 :
-        commentsHash.getAt(0).data.time);
-        
+      markLatestUpdate();
+
       // Not the first anymore
       firstPull = false;
+    }
+
+    // We remove any stories above our max here
+    public function removeExcessComments():void {
+      while (commentsHash.length > MaxComments)
+        removeCommentAtIndex(0);
+    }
+
+    // Mark latest update
+    public function markLatestUpdate():void {
+      latestUpdate = (commentsHash.length == 0 ? 0 :
+        commentsHash.getAt(0).data.time);
     }
 
     // We call this to narrow our comment view down to the group
@@ -313,6 +331,10 @@
       commentsHash = new HashArray();
       zombies = new Object();
       immunes = new Object();
+
+      // Put this back in the non revealed state
+      commentsBoxContainer.visible = false;
+      commentsBoxContainer.animateIn = false;
     }
   ]]></mx:Script>
 </mx:VBox>
