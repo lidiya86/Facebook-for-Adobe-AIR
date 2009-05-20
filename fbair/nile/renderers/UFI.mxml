@@ -214,11 +214,11 @@
       var commentData:Object = ObjectUtil.copy(event.data);
       
       // Iterate our comment count, and put in comment_list
-      data.comments.count++;
-      if (data.comments.count == 1)
+      if (data.comments.count == 0)
         data.comments.comment_list = [commentData];
       else
         data.comments.comment_list.push(commentData);
+      data.comments.count++;
 
       // Mark this as immune for next go around
       commentsRenderer.markImmune(commentData);

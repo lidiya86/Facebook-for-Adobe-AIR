@@ -195,7 +195,7 @@
         if (new_count <= 0) return;
         if (new_count <= 3) populateComments(data.comments.comment_list);
         else {
-          if (CommentCache.hasFreshComments(data.post_id, data.comments.count))
+          if (CommentCache.hasFreshComments(data.post_id, new_count))
             commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
               CommentCache.commentCache[data.post_id]));
           else
