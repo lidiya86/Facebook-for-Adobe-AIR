@@ -136,6 +136,9 @@
 
       // No more data!
       super.data = null;
+
+      // Re-enable our delete button
+      storyDeleteButton.enabled = true;
     }
 
     // When content box is created, we add content if there
