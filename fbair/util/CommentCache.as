@@ -65,6 +65,17 @@ package fbair.util {
         (new Date()).time - fetchTime < CommentLifeSpan;
     }
 
+    // Add a comment we've created locally
+    public static function addComment(commentData:Object):void {
+      // Add to cache
+      if (!commentCache[commentData.post_id])
+        commentCache[commentData.post_id] = new Array();
+      commentCache[commentData.post_id].push(commentData);
+      
+      // Dispatch event of add
+      dispatcher.dispatchEvent(new FBEvent(CommentCache.COMMENT_CREATED, 
+                                           commentData));
+    }
     // Main Getter for the comments of a post id
     // Returns an EventDispatcher to fire when it has the data.
     public static function getComments(postID:String,
