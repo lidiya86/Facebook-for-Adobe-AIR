@@ -104,7 +104,7 @@ package fb.util {
       var i:Number = -1;
       var x:Number, y:Number;
 
-      while(++i < input.length) {
+      while (++i < input.length) {
         // Decode utf-16 surrogate pairs
         x = input.charCodeAt(i);
         y = i + 1 < input.length ? input.charCodeAt(i + 1) : 0;

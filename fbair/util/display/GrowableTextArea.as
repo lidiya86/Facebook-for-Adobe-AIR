@@ -69,6 +69,7 @@ package fbair.util.display {
       if (text == focusOutText) text = "";
       stage.addEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
     }
+
     private function prepareUp(event:MouseEvent):void {
       stage.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
       stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);

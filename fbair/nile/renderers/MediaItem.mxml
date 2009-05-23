@@ -22,7 +22,7 @@
 
   <util:LinkImage id="linkImage"
                   styleName="mediaImage"
-                  source="{StringUtil.extractURL(data.src)}"
+                  source="{imgSrc}"
                   url="{data.href}"
                   maxWidth="{maxImageWidth}"
                   maxHeight="{maxImageHeight}" />
@@ -55,12 +55,14 @@
     [Bindable] public var maxImageHeight:Number;
     [Bindable] private var showPhotoFrame:Boolean = false;
     [Bindable] private var showVideoBadge:Boolean = false;
+    [Bindable] private var imgSrc:String;
 
     override public function set data(new_data:Object):void {
       super.data = new_data;
 
       showPhotoFrame = (data.type == PhotoType);
       showVideoBadge = (data.type == VideoType);
+      imgSrc = StringUtil.extractURL(data.src);
     }
 
     public function recycle():void {

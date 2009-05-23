@@ -62,7 +62,6 @@ package fb.util {
         case 3: return n + 'rd';
         default: return n + 'th';
       }
-      //return n + 'th';
     }
   }
 }

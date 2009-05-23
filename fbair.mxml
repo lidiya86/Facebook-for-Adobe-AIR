@@ -87,7 +87,7 @@
         nativeWindow.y = windowData.y;
         nativeWindow.height = windowData.height;
       }
-      
+
       // Trigger the load of anything else preferences wise
       ProfileCache.opening();
 

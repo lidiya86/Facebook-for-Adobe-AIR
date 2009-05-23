@@ -52,7 +52,7 @@ package fbair.util.display {
     }
 
     private function statusChanged(event:StatusEvent):void {
-      Output.error("Image Status changed: " + urlMonitor.available + 
+      Output.error("Image Status changed: " + urlMonitor.available +
         " for source: " + origSource);
       if (urlMonitor.available) reload();
     }
@@ -63,13 +63,11 @@ package fbair.util.display {
     }
 
     override public function set source(new_source:Object):void {
-      Output.log("Image Setting source: " + new_source);
       if (new_source.constructor == Class) {
         Output.error("Image re-setting source to crap: " + new_source
           + " from " + source);
-        super.source = '';
-      }
-      else {
+        super.source = null;
+      } else {
         if (urlMonitor) urlMonitor.stop();
         urlMonitor = new URLMonitor(new URLRequest(String(new_source)));
         urlMonitor.addEventListener(StatusEvent.STATUS, statusChanged);
