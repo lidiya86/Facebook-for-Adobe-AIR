@@ -215,7 +215,7 @@
 
       // Iterate our comment count, and put in comment_list
       if (!data.comments.comment_list)
-        data.commens.comment_list = new Array();
+        data.comments.comment_list = new Array();
       data.comments.comment_list.push(commentData);
       data.comments.count++;
 
