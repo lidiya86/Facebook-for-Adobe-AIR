@@ -70,27 +70,29 @@ package fbair.util.display {
       stage.addEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
     }
 
-    private function prepareUp(event:MouseEvent):void {
-      stage.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
-      stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
-    }
-
-    private function stageDown(event:MouseEvent):void {
-      if (hitTestPoint(event.stageX, event.stageY)) return;
-      stage.addEventListener(MouseEvent.MOUSE_UP, stageUp, true);
-    }
-
-    private function stageUp(event:MouseEvent):void {
-      stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
-      if (hitTestPoint(event.stageX, event.stageY)) return;
-      if (stage.focus && contains(stage.focus))
-        stage.focus = null;
-    }
 
     private function focusOut(event:FocusEvent = null):void {
       stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
       stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       active = (text.length > 0);
+    }
+    
+    // Stage up and down
+    private function prepareUp(event:MouseEvent):void {
+      event.target.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
+      event.target..addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
+    }
+
+    private function stageDown(event:MouseEvent):void {
+      if (hitTestPoint(event.stageX, event.stageY)) return;
+      event.target.addEventListener(MouseEvent.MOUSE_UP, stageUp, true);
+    }
+
+    private function stageUp(event:MouseEvent):void {
+      event.target.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
+      if (hitTestPoint(event.stageX, event.stageY)) return;
+      if (event.target.focus && contains(event.target.focus))
+        event.target.focus = null;
     }
 
     // Height change

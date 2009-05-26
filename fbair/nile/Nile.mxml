@@ -117,10 +117,10 @@
 
     // Function to remove a story, by story data
     public function removeStoryByID(post_id:String):void {
+      if (!items.hasKey(post_id)) return;
       Output.log("Removing story by id: " + post_id +
         " from filter-key: " + items.getAtKey(post_id).data.post_id +
         " from nile " + this);
-      if (!items.hasKey(post_id)) return;
       removeStoryAtIndex(items.indexAtKey(post_id));
     }
 

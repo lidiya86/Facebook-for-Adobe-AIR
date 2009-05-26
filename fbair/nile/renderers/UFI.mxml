@@ -176,6 +176,7 @@
           break;
       }
     }
+
     // this override determines if the animation should occur first
     override public function set visible(to:Boolean):void {
       if (super.visible == to) return;
@@ -210,11 +211,14 @@
     private function commentCreated(event:FBEvent):void {
       if (event.data.post_id != data.post_id) return;
 
+      // Set detailed mode
+      ufiMode = UFI_DETAIL;
+
       // Get a copy of our data
       var commentData:Object = ObjectUtil.copy(event.data);
 
       // Iterate our comment count, and put in comment_list
-      if (!data.comments.comment_list)
+      if (data.comments.comment_list == null)
         data.comments.comment_list = new Array();
       data.comments.comment_list.push(commentData);
       data.comments.count++;
