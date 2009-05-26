@@ -26,8 +26,6 @@ package fb.util {
       return n;
     }
 
-    // A simple number shaper which takes a number 0-1 and returning a
-    // number 0-1
     public static function invCos(x:Number):Number {
       return 1 - (0.5 * (Math.cos(x*Math.PI) + 1));
     }
