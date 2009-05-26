@@ -57,17 +57,18 @@
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
+    import fb.util.FlexUtil;
     import fb.util.Output;
-
-    import fbair.util.ProfileCache;
     import fb.util.StringUtil;
+
+    import fbair.util.CommentCache;
+    import fbair.util.ProfileCache;
     import fbair.util.TimeUtil;
 
     import flash.events.MouseEvent;
-    import fb.util.FlexUtil;
+
     import mx.utils.ObjectProxy;
 
-    public static const COMMENT_REMOVED:String = "commentRemoved";
     public static const PicSize:int = 28;
 
     // Constructor
@@ -103,7 +104,7 @@
       FBAPI.callMethod("stream.removeComment", {comment_id:data.id})
         .addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
           // Dispatch that we're deleted, biotch
-          dispatchEvent(new Event(COMMENT_REMOVED, true));
+          dispatchEvent(new FBEvent(CommentCache.COMMENT_REMOVED));
         });
     }
 

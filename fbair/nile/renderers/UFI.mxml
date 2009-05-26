@@ -147,6 +147,9 @@
       CommentCache.dispatcher.addEventListener(
         CommentCache.COMMENT_CREATED,
         commentCreated);
+      CommentCache.dispatcher.addEventListener(
+        CommentCache.COMMENT_REMOVED,
+        commentRemoved);
     }
 
     [Bindable]
@@ -207,12 +210,17 @@
       commentBox.destroy();
     }
 
+    // Called when we deleted a comment
+    private function commentRemoved(event:FBEvent):void {
+      // If not revealed, or not us, then don't care
+      if (ufiMode == UFI_PREVIEW || event.data.post_id != data.post_id) return;
+
+      commentsRenderer.removeCommentByID(event.data.id);
+    }
+
     // Called when we just successfully commented
     private function commentCreated(event:FBEvent):void {
-      if (event.data.post_id != data.post_id) return;
-
-      // Set detailed mode
-      ufiMode = UFI_DETAIL;
+      if (event.data.post_id != data.post_id || !data.comments) return;
 
       // Get a copy of our data
       var commentData:Object = ObjectUtil.copy(event.data);

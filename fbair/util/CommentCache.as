@@ -16,7 +16,6 @@
 package fbair.util {
   import fb.FBAPI;
   import fb.FBEvent;
-
   import flash.events.Event;
   import flash.events.EventDispatcher;
 
@@ -42,6 +41,7 @@ package fbair.util {
   public class CommentCache {
     public static const COMMENTS_FETCHED:String = "commentFetched";
     public static const COMMENT_CREATED:String = "commentCreated";
+    public static const COMMENT_REMOVED:String = "commentRemoved";
 
     // How long before comment data is stale
     private static const CommentLifeSpan:int = 45000;
@@ -63,6 +63,19 @@ package fbair.util {
       return commentCache[post_id] &&
         commentCache[post_id].length == comment_count &&
         (new Date()).time - fetchTime < CommentLifeSpan;
+    }
+
+    // Remove a comment we've deleted locally
+    public static function removeComment(commentData:Object):void {
+      // Remove from cache
+      if (commentCache[commentData.post_id])
+        for (var i:int = 0; i < commentCache[commentData.post_id].length; i++)
+          if (commentCache[commentData.post_id][i].id == commentData.id)
+              commentCache[commentData.post_id].splice(i--, 1);
+
+      // Dispatch it from here
+      dispatcher.dispatchEvent(new FBEvent(CommentCache.COMMENT_REMOVED,
+                                           commentData));
     }
 
     // Add a comment we've created locally

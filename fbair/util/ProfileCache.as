@@ -16,6 +16,7 @@
 package fbair.util {
   import fb.FBAPI;
   import fb.FBEvent;
+  import fb.net.JSONLoader;
   import fb.util.Output;
 
   import fbair.util.FBUpdater;
@@ -52,8 +53,6 @@ package fbair.util {
   //       trace("My profile pic is at : " + event.data.pic_square);
   //     });
   public class ProfileCache {
-    import fb.net.JSONLoader;
-
     public static const PROFILE_FETCHED:String = "profileFetched";
 
     // How long till our profile data is "old"

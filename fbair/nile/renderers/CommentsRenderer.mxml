@@ -112,7 +112,8 @@
 
     // On creation, we subscribe to comment remove events
     private function creationComplete(event:FlexEvent):void {
-      addEventListener(CommentRenderer.COMMENT_REMOVED, commentRemoved);
+      addEventListener(CommentCache.COMMENT_REMOVED,
+        myCommentRemoved);
     }
 
     // When we remove old items from the commentsrenderer
@@ -221,12 +222,11 @@
       }, data, ["comments", "count"]);
     }
 
-    // Called when a comment has been deleted by the user
-    private function commentRemoved(event:Event):void {
-      var comment:CommentRenderer = event.target as CommentRenderer;
-      removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id));
-      commentCount = data.comments.count - 1;
-      data.comments.count = commentCount;
+    // Called when a comment has been deleted by the user inside ourselves
+    private function myCommentRemoved(event:FBEvent):void {
+      var commentData:Object = event.target.data;
+      commentData.post_id = data.post_id;
+      CommentCache.removeComment(commentData);
     }
 
     // Called when we want to get some comments, yo
@@ -308,6 +308,17 @@
         }
     }
 
+    // Functino to remove a comment by id
+    public function removeCommentByID(comment_id:String,
+                                      zombie:Boolean = false):void {
+      Output.assert(commentsHash.hasKey(comment_id),
+        "Removing comment: " + comment_id + " that isn't in: " + this);
+
+      removeCommentAtIndex(commentsHash.indexAtKey(comment_id));
+      commentCount = data.comments.count - 1;
+      data.comments.count = commentCount;
+    }
+
     // Function to remove a comment, by index
     public function removeCommentAtIndex(i:int,
                                          zombie:Boolean = false):void {
@@ -342,7 +353,7 @@
       commentCount = -1;
 
       for (var i:int = 0; i < commentsHash.length; i++)
-        removeCommentAtIndex(i--, false);
+        removeCommentAtIndex(i--);
 
       if (countWatcher) countWatcher.unwatch();
       commentsHash = new HashArray();
