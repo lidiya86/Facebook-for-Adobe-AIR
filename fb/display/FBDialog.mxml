@@ -13,9 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
-<!-- This is a content renderer.
-     Every NileRenderer that contains more than a status update
-     has exactly one content renderer.  -->
 <!-- This internal dialog class is built to frame in
      Facebook authorization pages.
      It's functionally abstract.
@@ -31,6 +28,9 @@
                     width="510"
                     creationComplete="creationComplete(event)"
                     close="hide()" >
+
+  <mx:Style source="fb/styles/fb_style.css" />
+
   <mx:Canvas width="100%"
              height="100%" >
     <mx:HTML id="htmlWindow"
@@ -118,7 +118,7 @@
 
       // No longer care about timeouts
       reloadTimer.stop();
-      
+
       // Remove ourselves from display
       close();
 

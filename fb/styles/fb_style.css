@@ -1,0 +1,11 @@
+Label, Text, TextArea, Button, ToolTip {
+  font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
+}
+
+Label, Text, TextArea {
+  color: #333333;
+}
+
+WindowBase {
+  background-color: #ffffff;
+}
