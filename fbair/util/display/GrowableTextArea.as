@@ -76,7 +76,7 @@ package fbair.util.display {
       stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       active = (text.length > 0);
     }
-    
+
     // Stage up and down
     private function prepareUp(event:MouseEvent):void {
       event.target.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
