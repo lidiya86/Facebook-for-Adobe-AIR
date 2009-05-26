@@ -49,6 +49,7 @@
 
       // Screw bogus profile ids
       if (!profileID || profileID == "0" || profileID == "null") {
+        source = url = null;
         return;
       }
 
