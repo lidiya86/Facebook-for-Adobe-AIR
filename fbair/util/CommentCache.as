@@ -45,7 +45,7 @@ package fbair.util {
 
     // How long before comment data is stale
     private static const CommentLifeSpan:int = 45000;
-    
+
     // We dispatch events thru here to any globally interested party
     public static var dispatcher:EventDispatcher = new EventDispatcher();
 
@@ -71,11 +71,12 @@ package fbair.util {
       if (!commentCache[commentData.post_id])
         commentCache[commentData.post_id] = new Array();
       commentCache[commentData.post_id].push(commentData);
-      
+
       // Dispatch event of add
-      dispatcher.dispatchEvent(new FBEvent(CommentCache.COMMENT_CREATED, 
+      dispatcher.dispatchEvent(new FBEvent(CommentCache.COMMENT_CREATED,
                                            commentData));
     }
+
     // Main Getter for the comments of a post id
     // Returns an EventDispatcher to fire when it has the data.
     public static function getComments(postID:String,

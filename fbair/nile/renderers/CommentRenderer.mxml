@@ -88,6 +88,7 @@
       ProfileCache.getProfile(data.fromid).addEventListener(
         ProfileCache.PROFILE_FETCHED,
         function(event:FBEvent):void {
+          if (!data) return;
           data.name = event.data.name;
           data.url = event.data.url;
         });

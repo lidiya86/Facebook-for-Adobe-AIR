@@ -94,6 +94,9 @@
     // Watches when our count has changed, to refetch
     private var countWatcher:ChangeWatcher;
 
+    // Current count
+    private var commentCount:int = -1;
+
     // comments[0] => Newest
     // comments[comments.length-1] = Oldest
     // All the CommentRenderers, keyed by id
@@ -190,20 +193,33 @@
       }
 
       // Now lets bind to the count to see when to refetch
+      commentCount = data.comments.count;
       if (countWatcher) countWatcher.unwatch();
       countWatcher = BindingUtils.bindSetter(function(new_count:int):void {
+        // If we have more than max, then display link
+        allCommentsContainer.visible = (new_count > MaxComments);
+
+        // If we didn't really change our number, then screw it
+        if (commentCount == new_count) return;
+        Output.bug("New count:" + new_count + " old count:" +
+          commentCount);
+        commentCount = new_count;
+
+        // If count is 0, then screw it
         if (new_count <= 0) return;
+
+        // If <= 3, then we already own it
         if (new_count <= 3) populateComments(data.comments.comment_list);
         else {
+          // Perhaps they were already fetched on another filter tab
           if (CommentCache.hasFreshComments(data.post_id, new_count))
             commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
               CommentCache.commentCache[data.post_id]));
+          // Fetch more!
           else
             fetchComments();
         }
 
-        // If we have more than max, then display link
-        allCommentsContainer.visible = (new_count > MaxComments);
       }, data, ["comments", "count"]);
     }
 
@@ -211,7 +227,8 @@
     private function commentRemoved(event:Event):void {
       var comment:CommentRenderer = event.target as CommentRenderer;
       removeCommentAtIndex(commentsHash.indexAtKey(comment.data.id));
-      data.comments.count--;
+      commentCount = data.comments.count - 1;
+      data.comments.count = commentCount;
     }
 
     // Called when we want to get some comments, yo
@@ -239,7 +256,8 @@
 
       // Some more comments may have happened during this period of fetching
       //   so update our data.comments.count
-      data.comments.count = Math.max(commentsArray.length, data.comments.count);
+      commentCount = Math.max(data.comments.count, commentsArray.length);
+      data.comments.count = commentCount;
 
       // If we have any zombies, they need to be counted out
       removeZombies(commentsArray);
@@ -323,6 +341,7 @@
       revealed = false;
       firstPull = true;
       latestUpdate = 0;
+      commentCount = -1;
 
       for (var i:int = 0; i < commentsHash.length; i++)
         removeCommentAtIndex(i--, false);

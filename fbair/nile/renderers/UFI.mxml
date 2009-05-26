@@ -209,26 +209,25 @@
     // Called when we just successfully commented
     private function commentCreated(event:FBEvent):void {
       if (event.data.post_id != data.post_id) return;
-      
+
       // Get a copy of our data
       var commentData:Object = ObjectUtil.copy(event.data);
-      
+
       // Iterate our comment count, and put in comment_list
-      if (data.comments.count == 0)
-        data.comments.comment_list = [commentData];
-      else
-        data.comments.comment_list.push(commentData);
+      if (!data.comments.comment_list)
+        data.commens.comment_list = new Array();
+      data.comments.comment_list.push(commentData);
       data.comments.count++;
 
       // Mark this as immune for next go around
       commentsRenderer.markImmune(commentData);
-      
+
       // Add this comment to our CommentsRenderer
       commentsRenderer.addComment(commentData);
 
       // Remove overflow, if any.
       commentsRenderer.removeExcessComments();
-      
+
       // Mark latest update
       commentsRenderer.markLatestUpdate();
     }
