@@ -1,11 +1,13 @@
-Label, Text, TextArea, Button, ToolTip {
-  font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
+.dialogLoadingIndicator {
+  horizontalCenter:0;
+  verticalCenter:0;
 }
 
-Label, Text, TextArea {
-  color: #333333;
-}
-
-WindowBase {
+.fbDialog {
   background-color: #ffffff;
+}
+
+.statusText {
+  color: #333333;
+  font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
 }

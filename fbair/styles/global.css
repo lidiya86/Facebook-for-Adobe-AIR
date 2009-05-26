@@ -2,11 +2,6 @@
   color: #999;
 }
 
-.dialogLoadingIndicator {
-  horizontalCenter:0;
-  verticalCenter:0;
-}
-
 .errorIndicator {
   backgroundColor: #ffebe8;
   borderColor: #dd3c10;
