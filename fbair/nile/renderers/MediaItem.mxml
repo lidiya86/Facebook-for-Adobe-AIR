@@ -22,7 +22,7 @@
 
   <util:LinkImage id="linkImage"
                   styleName="mediaImage"
-                  source="{StringUtil.extractURL(data.src)}"
+                  source="{imageSrc}"
                   url="{data.href}"
                   maxWidth="{maxImageWidth}"
                   maxHeight="{maxImageHeight}" />
@@ -46,17 +46,21 @@
   <mx:Script><![CDATA[
     import fb.util.Output;
     import fb.util.StringUtil;
-    
+
     private static const PhotoType:String = "photo";
     private static const VideoType:String = "video";
 
     [Bindable] public var maxImageWidth:Number;
     [Bindable] public var maxImageHeight:Number;
 
+    [Bindable] public var imageSrc:String;
+
     override public function set data(new_data:Object):void {
       Output.assert(data == null,
         "Setting media item data that's not already null?:" + this)
       super.data = new_data;
+
+      imageSrc = StringUtil.extractURL(data.src);
     }
 
     public function recycle():void {
