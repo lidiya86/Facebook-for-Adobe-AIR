@@ -27,7 +27,6 @@ package fb.display {
       location = "/connect/prompt_permissions.php";
       extraParams["next"] = NextPath + "?xxRESULTTOKENxx";
       extraParams["extern"] = 1;
-      extraParams["channel_url"] = NextPath;
     }
 
     public function get ext_perm():String { return extraParams["ext_perm"]; }

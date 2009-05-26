@@ -52,6 +52,8 @@ package fbair.util {
   //       trace("My profile pic is at : " + event.data.pic_square);
   //     });
   public class ProfileCache {
+    import fb.net.JSONLoader;
+
     public static const PROFILE_FETCHED:String = "profileFetched";
 
     // How long till our profile data is "old"
@@ -134,26 +136,29 @@ package fbair.util {
 
       // If we have some uncached, then request them from the server.
       if (uncached_ids.length > 0) {
-        FBAPI.callMethod("fql.query", {
+        var jsonLoader:JSONLoader = FBAPI.callMethod("fql.query", {
           query:"select id, name, pic_square, " +
             "url from profile where id in " +
             "(" + uncached_ids.join(", ")  + ")"
-        }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
-          var results:Array = event.data as Array;
-          var result:Object;
-
-          // Put all results into the cache first, and timestamp
-          var now:Number = (new Date().time / 1000);
-          for each (result in results) {
-            result.time = now;
-            cache[result.id] = result;
-          }
-
-          // Now fire every event dispatcher for every request
-          for each (result in results)
-            uncached_requests[result.id].dispatchEvent(
-              new FBEvent(PROFILE_FETCHED, cache[result.id]));
         });
+        if (!jsonLoader) return;
+        jsonLoader.addEventListener(FBEvent.SUCCESS,
+          function(event:FBEvent):void {
+            var results:Array = event.data as Array;
+            var result:Object;
+
+            // Put all results into the cache first, and timestamp
+            var now:Number = (new Date().time / 1000);
+            for each (result in results) {
+              result.time = now;
+              cache[result.id] = result;
+            }
+
+            // Now fire every event dispatcher for every request
+            for each (result in results)
+              uncached_requests[result.id].dispatchEvent(
+                new FBEvent(PROFILE_FETCHED, cache[result.id]));
+          });
       }
 
       // Fire an event dispatcher for everything already cached right now.
