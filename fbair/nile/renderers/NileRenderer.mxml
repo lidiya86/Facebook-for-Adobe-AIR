@@ -243,13 +243,11 @@
         // Create correct type of content
         content = Depot.get(AttachmentRenderer);
         content.percentWidth = 100;
-        
+        content.data = data.attachment;
+
         // Add to content box
         if (contentBox) contentBox.addChild(content);
       }
-
-      // Update content's data
-      if (content) content.data = data.attachment;
     }
 
     // Called when we've fetched profile data about actor.

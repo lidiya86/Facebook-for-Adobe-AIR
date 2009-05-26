@@ -43,11 +43,11 @@ package fbair.util {
     public static const COMMENTS_FETCHED:String = "commentFetched";
     public static const COMMENT_CREATED:String = "commentCreated";
 
+    // How long before comment data is stale
+    private static const CommentLifeSpan:int = 45000;
+    
     // We dispatch events thru here to any globally interested party
     public static var dispatcher:EventDispatcher = new EventDispatcher();
-
-    // How long before comment data is stale
-    private static const CommentLifeSpan:int = 25000;
 
     // Our comments thus far fetched, keyed by post_id
     public static var commentCache:Object = new Object();
