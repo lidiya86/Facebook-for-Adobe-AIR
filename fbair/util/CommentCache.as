@@ -44,7 +44,7 @@ package fbair.util {
     public static const COMMENT_REMOVED:String = "commentRemoved";
 
     // How long before comment data is stale
-    private static const CommentLifeSpan:int = 45000;
+    private static const CommentLifeSpan:int = 8000;
 
     // We dispatch events thru here to any globally interested party
     public static var dispatcher:EventDispatcher = new EventDispatcher();
