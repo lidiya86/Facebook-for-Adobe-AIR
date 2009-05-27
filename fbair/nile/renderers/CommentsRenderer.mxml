@@ -78,7 +78,7 @@
     private static const MaxComments:int = 6;
 
     // Tracks whether we've been revealed and are getting ALL comments
-    private var revealed:Boolean = false;
+    public var revealed:Boolean = false;
 
     // Tracks if this renderer is getting it's very first data or not
     private var firstPull:Boolean = true;
@@ -308,20 +308,21 @@
         }
     }
 
-    // Functino to remove a comment by id
-    public function removeCommentByID(comment_id:String,
-                                      zombie:Boolean = false):void {
+    // Remove a comment deleted locally
+    public function removeLocalComment(comment_id:String):void {
       Output.assert(commentsHash.hasKey(comment_id),
         "Removing comment: " + comment_id + " that isn't in: " + this);
 
-      removeCommentAtIndex(commentsHash.indexAtKey(comment_id));
+      // Remove by index
+      removeCommentAtIndex(commentsHash.indexAtKey(comment_id), true);
+
+      // Decrement counts manually
       commentCount = data.comments.count - 1;
       data.comments.count = commentCount;
     }
 
     // Function to remove a comment, by index
-    public function removeCommentAtIndex(i:int,
-                                         zombie:Boolean = false):void {
+    public function removeCommentAtIndex(i:int, zombie:Boolean = false):void {
       var deadComment:CommentRenderer = commentsHash.removeIndex(i)[0];
       if (zombie) zombies[deadComment.data.id] = true;
       deadComment.remove();
