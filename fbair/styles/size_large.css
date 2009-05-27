@@ -2,15 +2,19 @@
   font-size: 13;
 }
 
+ActionRow, UFI, .actionButtonLabel, .commentInput, .contentBox, .commentButtonDisabled, .commentButtonDown, .commentButtonOver, .commentButtonUp, .timePhrase {
+  font-size: 11;
+}
+
+.itemSource, .commentTimeStamp {
+  font-size: 9;
+}
+
 .commentButtonDisabled, .commentButtonDown {
   paddingBottom: 2;
   paddingLeft: 5;
   paddingRight: 5;
   paddingTop: 4;
-}
-
-.commentButtonDisabled, .commentButtonDown, .commentButtonOver, .commentButtonUp {
-  font-size: 11;
 }
 
 .commentButtonOver, .commentButtonUp {
@@ -39,12 +43,4 @@
   paddingLeft: 7;
   paddingRight: 7;
   paddingTop: 4;
-}
-
-.itemSource, .commentTimeStamp {
-  font-size: 9;
-}
-
-ActionRow, UFI, .commentInput, .contentBox {
-  font-size: 11;
 }

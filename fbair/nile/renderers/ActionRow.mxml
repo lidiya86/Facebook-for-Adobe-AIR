@@ -23,24 +23,55 @@
     [Event(name="commentClick", type="flash.events.Event")]
   </mx:Metadata>
 
-  <!-- Tells us the time ago since it happened -->
+  <util:FBButton id="likeLink"
+                 autoStyle="true"
+                 styleNamePrefix="actionButton"
+                 visible="{data.likes.can_like}"
+                 includeInLayout="{data.likes.can_like}"
+                 click="dispatchEvent(new Event('likeClick'))"
+                 direction="horizontal" >
+    <mx:Image source="@Embed('../../assets/like.png')" />
+    <mx:Label styleName="actionButtonLabel"
+              text="{data.likes.user_likes ? 'Unlike' : 'Like'}" />
+  </util:FBButton>
+  
+  <util:FBButton autoStyle="true"
+                 styleNamePrefix="actionButton"
+                 visible="{data.comments.can_post}"
+                 includeInLayout="{data.comments.can_post}"
+                 click="dispatchEvent(new Event('commentClick'))"
+                 direction="horizontal" >
+    <mx:Image source="@Embed('../../assets/comment.png')" />
+    <mx:Label styleName="actionButtonLabel"
+              text="Comment" />
+  </util:FBButton>
+<!--
+  <util:FBButton styleName="actionButton"
+                 label="{commentText}"
+                 icon="@Embed('../../assets/comment.png')"
+                 visible="{data.comments.can_post}"
+                 includeInLayout="{data.comments.can_post}"
+                 click="dispatchEvent(new Event('commentClick'))" />
+-->
+  <!-- Tells us the time ago since it happened - ->
   <mx:Text id="timePhrase"
            styleName="timePhrase"
            text="{data.timePhrase}" />
+         -->
 
-  <!-- Dot and link for commenting -->
+  <!-- Dot and link for commenting - ->
   <mx:Label text="·"
             width="4"
             paddingLeft="-2"
             paddingRight="-2"
             visible="{data.comments.can_post}"
-            includeInLayout="{data.comments.can_post}" />
+            includeInLayout="{data.comments.can_post}" /> - ->
   <util:LinkLabel text="{commentText}"
                   visible="{data.comments.can_post}"
                   includeInLayout="{data.comments.can_post}"
-                  click="dispatchEvent(new Event('commentClick'))" />
+                  click="dispatchEvent(new Event('commentClick'))" /> -->
 
-  <!-- Dot and link for liking -->
+  <!-- Dot and link for liking - ->
   <mx:Label text="·"
             width="4"
             paddingLeft="-2"
@@ -51,7 +82,7 @@
                   text="{data.likes.user_likes ? 'Unlike' : 'Like'}"
                   visible="{data.likes.can_like}"
                   includeInLayout="{data.likes.can_like}"
-                  click="dispatchEvent(new Event('likeClick'))" />
+                  click="dispatchEvent(new Event('likeClick'))" />-->
   <mx:Script><![CDATA[
     import fbair.util.TimeUtil;
 

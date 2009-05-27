@@ -48,13 +48,16 @@ Box, Container, LayoutContainer {
 
 FBButton {
   color: #fff;
-  disabledSkin: Embed(source='../assets/blue_button_disabled.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
-  downSkin: Embed(source='../assets/blue_button_down.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
   font-weight: bold;
-  overSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
-  textRollOverColor: #fff;
-  textSelectedColor: #fff;
-  upSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  borderSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+}
+
+.fbButtonDisabled {
+  borderSkin: Embed(source='../assets/blue_button_disabled.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+}
+
+.fbButtonDown {
+  borderSkin: Embed(source='../assets/blue_button_down.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
 }
 
 GrowableTextArea {

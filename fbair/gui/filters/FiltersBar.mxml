@@ -16,7 +16,7 @@
 <!-- This contains our filters tab bar at top of window -->
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
            xmlns:filters="fbair.gui.filters.*"
-           xmlns:display="fbair.util.display.*"
+           xmlns:util="fbair.util.display.*"
            height="26"
            creationComplete="creationComplete(event)"
            addedToStage="addedToStage(event)" >
@@ -46,14 +46,15 @@
            width="100%"
            updateComplete="filterTabChanged(event)" />
 
-  <display:FBButton id="filterMenuButton"
+  <util:FBButton id="filterMenuButton"
                     styleName="filterMenuButton"
                     height="26"
                     alpha="{filterMenuButton.state == FBButton.OVER ?
                             1.0 : 0.7}"
-                    icon="@Embed('../../assets/plus.png')"
                     mouseDown="menuButtonClicked(event)"
-                    enabled="{menu.data.length > 0}" />
+                    enabled="{menu.data.length > 0}" >
+                    <mx:Image source="@Embed('../../assets/plus.png')" />
+                   </util:FBButton>
 
   <mx:Script><![CDATA[
     import fb.FBAPI;

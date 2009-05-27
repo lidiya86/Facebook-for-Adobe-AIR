@@ -10,4 +10,5 @@
 .statusText {
   color: #333333;
   font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
+  font-weight: bold;
 }

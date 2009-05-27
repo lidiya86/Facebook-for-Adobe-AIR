@@ -34,7 +34,8 @@
     <!-- The users name followed by their comment -->
     <mx:VBox styleName="commentVBox"
              width="100%" >
-      <mx:HBox styleName="commentHeader">
+      <mx:HBox styleName="commentHeader"
+               width="100%" >
         <mx:Text htmlText="{StringUtil.linkify(data.name, data.url)}" />
         <mx:Text text="{TimeUtil.describeWhenShort(data.time)}"
                  styleName="commentTimeStamp" />

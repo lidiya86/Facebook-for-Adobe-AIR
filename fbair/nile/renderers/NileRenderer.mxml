@@ -49,8 +49,12 @@
 
         <!-- Main text of actor's name and their status message -->
         <mx:Text styleName="actorAndMessage"
-                 htmlText="{data.actorAndMessage}"
-                 width="100%" />
+                 htmlText="{data.actorAndMessage}" />
+
+        <!-- Tells us the time ago since it happened -->
+        <mx:Text id="timePhrase"
+                 styleName="timePhrase"
+                 text="{TimeUtil.describeWhen(data.created_time)}" />
 
         <!-- No deleting until bug fixed in stream.remove -->
         <mx:Button id="storyDeleteButton"
@@ -64,6 +68,11 @@
                    click="deleteStory(event)" />
       </mx:HBox>
 
+      <mx:Text styleName="statusMessage"
+               includeInLayout="{!StringUtil.empty(data.message)}"
+               htmlText="{StringUtil.htmlize(data.message)}"
+               width="100%" />
+
       <!-- We place the stream entry's content in this canvas if it has any
            ex:  Photo, Album, Link, Video, etc -->
       <mx:Canvas width="100%"
@@ -72,12 +81,12 @@
                  creationComplete="contentBoxCreated(event)" />
 
       <!-- This is the row of action links we can take for this stream entry.
-           The two defaults are Like and Comment... -->
+           The two defaults are Like and Comment... - ->
       <renderer:ActionRow id="actionRow"
                           width="100%"
                           likeClick="likeClicked(event)"
                           commentClick="commentClicked(event)"
-                          data="{data}" />
+                          data="{data}" /> -->
 
       <renderer:UFI id="ufi"
                     width="100%"
@@ -99,6 +108,7 @@
     import fbair.gui.StylePrefs;
     import fbair.nile.Nile;
     import fbair.util.ProfileCache;
+    import fbair.util.TimeUtil;
 
     import flash.events.Event;
     import flash.events.MouseEvent;
@@ -158,7 +168,7 @@
 
       // Don't allow the link to be re-clicked during the period
       //   when we're posting to the server...
-      actionRow.likeLink.enabled = false;
+      ufi.likeLink.enabled = false;
 
       // Build our args and method depending on whether
       //   we're liking or unliking here
@@ -175,8 +185,8 @@
             data.likes.count += data.likes.user_likes ? 1 : -1;
 
             // Update our likeLink text and re-enable for next time
-            actionRow.data = data;
-            actionRow.likeLink.enabled = true;
+            //actionRow.data = data;
+            ufi.likeLink.enabled = true;
 
             // Update our likesRenderer now that we've changed it's data
             ufi.likesRenderer.update();
@@ -267,8 +277,9 @@
         body += StringUtil.colorize(' ► ', 'aaaaaa') +
                 StringUtil.linkify(ProfileCache.cache[data.target_id].name,
                                    ProfileCache.cache[data.target_id].url);
-      if (data.message)
-        body += '  ' + StringUtil.htmlize(data.message);
+//      if (data.message)
+//        body += '  ' + StringUtil.htmlize(data.message);
+
       data.actorAndMessage = body;
     }
 

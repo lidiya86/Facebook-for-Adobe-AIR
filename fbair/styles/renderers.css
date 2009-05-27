@@ -1,6 +1,28 @@
+.actionButtonUp, .actionButtonOver, .actionButtonDown, .actionButtonDisabled {
+  borderSkin: Embed(source='../assets/action2_button.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
+  paddingBottom: 2;
+  paddingLeft: 6;
+  paddingRight: 4;
+  paddingTop: 2;
+  horizontalGap: 2;
+}
+
+.actionButtonDown {
+  borderSkin: Embed(source='../assets/action2_button_down.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
+}
+
+.actionButtonUp, .actionButtonDisabled {
+  borderSkin: ClassReference(null);
+}
+
+.actionButtonLabel {
+  color: #3b5998;
+  font-weight: normal;
+}
+
 .actorAndMessage {
   paddingLeft: -2;
-  paddingRight: -2;
+  paddingRight: -4;
   paddingTop: -2;
 }
 
@@ -72,6 +94,7 @@
 
 .likesPreview {
   horizontalGap: 2;
+  paddingTop: 2;
 }
 
 .likesRenderer {
@@ -138,7 +161,7 @@
 }
 
 .ufiPreview {
-  horizontalGap: 6;
+  /*horizontalGap: 6;*/
   paddingBottom: 2;
   paddingLeft: 6;
   paddingRight: 1;
@@ -163,8 +186,14 @@
 
 ActionRow {
   paddingBottom: -3;
-  paddingLeft: -2;
+/*  paddingLeft: -2;*/
   paddingTop: -6;
+}
+
+.statusMessage {
+  paddingLeft: -2;
+  paddingTop: -4;
+  paddingBottom: 2;
 }
 
 AttachmentRenderer {
@@ -207,5 +236,5 @@ NileRenderer {
 }
 
 UFI {
-  borderSkin: Embed(source='../assets/ufi-low.png',scaleGridTop='10',scaleGridLeft='23',scaleGridBottom='11',scaleGridRight='24');
+/*  borderSkin: Embed(source='../assets/ufi-low.png',scaleGridTop='10',scaleGridLeft='23',scaleGridBottom='11',scaleGridRight='24'); */
 }

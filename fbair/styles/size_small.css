@@ -2,6 +2,10 @@
   font-size: 11;
 }
 
+ActionRow, .actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
+  font-size: 9;
+}
+
 .commentButtonDisabled, .commentButtonDown, .fbButtonDisabled, .fbButtonDown {
   paddingBottom: 2;
   paddingLeft: 5;
@@ -14,8 +18,4 @@
   paddingLeft: 5;
   paddingRight: 5;
   paddingTop: 3;
-}
-
-.commentTimeStamp, .itemSource, ActionRow {
-  font-size: 9;
 }

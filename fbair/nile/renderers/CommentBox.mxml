@@ -37,10 +37,11 @@
     <util:FBButton id="commentButton"
                    autoStyle="true"
                    styleNamePrefix="commentButton"
-                   label="Comment"
                    click="submitComment(event)"
                    visible="{data.commentBoxActive}"
-                   includeInLayout="{data.commentBoxActive}" />
+                   includeInLayout="{data.commentBoxActive}" >
+                   <mx:Label text="Comment" />
+                 </util:FBButton>
   </mx:VBox>
 
 

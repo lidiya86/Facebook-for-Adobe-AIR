@@ -11,17 +11,11 @@
 }
 
 .filterMenuButton {
+  borderSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
   right: 1;
-  paddingTop: 6;
+  paddingTop: 11;
   paddingLeft: 9;
   paddingRight: 9;
-}
-
-.filterMenuButton {
-  upSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
-  overSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
-  disabledSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
-  downSkin: Embed(source='../assets/tab_over.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='3');
 }
 
 .filterItemLabelOut {

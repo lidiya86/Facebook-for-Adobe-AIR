@@ -36,8 +36,9 @@
 
   <util:FBButton id="shareButton"
                  autoStyle="true"
-                 label="Share"
-                 click="shareStatus(event)" />
+                 click="shareStatus(event)" >
+    <mx:Label text="Share" />
+  </util:FBButton>
 
   <mx:Script><![CDATA[
     import fb.FBAPI;

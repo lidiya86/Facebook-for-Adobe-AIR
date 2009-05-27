@@ -18,9 +18,9 @@ package fbair.util.display {
   import flash.events.Event;
   import flash.events.MouseEvent;
 
-  import mx.controls.Button;
+  import mx.containers.Box;
 
-  public class FBButton extends Button {
+  public class FBButton extends Box {
 
     public static const UP:String = "Up";
     public static const OVER:String = "Over";
@@ -34,6 +34,16 @@ package fbair.util.display {
 
     public function FBButton() {
       buttonMode = true;
+      mouseChildren = false;
+
+      addEventListener(MouseEvent.MOUSE_DOWN, mouseDownHandler);
+      addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
+      addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
+    }
+
+    override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
+      trace(unscaledWidth+", "+unscaledHeight);
+      super.updateDisplayList(unscaledWidth, unscaledHeight);
     }
 
     [Bindable]
@@ -74,8 +84,7 @@ package fbair.util.display {
       state = enabled ? UP : DISABLED;
     }
 
-    override protected function mouseDownHandler(event:MouseEvent):void {
-      super.mouseDownHandler(event);
+    protected function mouseDownHandler(event:MouseEvent):void {
       if (!enabled) return;
       stage.addEventListener(MouseEvent.MOUSE_UP, stageMouseUp);
       stage.addEventListener(Event.MOUSE_LEAVE, stageMouseUp);
@@ -92,8 +101,7 @@ package fbair.util.display {
       }
     }
 
-    override protected function rollOutHandler(event:MouseEvent):void {
-      super.rollOutHandler(event);
+    protected function rollOutHandler(event:MouseEvent):void {
       if (!enabled) return;
       if (grabbed) {
         state = OVER;
@@ -102,8 +110,7 @@ package fbair.util.display {
       }
     }
 
-    override protected function rollOverHandler(event:MouseEvent):void {
-      super.rollOverHandler(event);
+    protected function rollOverHandler(event:MouseEvent):void {
       if (!enabled) return;
       if (grabbed) {
         state = DOWN;
