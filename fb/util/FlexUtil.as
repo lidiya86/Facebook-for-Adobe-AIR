@@ -18,6 +18,7 @@ package fb.util {
 
   import flash.display.DisplayObject;
   import flash.display.InteractiveObject;
+  import flash.filesystem.File;
 
   import mx.controls.TextArea;
   import mx.core.Container;
@@ -30,6 +31,14 @@ package fb.util {
         if (obj.getStyle(styles[i]))
           return obj.getStyle(styles[i]);
       return styles[styles.length-1];
+    }
+
+    public static function getUserPath(file:String):File {
+      if (File.desktopDirectory && File.desktopDirectory.exists)
+        return File.desktopDirectory.resolvePath(file);
+      if (File.userDirectory && File.userDirectory.exists)
+        return File.userDirectory.resolvePath(file);
+      return File.applicationStorageDirectory.resolvePath(file);
     }
 
     public static function simplify(obj:*):void {

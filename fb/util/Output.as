@@ -21,10 +21,11 @@ package fb.util {
 
   import mx.controls.Alert;
 
+  import fb.util.FlexUtil;
+
   public class Output {
     private static var verbose:Boolean = false;
-    private static var debugFile:File =
-      File.desktopDirectory.resolvePath("air_debug.txt");
+    private static var debugFile:File = FlexUtil.getUserPath("air_debug.txt");
     private static var debugStream:FileStream = new FileStream();
     private static var loggedItems:Array = new Array();
 

@@ -18,6 +18,7 @@
 //   and marks that version for the check again on the next launch, etc.
 package fbair.util {
   import fb.display.FBDialog;
+  import fb.util.FlexUtil;
   import fb.util.Output;
 
   import flash.desktop.Updater;
@@ -36,7 +37,7 @@ package fbair.util {
 
     private static const InfoURL:String = FBDialog.FacebookURL +
       "/fbair/fbair_version.php";
-    private static const FileName:String = "Facebook_for_Adobe_AIR.air";
+    private static const AppFileName:String = "Facebook_for_Adobe_AIR.air";
     private static const VersionFile:String = "Preferences/version.txt";
 
     private static var checkedForNewVersion:Boolean = false;
@@ -76,7 +77,7 @@ package fbair.util {
 
     // Deletes our autoupdate file if present
     public static function deleteInstallationFile():void {
-      var file:File = File.desktopDirectory.resolvePath(FileName);
+      var file:File = FlexUtil.getPath(AppFileName);
       if (file.exists) {
         try { file.deleteFile(); }
         catch(error:Error) {/* do nothing */}
@@ -111,7 +112,7 @@ package fbair.util {
     private static function newVersionLoaded(event:Event):void {
       stream.readBytes(bytes, 0, stream.bytesAvailable);
 
-      var file:File = File.desktopDirectory.resolvePath(FileName);
+      var file:File = FlexUtil.getPath(AppFileName);
 
       var fileStream:FileStream = new FileStream();
       fileStream.addEventListener(Event.CLOSE, fileClosed);
@@ -125,7 +126,7 @@ package fbair.util {
     // So at this point we're ready to trigger the auto-update
     private static function fileClosed(event:Event):void {
       var updater:Updater = new Updater();
-      var file:File = File.desktopDirectory.resolvePath(FileName);
+      var file:File = FlexUtil.getPath(AppFileName);
       updater.update(file, String(newestVersion));
     }
 
