@@ -45,6 +45,7 @@ package fbair.util.display {
       addEventListener(FocusEvent.FOCUS_OUT, focusOut);
       addEventListener(FlexEvent.CREATION_COMPLETE, creationComplete);
     }
+
     private function creationComplete(event:FlexEvent):void {
       updateState();
     }
@@ -79,20 +80,20 @@ package fbair.util.display {
 
     // Stage up and down
     private function prepareUp(event:MouseEvent):void {
-      event.target.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
-      event.target..addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
+      stage.removeEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
+      stage.addEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
     }
 
     private function stageDown(event:MouseEvent):void {
       if (hitTestPoint(event.stageX, event.stageY)) return;
-      event.target.addEventListener(MouseEvent.MOUSE_UP, stageUp, true);
+      stage.addEventListener(MouseEvent.MOUSE_UP, stageUp, true);
     }
 
     private function stageUp(event:MouseEvent):void {
-      event.target.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
+      stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       if (hitTestPoint(event.stageX, event.stageY)) return;
-      if (event.target.focus && contains(event.target.focus))
-        event.target.focus = null;
+      if (stage.focus && contains(stage.focus))
+        stage.focus = null;
     }
 
     // Height change
