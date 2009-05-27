@@ -162,9 +162,14 @@
 }
 
 .ufiPreview {
+  paddingBottom: -2;
   paddingTop: -6;
   paddingLeft: -6;
   horizontalGap: -2;
+}
+
+.ufiRenderers {
+  paddingTop: 2;
 }
 
 .ufiUpperLip {
