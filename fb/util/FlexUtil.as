@@ -93,7 +93,7 @@ package fb.util {
         if (other.length < orig.length)
           orig.splice(other.length, orig.length - other.length);
         else if (other.length > orig.length)
-          orig.splice(orig.length, 0, other.slice(orig.length));
+          orig.push.apply(orig, other.slice(orig.length));
         return orig;
       }
 

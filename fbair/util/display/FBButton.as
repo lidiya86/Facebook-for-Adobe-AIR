@@ -41,11 +41,6 @@ package fbair.util.display {
       addEventListener(MouseEvent.ROLL_OVER, rollOverHandler);
     }
 
-    override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
-      trace(unscaledWidth+", "+unscaledHeight);
-      super.updateDisplayList(unscaledWidth, unscaledHeight);
-    }
-
     [Bindable]
     public function get autoStyle():Boolean { return _autoStyle; }
     public function set autoStyle(to:Boolean):void {
