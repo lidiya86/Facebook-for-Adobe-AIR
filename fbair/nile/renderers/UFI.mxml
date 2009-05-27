@@ -110,6 +110,7 @@
     import fb.FBEvent;
     import fb.util.MathUtil;
     import fb.util.StringUtil;
+    import fb.util.Output;
 
     import fbair.nile.Nile;
     import fbair.nile.NileContainer;
@@ -252,9 +253,10 @@
     // Called when we deleted a comment
     private function commentRemoved(event:FBEvent):void {
       // If not revealed, or not us, then don't care
-      if (ufiMode == UFI_PREVIEW || event.data.post_id != data.post_id) return;
+      if (!commentsRenderer.revealed || 
+          event.data.post_id != data.post_id) return;
 
-      commentsRenderer.removeCommentByID(event.data.id);
+      commentsRenderer.removeLocalComment(event.data.id);
     }
 
     // Called when we just successfully commented
@@ -265,7 +267,8 @@
       var commentData:Object = ObjectUtil.copy(event.data);
 
       // Iterate our comment count, and put in comment_list
-      if (data.comments.comment_list == null)
+      if (!data.comments.comment_list ||
+          !(data.comments.comment_list is Array))
         data.comments.comment_list = new Array();
       data.comments.comment_list.push(commentData);
       data.comments.count++;
@@ -281,6 +284,10 @@
 
       // Mark latest update
       commentsRenderer.markLatestUpdate();
+      
+      // Reveal us, if needed
+      if (data.filter_key == NileContainer.CurrentFilter)
+        ufiMode = UFI_DETAIL;
     }
   ]]></mx:Script>
 </mx:VBox>
