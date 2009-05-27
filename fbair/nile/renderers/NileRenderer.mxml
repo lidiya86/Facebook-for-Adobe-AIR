@@ -48,8 +48,8 @@
         <mx:HBox width="100%"
                  horizontalGap="4" >
           <!-- Main text of actor's name and their status message -->
-          <mx:Text styleName="actorAndMessage"
-                   htmlText="{data.actorAndMessage}" />
+          <mx:Text styleName="actorsText"
+                   htmlText="{data.actors}" />
 
           <!-- Tells us the time ago since it happened -->
           <util:LinkText id="timePhrase"
@@ -202,8 +202,8 @@
         "Setting null data on NileRenderer?: " + this);
 
       // We don't want to rebuild this string every time
-      if (data && data.actorAndMessage)
-        new_data.actorAndMessage = data.actorAndMessage;
+      if (data && data.actors)
+        new_data.actors = data.actors;
 
       // Set immunity on likes
       if (new_data.likes) {
@@ -222,7 +222,7 @@
 
       // Get name of our actor, to build message text, if not already built
       // If this entry has a target, let's get that profile data too
-      if (!data.actorAndMessage) {
+      if (!data.actors) {
         if (data.target_id) {
           ProfileCache.getProfile(data.target_id).addEventListener(
             ProfileCache.PROFILE_FETCHED, profileFetched);
@@ -271,7 +271,7 @@
                 StringUtil.linkify(ProfileCache.cache[data.target_id].name,
                                    ProfileCache.cache[data.target_id].url);
 
-      data.actorAndMessage = body;
+      data.actors = body;
     }
 
     // Called to delete ourself!
