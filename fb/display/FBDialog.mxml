@@ -13,9 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
-<!-- This is a content renderer.
-     Every NileRenderer that contains more than a status update
-     has exactly one content renderer.  -->
 <!-- This internal dialog class is built to frame in
      Facebook authorization pages.
      It's functionally abstract.
@@ -29,8 +26,12 @@
 <display:WindowBase xmlns:mx="http://www.adobe.com/2006/mxml"
                     xmlns:display="fb.display.*"
                     width="510"
+                    styleName="fbDialog"
                     creationComplete="creationComplete(event)"
                     close="hide()" >
+
+  <mx:Style source="../styles/fb_style.css" />
+
   <mx:Canvas width="100%"
              height="100%" >
     <mx:HTML id="htmlWindow"
@@ -40,8 +41,9 @@
              updateComplete="htmlComplete(event)" />
     <mx:HBox id="loadingAnimation"
              visible="false"
-             styleName="dialogLoadingIndicator">
-      <mx:Label text="Connecting to Facebook" />
+             styleName="dialogLoadingIndicator" >
+      <mx:Label styleName="statusText"
+                text="Connecting to Facebook" />
       <display:LoadAnimation width="20"
                              height="100%" />
     </mx:HBox>
@@ -118,7 +120,7 @@
 
       // No longer care about timeouts
       reloadTimer.stop();
-      
+
       // Remove ourselves from display
       close();
 

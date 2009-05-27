@@ -1,0 +1,13 @@
+.dialogLoadingIndicator {
+  horizontalCenter:0;
+  verticalCenter:0;
+}
+
+.fbDialog {
+  background-color: #ffffff;
+}
+
+.statusText {
+  color: #333333;
+  font-family: "Lucida Grande", "Segoe UI", "Tahoma", "Verdana", "Arial", "_sans";
+}
