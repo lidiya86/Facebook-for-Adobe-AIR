@@ -30,10 +30,6 @@
   borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
   bottomBorderColor: #ffffff;
   horizontalGap: 2;
-/*  paddingBottom: 2;
-  paddingLeft: 4;
-  paddingRight: 3;
-  paddingTop: 3;*/
 }
 
 .commentsBox {
@@ -61,9 +57,6 @@
 .commentRenderer {
   horizontalGap: 5;
   paddingBottom: 6;
-/*  paddingLeft: 3;
-  paddingRight: 3;*/
-/*  paddingTop: 6;*/
 }
 
 .commentText {
@@ -105,9 +98,6 @@
 .likesRenderer {
   horizontalGap: 2;
   paddingBottom: 2;
-/*  paddingLeft: 4;
-  paddingRight: 3;
-  paddingTop: 3;*/
 }
 
 .mediaImage {
@@ -167,19 +157,7 @@
 
 .ufiPreview {
   paddingTop: -6;
-  paddingLeft: -2;
-  /*horizontalGap: 6;*/
-/*  paddingBottom: 2;*/
-/*  paddingLeft: 6;
-  paddingRight: 1;*/
-/*  paddingTop: 7;*/
-}
-
-.ufiRenderers {
-/*  paddingBottom: 3;*/
-/*  paddingLeft: 2;
-  paddingRight: 1;*/
-/*  paddingTop: 4;*/
+  paddingLeft: -4;
 }
 
 .ufiUpperLip {
@@ -191,16 +169,9 @@
   left: 0;
 }
 
-ActionRow {
-  paddingBottom: -3;
-/*  paddingLeft: -2;*/
-  paddingTop: -6;
-}
-
 .statusMessage {
   paddingLeft: -2;
   paddingTop: -4;
-/*  paddingBottom: 2;*/
 }
 
 AttachmentRenderer {
@@ -210,10 +181,6 @@ AttachmentRenderer {
 
 CommentBox {
   horizontalGap: 5;
-/*  paddingBottom: 2;*/
-/*  paddingLeft: 3;
-  paddingRight: 3;*/
-/*  paddingTop: 6;*/
 }
 
 CommentRenderer {
@@ -240,8 +207,4 @@ NileRenderer {
   insetTopBorder: -1;
   topBorderColor: #ddd;
   topBorderColor: #dddddd;
-}
-
-UFI {
-/*  borderSkin: Embed(source='../assets/ufi-low.png',scaleGridTop='10',scaleGridLeft='23',scaleGridBottom='11',scaleGridRight='24'); */
 }

@@ -2,7 +2,7 @@
   font-size: 11;
 }
 
-ActionRow, .actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
+.actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
   font-size: 9;
 }
 
