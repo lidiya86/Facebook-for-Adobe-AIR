@@ -40,8 +40,9 @@
                    click="submitComment(event)"
                    visible="{data.commentBoxActive}"
                    includeInLayout="{data.commentBoxActive}" >
-                   <mx:Label text="Comment" />
-                 </util:FBButton>
+      <mx:Label styleName="fbButtonLabel"
+                text="Comment" />
+    </util:FBButton>
   </mx:VBox>
 
 

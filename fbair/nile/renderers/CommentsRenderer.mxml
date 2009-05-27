@@ -55,6 +55,7 @@
                        animateIn="false"
                        animateOnce="true" >
     <mx:VBox id="commentsBox"
+             styleName="commentsBox"
              width="100%"
              removed="rendererRemoved(event)" />
   </util:AnimatedCanvas>

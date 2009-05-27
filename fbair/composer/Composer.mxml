@@ -37,7 +37,8 @@
   <util:FBButton id="shareButton"
                  autoStyle="true"
                  click="shareStatus(event)" >
-    <mx:Label text="Share" />
+    <mx:Label styleName="fbButtonLabel"
+              text="Share" />
   </util:FBButton>
 
   <mx:Script><![CDATA[

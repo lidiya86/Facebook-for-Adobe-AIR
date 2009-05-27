@@ -47,8 +47,6 @@ Box, Container, LayoutContainer {
 }
 
 FBButton {
-  color: #fff;
-  font-weight: bold;
   borderSkin: Embed(source='../assets/blue_button.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
 }
 
@@ -58,6 +56,11 @@ FBButton {
 
 .fbButtonDown {
   borderSkin: Embed(source='../assets/blue_button_down.png',scaleGridTop='3',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+}
+
+.fbButtonLabel {
+  color: #fff;
+  font-weight: bold;
 }
 
 GrowableTextArea {

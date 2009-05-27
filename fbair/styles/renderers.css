@@ -30,9 +30,13 @@
   borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
   bottomBorderColor: #ffffff;
   horizontalGap: 2;
-  paddingBottom: 2;
+/*  paddingBottom: 2;
   paddingLeft: 4;
   paddingRight: 3;
+  paddingTop: 3;*/
+}
+
+.commentsBox {
   paddingTop: 3;
 }
 
@@ -56,10 +60,10 @@
 
 .commentRenderer {
   horizontalGap: 5;
-  paddingBottom: 3;
-  paddingLeft: 3;
-  paddingRight: 3;
-  paddingTop: 6;
+  paddingBottom: 6;
+/*  paddingLeft: 3;
+  paddingRight: 3;*/
+/*  paddingTop: 6;*/
 }
 
 .commentText {
@@ -95,14 +99,15 @@
 .likesPreview {
   horizontalGap: 2;
   paddingTop: 2;
+  color: #808080;
 }
 
 .likesRenderer {
   horizontalGap: 2;
   paddingBottom: 2;
-  paddingLeft: 4;
+/*  paddingLeft: 4;
   paddingRight: 3;
-  paddingTop: 3;
+  paddingTop: 3;*/
 }
 
 .mediaImage {
@@ -121,7 +126,7 @@
 
 .nileRenderer {
   horizontalGap: 6;
-  paddingBottom: 7;
+  paddingBottom: 6;
   paddingLeft: 6;
   paddingRight: 6;
   paddingTop: 6;
@@ -161,18 +166,20 @@
 }
 
 .ufiPreview {
+  paddingTop: -6;
+  paddingLeft: -2;
   /*horizontalGap: 6;*/
-  paddingBottom: 2;
-  paddingLeft: 6;
-  paddingRight: 1;
-  paddingTop: 7;
+/*  paddingBottom: 2;*/
+/*  paddingLeft: 6;
+  paddingRight: 1;*/
+/*  paddingTop: 7;*/
 }
 
 .ufiRenderers {
-  paddingBottom: 3;
-  paddingLeft: 2;
-  paddingRight: 1;
-  paddingTop: 4;
+/*  paddingBottom: 3;*/
+/*  paddingLeft: 2;
+  paddingRight: 1;*/
+/*  paddingTop: 4;*/
 }
 
 .ufiUpperLip {
@@ -193,7 +200,7 @@ ActionRow {
 .statusMessage {
   paddingLeft: -2;
   paddingTop: -4;
-  paddingBottom: 2;
+/*  paddingBottom: 2;*/
 }
 
 AttachmentRenderer {
@@ -203,10 +210,10 @@ AttachmentRenderer {
 
 CommentBox {
   horizontalGap: 5;
-  paddingBottom: 2;
-  paddingLeft: 3;
-  paddingRight: 3;
-  paddingTop: 6;
+/*  paddingBottom: 2;*/
+/*  paddingLeft: 3;
+  paddingRight: 3;*/
+/*  paddingTop: 6;*/
 }
 
 CommentRenderer {
