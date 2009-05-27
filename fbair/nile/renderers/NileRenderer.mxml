@@ -177,7 +177,6 @@
             data.likes.count += data.likes.user_likes ? 1 : -1;
 
             // Update our likeLink text and re-enable for next time
-            //actionRow.data = data;
             ufi.likeLink.enabled = true;
 
             // Update our likesRenderer now that we've changed it's data

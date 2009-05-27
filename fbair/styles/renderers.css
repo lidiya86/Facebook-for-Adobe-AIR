@@ -92,6 +92,10 @@
 .likesPreview {
   horizontalGap: 2;
   paddingTop: 2;
+  paddingLeft: 2;
+}
+
+.likesPreviewLabel {
   color: #808080;
 }
 
@@ -157,7 +161,8 @@
 
 .ufiPreview {
   paddingTop: -6;
-  paddingLeft: -4;
+  paddingLeft: -6;
+  horizontalGap: -2;
 }
 
 .ufiUpperLip {

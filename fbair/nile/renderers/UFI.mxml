@@ -62,7 +62,7 @@
       <mx:Label styleName="actionButtonLabel"
                 text="{data.likes.user_likes ? 'Unlike' : 'Like'}" />
     </util:FBButton>
-    
+
     <!-- Show how many people like this in the preview -->
     <mx:HBox id="likesPreview"
              styleName="likesPreview"
@@ -71,7 +71,9 @@
              showEffect="fadeIn"
              click="{ufiMode = ufiMode == UFI_PREVIEW ?
                      UFI_DETAIL : UFI_PREVIEW}" >
-      <mx:Label text="{likeTitle(data.likes.count, data.likes.user_likes)}" />
+      <util:LinkLabel styleName="likesPreviewLabel"
+                    text="{likeTitle(data.likes.count,
+                           data.likes.user_likes)}" />
     </mx:HBox>
 
   </mx:HBox>
@@ -100,7 +102,6 @@
       <renderer:CommentBox id="commentBox"
                            width="100%"
                            data="{data}" />
-
     </mx:VBox>
   </util:AnimatedCanvas>
 
@@ -168,7 +169,8 @@
     private function likeTitle(number:int, userLikes:Boolean):String {
       if (number == 1 && userLikes)
         return 'You like this';
-      return number + ((number == 1) ? ' Person Likes' : ' People Like');
+      return number + ((number == 1) ? ' person likes this'
+                                     : ' people like this');
     }
 
     private function commentTitle(comments:Number, mode:int):String {
@@ -213,21 +215,15 @@
       switch (ufiMode) {
         case UFI_PREVIEW :
           fadeOut.play([ufiDetail]);
-//          ufiPreview.visible = true;
           ufiDetail.visible = false;
           break;
 
         case UFI_DETAIL :
           commentsRenderer.reveal();
-          /*
-          ufiDetail.animateIn = !(data.commentBoxActive &&
-                                  UFI.count(data) == 1);*/
-          if (ufiDetail.animateIn) {
+          if (ufiDetail.animateIn)
             fadeIn.play([ufiDetail]);
-          } else {
+          else
             ufiDetail.alpha = 1;
-          }
-//          ufiPreview.visible = false;
           ufiDetail.visible = true;
           break;
       }
