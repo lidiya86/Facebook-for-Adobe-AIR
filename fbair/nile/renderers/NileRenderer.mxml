@@ -44,17 +44,19 @@
     <mx:VBox width="100%"
              styleName="storyContent" >
 
-      <mx:HBox width="100%"
-               horizontalGap="4" >
+      <mx:HBox width="100%" >
+        <mx:HBox width="100%"
+                 horizontalGap="4" >
+          <!-- Main text of actor's name and their status message -->
+          <mx:Text styleName="actorAndMessage"
+                   htmlText="{data.actorAndMessage}" />
 
-        <!-- Main text of actor's name and their status message -->
-        <mx:Text styleName="actorAndMessage"
-                 htmlText="{data.actorAndMessage}" />
-
-        <!-- Tells us the time ago since it happened -->
-        <mx:Text id="timePhrase"
-                 styleName="timePhrase"
-                 text="{TimeUtil.describeWhen(data.created_time)}" />
+          <!-- Tells us the time ago since it happened -->
+          <util:LinkText id="timePhrase"
+                         styleName="timePhrase"
+                         click="{navigateToURL(new URLRequest(data.permalink))}"
+                         text="{TimeUtil.describeWhen(data.created_time)}" />
+        </mx:HBox>
 
         <!-- No deleting until bug fixed in stream.remove -->
         <mx:Button id="storyDeleteButton"

@@ -115,6 +115,7 @@
 }
 
 .multiItemDetail {
+  paddingBottom: -4;
   verticalGap: -2;
 }
 
@@ -131,6 +132,7 @@
   borderSides: "left";
   borderStyle: solid;
   borderThickness: 2;
+  paddingBottom: -4;
   paddingLeft: 6;
   verticalGap: -2;
 }
