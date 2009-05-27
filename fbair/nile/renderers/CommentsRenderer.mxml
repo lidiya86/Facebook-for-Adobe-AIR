@@ -87,9 +87,6 @@
     // Mutex on whether we're currently requesting comments
     private var fetchingComments:Boolean = false;
 
-    // Mutex on whether we're populating comments
-    private var populatingComments:Boolean = false;
-
     // We iterate this variable to have the timestamp of
     //    the latest comments thus far made on this story
     // This allows us to only fetch "new" comments each time.
@@ -204,8 +201,7 @@
 
         // If we didn't really change our number, then screw it
         // If we're doing shit RIGHT NOW, then nevermind, also
-        if (commentCount == new_count ||
-            populatingComments ||
+        if (commentCount == new_count
             fetchingComments) return;
         commentCount = new_count;
 
@@ -253,9 +249,6 @@
 
     // Populate our comments with given array
     private function populateComments(newComments:*):void {
-      // Mutex flag around this function
-      populatingComments = true;
-
       // If comments isn't an Array, then there are no comments
       if (!(newComments is Array)) newComments = new Array();
       var commentsArray:Array = newComments.slice(0, MaxComments);
@@ -283,9 +276,6 @@
 
       // Not the first anymore
       firstPull = false;
-
-      // Not populating comments now
-      populatingComments = false;
     }
 
     // We remove any stories above our max here
