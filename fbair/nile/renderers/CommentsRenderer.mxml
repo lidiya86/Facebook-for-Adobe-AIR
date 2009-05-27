@@ -83,8 +83,11 @@
     // Tracks if this renderer is getting it's very first data or not
     private var firstPull:Boolean = true;
 
-    // Flag on whether we're currently requesting comments
+    // Mutex on whether we're currently requesting comments
     private var fetchingComments:Boolean = false;
+
+    // Mutex on whether we're populating comments
+    private var populatingComments:Boolean = false;
 
     // We iterate this variable to have the timestamp of
     //    the latest comments thus far made on this story
@@ -178,18 +181,16 @@
         commentsBoxContainer.visible = false;
         commentsBoxContainer.animateIn = true;
 
-        if (data.comments.count > 0) {
-          // If data is already in the cache, then just show it
-          if (CommentCache.hasFreshComments(data.post_id, data.comments.count))
-            commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
-              CommentCache.commentCache[data.post_id]));
-          // Fetch data, and show loader
-          else {
-            loadingIndicator.immediateVisible = true;
-            commentsBoxContainer.addEventListener(AnimatedCanvas.TWEEN_COMPLETE,
-                                                  hideLoadingIndicator);
-            fetchComments();
-          }
+        // If data is already in the cache, then just show it
+        if (CommentCache.hasFreshComments(data.post_id, data.comments.count))
+          commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
+            CommentCache.commentCache[data.post_id]));
+        // Fetch data, and show loader
+        else {
+          loadingIndicator.immediateVisible = true;
+          commentsBoxContainer.addEventListener(AnimatedCanvas.TWEEN_COMPLETE,
+                                                hideLoadingIndicator);
+          fetchComments();
         }
       }
 
@@ -201,7 +202,10 @@
         allCommentsContainer.visible = (new_count > MaxComments);
 
         // If we didn't really change our number, then screw it
-        if (commentCount == new_count) return;
+        // If we're doing shit RIGHT NOW, then nevermind, also
+        if (commentCount == new_count ||
+            populatingComments ||
+            fetchingComments) return;
         commentCount = new_count;
 
         // If count is 0, then screw it
@@ -248,6 +252,9 @@
 
     // Populate our comments with given array
     private function populateComments(newComments:*):void {
+      // Mutex flag around this function
+      populatingComments = true;
+
       // If comments isn't an Array, then there are no comments
       if (!(newComments is Array)) newComments = new Array();
       var commentsArray:Array = newComments.slice(0, MaxComments);
@@ -275,6 +282,9 @@
 
       // Not the first anymore
       firstPull = false;
+
+      // Not populating comments now
+      populatingComments = false;
     }
 
     // We remove any stories above our max here
