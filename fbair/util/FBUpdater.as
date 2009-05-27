@@ -77,7 +77,7 @@ package fbair.util {
 
     // Deletes our autoupdate file if present
     public static function deleteInstallationFile():void {
-      var file:File = FlexUtil.getPath(AppFileName);
+      var file:File = FlexUtil.getUserPath(AppFileName);
       if (file.exists) {
         try { file.deleteFile(); }
         catch(error:Error) {/* do nothing */}
@@ -112,7 +112,7 @@ package fbair.util {
     private static function newVersionLoaded(event:Event):void {
       stream.readBytes(bytes, 0, stream.bytesAvailable);
 
-      var file:File = FlexUtil.getPath(AppFileName);
+      var file:File = FlexUtil.getUserPath(AppFileName);
 
       var fileStream:FileStream = new FileStream();
       fileStream.addEventListener(Event.CLOSE, fileClosed);
@@ -126,7 +126,7 @@ package fbair.util {
     // So at this point we're ready to trigger the auto-update
     private static function fileClosed(event:Event):void {
       var updater:Updater = new Updater();
-      var file:File = FlexUtil.getPath(AppFileName);
+      var file:File = FlexUtil.getUserPath(AppFileName);
       updater.update(file, String(newestVersion));
     }
 
