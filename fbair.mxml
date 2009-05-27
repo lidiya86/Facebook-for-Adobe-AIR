@@ -79,6 +79,7 @@
     private function applicationComplete(event:FlexEvent):void {
       // Don't enable our composer until we're authorized
       composer.enabled = false;
+      filtersBar.enabled = false;
 
       // If we have stored session data, let's pull it in
       var windowData:Object = Preferences.getPreference("window");
@@ -196,6 +197,7 @@
 
       // Allow Composing
       composer.enabled = true;
+      filtersBar.enabled = true;
 
       // Fetch filters
       filtersBar.fetchFilters();
