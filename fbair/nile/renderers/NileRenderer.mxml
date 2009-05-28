@@ -24,6 +24,7 @@
                      xmlns:util="fbair.util.display.*"
                      implements="fbair.gc.Recyclable"
                      includeInLayout="{false}"
+                     minWidth="349"
                      width="100%"
                      animate="false"
                      animateOut="true"
