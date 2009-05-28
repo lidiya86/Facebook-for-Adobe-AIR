@@ -13,34 +13,19 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
-<!-- This HBox acts shows who Likes an entry in the Stream.
-     There's exactly one of these in every NileRenderer -->
-<util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
-                     xmlns:util="fbair.util.display.*"
-                     animateOut="true"
-                     animateOnce="true" >
+<!-- Sentence of who likes this.
+     eg. "Bobby, Mary, You and 14 others like this." -->
+<mx:Text xmlns:mx="http://www.adobe.com/2006/mxml"
+         styleName="likeText"
+         htmlText="{data.likes.likeText}" >
 
-  <mx:HBox width="100%"
-           styleName="likesRenderer" >
-
-    <mx:Image source="@Embed('../../assets/like.png')" />
-
-    <!-- Sentence of who likes this.
-         eg. "Bobby, Mary, You and 14 others like this." -->
-    <mx:Text id="likeText"
-             htmlText="{data.likes.likeText}"
-             width="100%" />
-
-  </mx:HBox>
   <mx:Script><![CDATA[
     import fb.FBEvent;
     import fb.util.StringUtil;
+    import fb.util.Output;
 
     import fbair.nile.Nile;
     import fbair.util.ProfileCache;
-
-    // Total explicit names provided (friends + others)
-    private var totalNames:int = 0;
 
     // "data" in this context is stream.likes
     override public function set data(new_data:Object):void {
@@ -56,7 +41,6 @@
         liked_ids = liked_ids.concat(data.likes.friends);
       if (data.likes.sample is Array)
         liked_ids = liked_ids.concat(data.likes.sample);
-      totalNames = liked_ids.length;
 
       // Fetch the names we need, or just update asap if none
       if (liked_ids.length > 0) {
@@ -81,67 +65,64 @@
     // Function painstakingly applies the logic of
     // english to our "Likes" sentence.
     private function buildLikeText():String {
-      var remaining:int = totalNames;
+      var builtText:String = "";
+      var likePeople:Array = new Array();
+
+      if (data.likes.friends is Array)
+        for each (var friend:int in data.likes.friends)
+          likePeople.push(friend);
+
+      if (data.likes.sample is Array)
+        for each (var sample:int in data.likes.sample)
+          likePeople.push(sample);
+
+      var numToShow:int = data.likes.user_likes ? 1 : 2;
+      if (likePeople.length > numToShow)
+        likePeople = likePeople.slice(-numToShow);
+
+      var remaining:int = likePeople.length;
       if (data.likes.user_likes) remaining++;
       var others:int = data.likes.count - remaining;
       if (others > 0) remaining++;
 
-      var builtText:String = "";
-
       if (data.likes.user_likes) {
-        builtText += "You";
         remaining--;
-        if (remaining == 1) builtText += " and ";
-        else if (remaining >= 2) builtText += ", ";
+        builtText += 'You';
+        if (remaining == 1) builtText += ' and ';
+        else if (remaining >= 2) builtText += ', ';
       }
 
-      if (data.likes.friends is Array) {
-        for each (var friend:int in data.likes.friends) {
-          remaining--;
-          if (ProfileCache.hasProfile(String(friend))) {
-            builtText += StringUtil.linkify(
-              ProfileCache.cache[String(friend)].name,
-              ProfileCache.cache[String(friend)].url);
-            if (remaining == 1) builtText += " and ";
-            else if (remaining >= 2) builtText += ", ";
-          }
-        }
-      }
-
-      if (data.likes.sample is Array) {
-        for each (var sample:int in data.likes.sample) {
-          remaining--;
-          if (ProfileCache.hasProfile(String(sample))) {
-            builtText += StringUtil.linkify(
-              ProfileCache.cache[String(sample)].name,
-              ProfileCache.cache[String(sample)].url);
-            if (remaining == 1) builtText += " and ";
-            else if (remaining >= 2) builtText += ", ";
-          }
+      for each (var person:int in likePeople) {
+        remaining--;
+        if (ProfileCache.hasProfile(String(person))) {
+          var prof:Object = ProfileCache.cache[String(person)];
+          builtText +=
+            StringUtil.linkify(prof.name, prof.url, false, '808080');
+          if (remaining == 1) builtText += ' and ';
+          else if (remaining >= 2) builtText += ', ';
         }
       }
 
       if (others > 0) {
         var othersText:String;
-        if (builtText != "") {
-          othersText = others + " other" + (others == 1 ? "" : "s");
-        } else {
-          othersText = others + (others == 1 ? " person" : " people");
-        }
-        if (data.permalink) {
-          builtText += StringUtil.linkify(othersText, data.permalink);
-        } else {
+        if (builtText.length > 0)
+          othersText = StringUtil.pluralize('other', others);
+        else
+          othersText = others + (others == 1 ? ' person' : ' people');
+
+        if (data.permalink)
+          builtText +=
+            StringUtil.linkify(othersText, data.permalink, false, '808080');
+        else
           builtText += othersText;
-        }
       }
 
-      if (totalNames == 1 && others == 0 && !data.user_likes) {
-        builtText += " likes this.";
-      } else {
-        builtText += " like this.";
-      }
+      if (likePeople.length == 1 && others == 0 && !data.user_likes)
+        builtText += ' likes this';
+      else
+        builtText += ' like this';
 
       return builtText;
     }
   ]]></mx:Script>
-</util:AnimatedCanvas>
+</mx:Text>

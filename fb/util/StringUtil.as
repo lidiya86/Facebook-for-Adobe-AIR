@@ -21,13 +21,14 @@ package fb.util {
 
     // Simple util builds an html link out of a string and a url
     public static function linkify(str:String, url:String,
-                                   bold:Boolean=true):String {
+                                   bold:Boolean=true,
+                                   color:String='3b5998'):String {
       if (empty(str)) return '';
       var link:String = '<a href="' + url + '">' + str + '</a>';
       if (bold) {
         link = '<b>' + link + '</b>';
       }
-      return colorize(link, '3b5998');
+      return colorize(link, color);
     }
 
     // Wrap some text in a font color tag

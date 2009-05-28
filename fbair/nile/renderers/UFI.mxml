@@ -17,9 +17,9 @@
      use on facebook for getting and displaying likes and comments about
      stories, photos, and other content -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
-                     xmlns:renderer="fbair.nile.renderers.*"
-                     xmlns:util="fbair.util.display.*"
-                     creationComplete="creationComplete(event)" >
+         xmlns:renderer="fbair.nile.renderers.*"
+         xmlns:util="fbair.util.display.*"
+         creationComplete="creationComplete(event)" >
 
   <!-- We use these fades when replacing the preview with the renderer -->
   <mx:Fade id="fadeOut"
@@ -32,9 +32,9 @@
 
   <!-- The UFI Preview displays if there is any feedback to a stream
        story. Clicking the preview replaces it with the UFI renderer -->
-  <mx:HBox width="100%"
-           id="ufiPreview"
-           styleName="ufiPreview" >
+  <util:FlowBox width="100%"
+                id="ufiPreview"
+                styleName="ufiPreview" >
 
     <!-- Display number of comments, or add a comment -->
     <util:FBButton autoStyle="true"
@@ -64,19 +64,10 @@
     </util:FBButton>
 
     <!-- Show how many people like this in the preview -->
-    <mx:HBox id="likesPreview"
-             styleName="likesPreview"
-             visible="{data.likes.count > 0}"
-             includeInLayout="{data.likes.count > 0}"
-             showEffect="fadeIn"
-             click="{ufiMode = ufiMode == UFI_PREVIEW ?
-                     UFI_DETAIL : UFI_PREVIEW}" >
-      <util:LinkLabel styleName="likesPreviewLabel"
-                    text="{likeTitle(data.likes.count,
-                           data.likes.user_likes)}" />
-    </mx:HBox>
-
-  </mx:HBox>
+    <renderer:LikesRenderer id="likesRenderer"
+                            maxWidth="{width}"
+                            data="{data}" />
+  </util:FlowBox>
 
   <!-- The UFI renderer displays the actual likes and comments -->
   <util:AnimatedCanvas id="ufiDetail"
@@ -89,12 +80,7 @@
     <mx:VBox width="100%"
              id="ufiRenderers"
              styleName="ufiRenderers" >
-      <!-- These renderers show the Likes and Comments for this entry -->
-      <renderer:LikesRenderer id="likesRenderer"
-                              width="100%"
-                              data="{data}"
-                              animateIn="{ufiRevealed}" />
-
+      <!-- These renderers show the Comments for this entry -->
       <renderer:CommentsRenderer id="commentsRenderer"
                                  width="100%"
                                  data="{data}" />
@@ -165,13 +151,6 @@
           // Update our likesRenderer now that we've changed it's data
           likesRenderer.update();
         });
-    }
-
-    private function likeTitle(number:int, userLikes:Boolean):String {
-      if (number == 1 && userLikes)
-        return 'You like this';
-      return number + ((number == 1) ? ' person likes this'
-                                     : ' people like this');
     }
 
     private function commentTitle(comments:Number, mode:int):String {
@@ -253,7 +232,7 @@
     // Called when we deleted a comment
     private function commentRemoved(event:FBEvent):void {
       // If not revealed, or not us, then don't care
-      if (!commentsRenderer.revealed || 
+      if (!commentsRenderer.revealed ||
           event.data.post_id != data.post_id) return;
 
       commentsRenderer.removeLocalComment(event.data.id);
@@ -284,7 +263,7 @@
 
       // Mark latest update
       commentsRenderer.markLatestUpdate();
-      
+
       // Reveal us, if needed
       if (data.filter_key == NileContainer.CurrentFilter)
         ufiMode = UFI_DETAIL;

@@ -103,6 +103,12 @@
   paddingBottom: 2;
 }
 
+.likeText {
+  paddingTop: 2;
+  paddingLeft: 2;
+  color: #aaaaaa;
+}
+
 .mediaImage {
   bottom: 1;
   top: 1;
@@ -180,6 +186,7 @@
   paddingTop: -6;
   paddingLeft: -6;
   horizontalGap: -2;
+  verticalGap: -4;
 }
 
 .ufiRenderers {

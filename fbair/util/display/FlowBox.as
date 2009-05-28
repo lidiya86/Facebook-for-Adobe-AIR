@@ -18,12 +18,14 @@ package fbair.util.display {
     private var _childrenChanged:Boolean = false;
 
     public function FlowBox() {
-      this.addEventListener(ResizeEvent.RESIZE, resizeHanlder);
+      this.addEventListener(ResizeEvent.RESIZE, resizeHandler);
     }
 
     // If this component is resized, the child
     //   components must be laid out again
-    private function resizeHanlder(e:Event):void {
+    private function resizeHandler(event:Event):void {
+      //invalidateSize();
+      validateNow();
       relayoutChildren();
     }
 
@@ -144,7 +146,7 @@ package fbair.util.display {
 
     // Flag that the children of this control have changed,
     //   and should be redrawn at the next convenient time
-    private function relayoutChildren():void {
+    public function relayoutChildren(event:Event = null):void {
       _childrenChanged = true;
       invalidateProperties();
     }
@@ -174,37 +176,43 @@ package fbair.util.display {
     public override function addChild(child:DisplayObject):DisplayObject {
       _children.addItem(child);
       relayoutChildren();
+      child.addEventListener(ResizeEvent.RESIZE, relayoutChildren);
       return child;
     }
-    
+
     override public function addChildAt(child:DisplayObject, index:int):DisplayObject {
       _children.addItemAt(child, index);
       relayoutChildren();
+      child.addEventListener(ResizeEvent.RESIZE, relayoutChildren);
       return child;
     }
-    
+
     override public function removeChild(child:DisplayObject):DisplayObject {
       var tmp:DisplayObject = _children.removeItemAt(
         _children.getItemIndex(child)) as DisplayObject;
+      tmp.removeEventListener(ResizeEvent.RESIZE, relayoutChildren);
       relayoutChildren();
       return tmp;
     }
-    
+
     override public function removeChildAt(index:int):DisplayObject {
       var tmp:DisplayObject = _children.removeItemAt(index) as DisplayObject;
+      tmp.removeEventListener(ResizeEvent.RESIZE, relayoutChildren);
       relayoutChildren();
       return tmp;
     }
-    
+
     override public function removeAllChildren():void {
+      for each (var child:DisplayObject in _children)
+        child.removeEventListener(ResizeEvent.RESIZE, relayoutChildren);
       _children.removeAll();
       relayoutChildren();
     }
-    
+
     override public function getChildren():Array {
       return _children.toArray();
     }
-    
+
     override public function getChildIndex(child:DisplayObject):int {
       return _children.getItemIndex(child);
     }
@@ -219,8 +227,10 @@ package fbair.util.display {
         var tmp:Array = value as Array;
         _children = new ArrayCollection();
 
-        for each (var child:DisplayObject in tmp)
-          _children.addItem( child );
+        for each (var child:DisplayObject in tmp) {
+          _children.addItem(child);
+          child.addEventListener(ResizeEvent.RESIZE, relayoutChildren);
+        }
       }
       relayoutChildren();
     }
