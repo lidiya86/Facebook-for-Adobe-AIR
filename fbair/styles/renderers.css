@@ -20,9 +20,8 @@
   font-weight: normal;
 }
 
-.actorsText {
-  paddingLeft: -2;
-  paddingRight: -4;
+.actorTitle {
+  paddingRight: 2;
   paddingTop: -2;
 }
 
@@ -64,7 +63,7 @@
 }
 
 .commentTimeStamp {
-  color: #AAA;
+  color: #aaaaaa;
 }
 
 .commentVBox {
@@ -127,12 +126,22 @@
   paddingTop: 6;
 }
 
+.nileStoryHeader {
+  paddingLeft: -2;
+  paddingTop: -2;
+}
+
+.nileStoryTarget {
+  paddingLeft: -2;
+}
+
 .noItemDetail {
-  borderColor: #dddddd;
-  borderSides: "left";
-  borderStyle: solid;
-  borderThickness: 2;
+  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
+  leftBorderColor: #dddddd;
+  leftBorderThickness: 2;
+  insetTopBorder: 2;
   paddingBottom: -4;
+  paddingTop: -2;
   paddingLeft: 6;
   verticalGap: -2;
 }
@@ -155,6 +164,11 @@
 
 .storyContent {
   verticalGap: 3;
+}
+
+.targetArrow {
+  color: #aaaaaa;
+  paddingTop: 2;
 }
 
 .timePhrase {

@@ -1,4 +1,4 @@
-.actorsText, ApplicationBase, FBButton, GrowableTextArea {
+.actorTitle, ApplicationBase, FBButton, GrowableTextArea {
   font-size: 13;
 }
 
@@ -6,7 +6,7 @@ UFI, .actionButtonLabel, .commentInput, .contentBox, .commentButtonDisabled, .co
   font-size: 11;
 }
 
-.itemSource, .commentTimeStamp {
+.itemSource, .targetArrow, .commentTimeStamp {
   font-size: 9;
 }
 

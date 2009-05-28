@@ -1,8 +1,8 @@
-.actorsText, ApplicationBase, FBButton, GrowableTextArea {
+.actorTitle, ApplicationBase, FBButton, GrowableTextArea {
   font-size: 11;
 }
 
-.actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
+.targetArrow, .actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
   font-size: 9;
 }
 

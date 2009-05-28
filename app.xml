@@ -61,16 +61,16 @@
     <resizable>true</resizable>
 
     <!-- The window's initial width. Optional. -->
-    <width>380</width> <!-- was 366 -->
+    <width>360</width> <!-- was 366 -->
 
     <!-- The window's initial height. Optional. -->
     <height>700</height>
 
     <!-- The window's initial minimum size, specified as a width/height pair, such as "400 200". Optional. -->
-    <minSize>380 350</minSize>
+    <minSize>360 350</minSize>
 
     <!-- The window's initial maximum size, specified as a width/height pair, such as "1600 1200". Optional. -->
-    <maxSize>380 3200</maxSize>
+    <maxSize>360 3200</maxSize>
   </initialWindow>
 
   <!-- The subpath of the standard default installation location to use. Optional. -->

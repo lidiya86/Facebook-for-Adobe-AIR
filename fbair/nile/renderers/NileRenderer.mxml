@@ -24,7 +24,6 @@
                      xmlns:util="fbair.util.display.*"
                      implements="fbair.gc.Recyclable"
                      includeInLayout="{false}"
-                     minWidth="369"
                      width="100%"
                      animate="false"
                      animateOut="true"
@@ -45,20 +44,35 @@
              styleName="storyContent" >
 
       <mx:HBox width="100%" >
-        <mx:HBox width="100%"
-                 horizontalGap="4" >
-          <!-- Main text of actor's name and their status message -->
-          <mx:Text styleName="actorsText"
-                   htmlText="{data.actors}" />
+        <util:FlowBox width="100%"
+                      horizontalGap="0"
+                      verticalGap="-4"
+                      styleName="nileStoryHeader" >
+          <!-- Actor's name -->
+          <mx:Label styleName="actorTitle"
+                   htmlText="{StringUtil.linkify(data.actorName,
+                              data.actorURL)}" />
+
+          <!-- Target of wall-post -->
+          <mx:HBox styleName="nileStoryTarget"
+                   visible="{data.targetName != null}"
+                   horizontalGap="-4"
+                   includeInLayout="{data.targetName != null}">
+            <mx:Label styleName="targetArrow" text="►" />
+
+            <mx:Label styleName="actorTitle"
+                     htmlText="{StringUtil.linkify(data.targetName,
+                                 data.targetURL)}" />
+          </mx:HBox>
 
           <!-- Tells us the time ago since it happened -->
           <util:LinkText id="timePhrase"
                          styleName="timePhrase"
                          click="{navigateToURL(new URLRequest(data.permalink))}"
                          text="{TimeUtil.describeWhen(data.created_time)}" />
-        </mx:HBox>
+        </util:FlowBox>
 
-        <!-- No deleting until bug fixed in stream.remove -->
+        <!-- Removes this story if you are able -->
         <mx:Button id="storyDeleteButton"
                    styleName="storyDeleteButton"
                    buttonMode="true"
@@ -261,17 +275,15 @@
       if (!ProfileCache.hasProfile(data.actor_id)) return;
       if (data.target_id && !ProfileCache.hasProfile(data.target_id)) return;
 
-      // Get our actor data
       var actorData:Object = ProfileCache.cache[data.actor_id];
+      data.actorName = actorData.name;
+      data.actorURL = actorData.url;
 
-      // Build our body that contains actor/target/message
-      var body:String = StringUtil.linkify(actorData.name, actorData.url);
-      if (ProfileCache.hasProfile(data.target_id))
-        body += StringUtil.colorize(' ► ', 'aaaaaa') +
-                StringUtil.linkify(ProfileCache.cache[data.target_id].name,
-                                   ProfileCache.cache[data.target_id].url);
-
-      data.actors = body;
+      if (ProfileCache.hasProfile(data.target_id)) {
+        var targetData:Object = ProfileCache.cache[data.target_id];
+        data.targetName = targetData.name;
+        data.targetURL = targetData.url;
+      }
     }
 
     // Called to delete ourself!
