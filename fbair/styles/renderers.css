@@ -1,3 +1,8 @@
+.actionButtons {
+  paddingLeft: -6;
+  horizontalGap: -2;
+}
+
 .actionButtonUp, .actionButtonOver, .actionButtonDown, .actionButtonDisabled {
   borderSkin: Embed(source='../assets/action2_button.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
   paddingBottom: 2;
@@ -105,7 +110,7 @@
 
 .likeText {
   paddingTop: 2;
-  paddingLeft: 2;
+  paddingLeft: -2;
   color: #aaaaaa;
 }
 
@@ -184,9 +189,7 @@
 .ufiPreview {
   paddingBottom: -2;
   paddingTop: -6;
-  paddingLeft: -6;
-  horizontalGap: -2;
-  verticalGap: -4;
+  verticalGap: -6;
 }
 
 .ufiRenderers {

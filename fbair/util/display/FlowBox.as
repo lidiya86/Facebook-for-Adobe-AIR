@@ -25,7 +25,7 @@ package fbair.util.display {
     //   components must be laid out again
     private function resizeHandler(event:Event):void {
       //invalidateSize();
-      validateNow();
+      //validateNow();
       relayoutChildren();
     }
 

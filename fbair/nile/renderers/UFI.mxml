@@ -36,35 +36,38 @@
                 id="ufiPreview"
                 styleName="ufiPreview" >
 
-    <!-- Display number of comments, or add a comment -->
-    <util:FBButton autoStyle="true"
-                   styleNamePrefix="actionButton"
-                   includeInLayout="{MathUtil.or(data.comments.can_post,
-                                     data.comments.count > 0)}"
-                   visible="{MathUtil.or(data.comments.can_post,
-                             data.comments.count > 0)}"
-                   click="commentClicked(event)"
-                   direction="horizontal" >
-      <mx:Image source="@Embed('../../assets/comment.png')" />
-      <mx:Label styleName="actionButtonLabel"
-                text="{commentTitle(data.comments.count, ufiMode)}" />
-    </util:FBButton>
+    <mx:HBox styleName="actionButtons" >
+      <!-- Display number of comments, or add a comment -->
+      <util:FBButton autoStyle="true"
+                     styleNamePrefix="actionButton"
+                     includeInLayout="{MathUtil.or(data.comments.can_post,
+                                       data.comments.count > 0)}"
+                     visible="{MathUtil.or(data.comments.can_post,
+                               data.comments.count > 0)}"
+                     click="commentClicked(event)"
+                     direction="horizontal" >
+        <mx:Image source="@Embed('../../assets/comment.png')" />
+        <mx:Label styleName="actionButtonLabel"
+                  text="{commentTitle(data.comments.count, ufiMode)}" />
+      </util:FBButton>
 
-    <!-- Like button -->
-    <util:FBButton id="likeLink"
-                   autoStyle="true"
-                   styleNamePrefix="actionButton"
-                   visible="{data.likes.can_like}"
-                   includeInLayout="{data.likes.can_like}"
-                   click="likeClicked(event)"
-                   direction="horizontal" >
-      <mx:Image source="@Embed('../../assets/like.png')" />
-      <mx:Label styleName="actionButtonLabel"
-                text="{data.likes.user_likes ? 'Unlike' : 'Like'}" />
-    </util:FBButton>
+      <!-- Like button -->
+      <util:FBButton id="likeLink"
+                     autoStyle="true"
+                     styleNamePrefix="actionButton"
+                     visible="{data.likes.can_like}"
+                     includeInLayout="{data.likes.can_like}"
+                     click="likeClicked(event)"
+                     direction="horizontal" >
+        <mx:Image source="@Embed('../../assets/like.png')" />
+        <mx:Label styleName="actionButtonLabel"
+                  text="{data.likes.user_likes ? 'Unlike' : 'Like'}" />
+      </util:FBButton>
+    </mx:HBox>
 
     <!-- Show how many people like this in the preview -->
     <renderer:LikesRenderer id="likesRenderer"
+                            styleName="likeText"
                             maxWidth="{width}"
                             data="{data}" />
   </util:FlowBox>

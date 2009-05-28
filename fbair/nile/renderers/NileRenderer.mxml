@@ -249,7 +249,7 @@
       // Determine whether we have special content
       //   that requires a "ContentRenderer".
       // If we don't already have a ContentRenderer...
-      if (!content && hasRealAttachment()) {
+      if (!content && hasRealAttachment) {
         // Turn attachment into collection for binding
         if ((data.attachment.media is Array)) {
           for (var i:int = 0; i < data.attachment.media.length; i++) {
@@ -268,10 +268,10 @@
       }
     }
 
-    private function hasRealAttachment():Boolean {
+    private function get hasRealAttachment():Boolean {
       return data.attachment.media is Array
         || data.attachment.properties is Array
-        || (data.attachment.title && data.attachment.title != '')
+        || (data.attachment.name && data.attachment.name != '')
         || (data.attachment.description && data.attachment.description != '');
     }
 

@@ -16,7 +16,6 @@
 <!-- Sentence of who likes this.
      eg. "Bobby, Mary, You and 14 others like this." -->
 <mx:Text xmlns:mx="http://www.adobe.com/2006/mxml"
-         styleName="likeText"
          htmlText="{data.likes.likeText}" >
 
   <mx:Script><![CDATA[
