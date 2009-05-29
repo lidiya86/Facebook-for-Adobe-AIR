@@ -109,9 +109,9 @@
 }
 
 .likeText {
-  paddingTop: 2;
-  paddingLeft: -2;
   color: #aaaaaa;
+  left: -2;
+  top: 2;
 }
 
 .mediaImage {
@@ -140,6 +140,7 @@
 .nileStoryHeader {
   paddingLeft: -2;
   paddingTop: -2;
+  verticalGap: -4;
 }
 
 .nileStoryTarget {

@@ -11,6 +11,7 @@
 
 package fbair.util.display.layout {
 
+  import mx.styles.IStyleClient;
   import mx.containers.BoxDirection;
   import mx.containers.utilityClasses.BoxLayout;
   import mx.core.EdgeMetrics;
@@ -90,26 +91,55 @@ package fbair.util.display.layout {
       // for every child in layout, size and move
       for (i = 0; i < n; i++) {
         child = target.getChildAt(i) as IUIComponent;
-        if (!child.includeInLayout) continue;
+
+        // relative positions
+        var relativeTop:Number = 0;
+        var relativeLeft:Number = 0;
+        var relativeBottom:Number = 0;
+        var relativeRight:Number = 0;
+        if (child is IStyleClient) {
+          relativeTop = (child as IStyleClient).getStyle("top");
+          relativeLeft = (child as IStyleClient).getStyle("left");
+          relativeBottom = (child as IStyleClient).getStyle("bottom");
+          relativeRight = (child as IStyleClient).getStyle("right");
+          if (isNaN(relativeTop)) relativeTop = 0;
+          if (isNaN(relativeLeft)) relativeLeft = 0;
+          if (isNaN(relativeBottom)) relativeBottom = 0;
+          if (isNaN(relativeRight)) relativeRight = 0;
+        }
+
+        if (!child.includeInLayout) {
+          child.move(Math.floor(vm.left + relativeLeft),
+                     Math.floor(vm.top + relativeTop));
+          continue;
+        }
 
         // get child's dimensions
         var percentWidth:Number = child.percentWidth;
         var percentHeight:Number = child.percentHeight;
         var width:Number;
         var height:Number;
-        if (percentWidth)
-          width = Math.max(child.minWidth,
-                  Math.min(child.maxWidth,
-                  ((percentWidth >= 100) ? w : (w * percentWidth / 100))));
-        else
-          width = child.getExplicitOrMeasuredWidth();
+        var expW:Number = child.getExplicitOrMeasuredWidth();
+        var expH:Number = child.getExplicitOrMeasuredHeight();
 
-        if (percentHeight)
+        if (percentWidth) {
+          width = (percentWidth >= 100) ? w : (w * percentWidth / 100);
+          if (!isNaN(expW) && expW > 0)
+            width = Math.min(width, expW);
+          width = Math.max(child.minWidth, Math.min(child.maxWidth, width));
+        } else {
+          width = expW;
+        }
+
+        if (percentHeight) {
+          height = (percentHeight >= 100) ? h : (h * percentHeight / 100);
+          if (!isNaN(expH) && expH > 0)
+            height = Math.min(height, expH);
           height = Math.max(child.minHeight,
-                   Math.min(child.maxHeight,
-                   ((percentHeight >= 100) ? h : (h * percentHeight / 100))));
-        else
-          height = child.getExplicitOrMeasuredHeight();
+                            Math.min(child.maxHeight, height));
+        } else {
+          height = expH;
+        }
 
         // if scaled and zoom is playing, best to let the sizes be non-integer
         if (child.scaleX == 1 && child.scaleY == 1)
@@ -117,10 +147,14 @@ package fbair.util.display.layout {
         else
           child.setActualSize(width, height);
 
+        // offset size due to relative padding and flex resize effect bug
+        width = child.width + relativeLeft + relativeRight;
+        height = child.height + relativeTop + relativeBottom;
+
         // position within the flow box
         if (isVertical) {
           // if it's overflowing it's set, create a new set
-          if (itemsInSet > 0 && setHeight + vGap + child.height > h) {
+          if (itemsInSet > 0 && setHeight + vGap + height > h) {
             totalWidth += setWidth + hGap;
             totalHeight = Math.max(totalHeight, setHeight);
             setWidth = 0;
@@ -129,17 +163,17 @@ package fbair.util.display.layout {
           }
 
           // add to the set
-          left = vm.left + totalWidth;
-          top = vm.top + setHeight;
+          left = vm.left + relativeLeft + totalWidth;
+          top = vm.top + relativeTop + setHeight;
           child.move(Math.floor(left), Math.floor(top));
 
           // update set attributes
-          setHeight = (itemsInSet > 0 ? vGap : 0) + child.height;
-          setWidth = Math.max(setWidth, child.width);
+          setHeight += (itemsInSet > 0 ? vGap : 0) + height;
+          setWidth = Math.max(setWidth, width);
           itemsInSet++;
         } else {
           // if it's overflowing it's set, create a new set
-          if (itemsInSet > 0 && setWidth + hGap + child.width > w) {
+          if (itemsInSet > 0 && setWidth + hGap + width > w) {
             totalWidth = Math.max(totalWidth, setWidth);
             totalHeight += setHeight + vGap;
             setWidth = 0;
@@ -148,13 +182,13 @@ package fbair.util.display.layout {
           }
 
           // add to the set
-          left = vm.left + setWidth;
-          top = vm.top + totalHeight;
+          left = vm.left + relativeLeft + setWidth;
+          top = vm.top + relativeTop + totalHeight;
           child.move(Math.floor(left), Math.floor(top));
 
           // update set attributes
-          setHeight = Math.max(setHeight, child.height);
-          setWidth = (itemsInSet > 0 ? hGap : 0) + child.width;
+          setHeight = Math.max(setHeight, height);
+          setWidth += (itemsInSet > 0 ? hGap : 0) + width;
           itemsInSet++;
         }
       }

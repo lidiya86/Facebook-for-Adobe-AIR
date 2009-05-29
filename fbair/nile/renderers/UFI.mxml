@@ -68,6 +68,7 @@
     <!-- Show how many people like this in the preview -->
     <renderer:LikesRenderer id="likesRenderer"
                             styleName="likeText"
+                            width="100%"
                             maxWidth="{width}"
                             data="{data}" />
   </util:FlowBox>

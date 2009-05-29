@@ -26,6 +26,8 @@
     import fbair.nile.Nile;
     import fbair.util.ProfileCache;
 
+    private static const MaxNames:int = 5;
+
     // "data" in this context is stream.likes
     override public function set data(new_data:Object):void {
       if (data && data.likes.likeText)
@@ -75,7 +77,11 @@
         for each (var sample:int in data.likes.sample)
           likePeople.push(sample);
 
-      var numToShow:int = data.likes.user_likes ? 1 : 2;
+
+      var numToShow:int = MaxNames;
+      if (data.likes.user_likes)
+        numToShow--;
+
       if (likePeople.length > numToShow)
         likePeople = likePeople.slice(-numToShow);
 

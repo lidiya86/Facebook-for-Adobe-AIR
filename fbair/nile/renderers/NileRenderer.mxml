@@ -46,14 +46,11 @@
 
       <mx:HBox width="100%" >
         <util:FlowBox width="100%"
-                      horizontalGap="0"
-                      verticalGap="-4"
                       styleName="nileStoryHeader" >
           <!-- Actor's name -->
           <mx:Label styleName="actorTitle"
                    htmlText="{StringUtil.linkify(data.actorName,
                               data.actorURL)}" />
-
           <!-- Target of wall-post -->
           <mx:HBox styleName="nileStoryTarget"
                    visible="{data.targetName != null}"
