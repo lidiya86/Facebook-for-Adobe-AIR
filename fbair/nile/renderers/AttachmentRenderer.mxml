@@ -59,6 +59,20 @@
              maxHeight="{numMediaItems == 1 ? 63 : 47}"
              includeInLayout="{!StringUtil.empty(itemDescription.htmlText)}"
              visible="{itemDescription.includeInLayout}" />
+
+    <!-- Renders the properties of a story, such as event time/place -->
+    <mx:Repeater id="itemProperties"
+                 dataProvider="{itemPropertyList}"
+                 recycleChildren="true" >
+      <mx:HBox styleName="itemProperty"
+               width="100%" >
+        <mx:Label styleName="itemPropertyName"
+                  text="{itemProperties.currentItem.name + ':'}" />
+        <mx:Text  styleName="itemPropertyText"
+                  width="100%"
+                  text="{itemProperties.currentItem.text}" />
+      </mx:HBox>
+    </mx:Repeater>
   </mx:VBox>
 
   <mx:Script><![CDATA[
@@ -70,6 +84,7 @@
     import fbair.util.HashArray;
 
     import mx.events.FlexEvent;
+    import mx.collections.ArrayCollection;
 
     public static const MaxImageWidth:int = 117;
     public static const MaxImageHeight:int = 160;
@@ -78,6 +93,8 @@
     // Our list of media items
     public var itemsHash:HashArray = new HashArray();
     [Bindable] public var numMediaItems:int = 0;
+
+    [Bindable] public var itemPropertyList:ArrayCollection;
 
     // When we were created
     private function creationComplete(event:FlexEvent):void {
@@ -118,8 +135,12 @@
       // update the number of media items we have
       numMediaItems = data.media.length;
 
-        // Update our dimensions, if we have a display tree..
+      // Update our dimensions, if we have a display tree..
       if (mediaItems) updateImageDimensions();
+
+      // Create properties
+      if (data.properties is Array)
+        itemPropertyList = new ArrayCollection(data.properties);
     }
 
     // Fight global warming!
