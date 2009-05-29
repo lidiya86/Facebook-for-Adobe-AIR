@@ -69,7 +69,6 @@
     <renderer:LikesRenderer id="likesRenderer"
                             styleName="likeText"
                             width="100%"
-                            maxWidth="{width}"
                             data="{data}" />
   </util:FlowBox>
 
@@ -229,6 +228,7 @@
       ufiRevealed = false;
 
       // Destroy our parts
+      likesRenderer.destroy();
       commentsRenderer.destroy();
       commentBox.destroy();
     }

@@ -16,7 +16,19 @@
 <!-- Sentence of who likes this.
      eg. "Bobby, Mary, You and 14 others like this." -->
 <mx:Text xmlns:mx="http://www.adobe.com/2006/mxml"
-         htmlText="{data.likes.likeText}" >
+         htmlText="{data.likes.likeText}"
+         hideEffect="fadeOut"
+         showEffect="fadeIn" >
+
+   <mx:Fade id="fadeOut"
+            duration="300"
+            alphaTo="0"
+            tweenEnd="{includeInLayout = false}" />
+   <mx:Fade id="fadeIn"
+            duration="300"
+            alphaTo="1"
+            alphaFrom="0"
+            tweenEnd="{includeInLayout = true}" />
 
   <mx:Script><![CDATA[
     import fb.FBEvent;
@@ -30,7 +42,7 @@
 
     // "data" in this context is stream.likes
     override public function set data(new_data:Object):void {
-      if (data && data.likes.likeText)
+      if (new_data && data && data.likes.likeText)
         new_data.likes.likeText = data.likes.likeText;
 
       super.data = new_data;
@@ -61,6 +73,11 @@
 
       if (data.likes.count > 0)
         data.likes.likeText = buildLikeText();
+    }
+
+    // Called when NileRenderer is recycled
+    public function destroy():void {
+      data = null;
     }
 
     // Function painstakingly applies the logic of
