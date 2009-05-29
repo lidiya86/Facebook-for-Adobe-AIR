@@ -26,7 +26,7 @@
     import fbair.nile.Nile;
     import fbair.util.ProfileCache;
 
-    private static const MaxNames:int = 5;
+    private static const MaxNames:int = 3;
 
     // "data" in this context is stream.likes
     override public function set data(new_data:Object):void {
