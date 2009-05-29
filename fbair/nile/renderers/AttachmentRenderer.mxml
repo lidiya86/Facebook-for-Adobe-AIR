@@ -161,6 +161,9 @@
       // Clear itemsHash too
       itemsHash = new HashArray();
 
+      // Reset properties renderer
+      itemPropertyList = null;
+
       // Data to null!
       super.data = null;
     }
