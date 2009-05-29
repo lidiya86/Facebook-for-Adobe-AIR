@@ -4,7 +4,7 @@
 }
 
 .actionButtonUp, .actionButtonOver, .actionButtonDown, .actionButtonDisabled {
-  borderSkin: Embed(source='../assets/action2_button.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
+  borderSkin: Embed(source='../assets/action_button.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
   paddingBottom: 2;
   paddingLeft: 6;
   paddingRight: 4;
@@ -13,7 +13,7 @@
 }
 
 .actionButtonDown {
-  borderSkin: Embed(source='../assets/action2_button_down.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
+  borderSkin: Embed(source='../assets/action_button_down.png',scaleGridTop='3',scaleGridLeft='4',scaleGridBottom='5',scaleGridRight='6');
 }
 
 .actionButtonUp, .actionButtonDisabled {
@@ -76,10 +76,6 @@
   verticalGap: 0;
 }
 
-.commentsPreview {
-  horizontalGap: 2;
-}
-
 .itemDescription, .itemSource {
   color: #808080;
 }
@@ -93,25 +89,11 @@
   paddingBottom: 2;
 }
 
-.itemProperty {
-
-}
-
 .itemPropertyName {
   color: #AAAAAA;
 }
 
 .itemPropertyText {
-  color: #808080;
-}
-
-.likesPreview {
-  horizontalGap: 2;
-  paddingTop: 2;
-  paddingLeft: 2;
-}
-
-.likesPreviewLabel {
   color: #808080;
 }
 
@@ -177,15 +159,6 @@
   upSkin: Embed(source='../assets/photo_frame.png',scaleGridTop='4',scaleGridLeft='4',scaleGridBottom='6',scaleGridRight='6');
 }
 
-.shrinkUFIButton {
-  disabledSkin: Embed(source='../assets/shrink_ufi_over.png');
-  downSkin: Embed(source='../assets/shrink_ufi_over.png');
-  overSkin: Embed(source='../assets/shrink_ufi_over.png');
-  right: 3;
-  top: 6;
-  upSkin: Embed(source='../assets/shrink_ufi.png');
-}
-
 .storyContent {
   verticalGap: 3;
 }
@@ -207,10 +180,6 @@
 
 .ufiRenderers {
   paddingTop: 2;
-}
-
-.ufiUpperLip {
-  borderSkin: Embed(source='../assets/ufi-high.png',scaleGridTop='9',scaleGridLeft='23',scaleGridBottom='12',scaleGridRight='24');
 }
 
 .videoBadge {
