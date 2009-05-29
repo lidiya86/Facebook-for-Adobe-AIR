@@ -64,7 +64,7 @@
     import mx.events.ScrollEvent;
     import mx.utils.ObjectUtil;
 
-    private static const PollingDelay:int = 10000;
+    private static const PollingDelay:int = 30000;
     private static const MinAnimationDelay:int = 500;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
