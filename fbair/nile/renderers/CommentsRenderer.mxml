@@ -196,30 +196,33 @@
       commentCount = data.comments.count;
       if (countWatcher) countWatcher.unwatch();
       countWatcher = BindingUtils.bindSetter(function(new_count:int):void {
-        // If we have more than max, then display link
-        allCommentsContainer.visible = (new_count > MaxComments);
-
-        // If we didn't really change our number, then screw it
-        // If we're doing shit RIGHT NOW, then nevermind, also
-        if (commentCount == new_count || fetchingComments) return;
-        commentCount = new_count;
-
-        // If count is 0, then screw it
-        if (new_count <= 0) return;
-
-        // If <= 3, then we already own it
-        if (new_count <= 3) populateComments(data.comments.comment_list);
-        else {
-          // Perhaps they were already fetched on another filter tab
-          if (CommentCache.hasFreshComments(data.post_id, new_count))
-            commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
-              CommentCache.commentCache[data.post_id]));
-          // Fetch more!
-          else
-            fetchComments();
-        }
-
+        callLater(updatedCommentCount, [new_count]);
       }, data, ["comments", "count"]);
+    }
+
+    private function updatedCommentCount(new_count:int):void {
+      // If we have more than max, then display link
+      allCommentsContainer.visible = (new_count > MaxComments);
+
+      // If we didn't really change our number, then screw it
+      // If we're doing shit RIGHT NOW, then nevermind, also
+      if (commentCount == new_count || fetchingComments) return;
+      commentCount = new_count;
+
+      // If count is 0, then screw it
+      if (new_count <= 0) return;
+
+      // If <= 3, then we already own it
+      if (new_count <= 3) populateComments(data.comments.comment_list);
+      else {
+        // Perhaps they were already fetched on another filter tab
+        if (CommentCache.hasFreshComments(data.post_id, new_count))
+          commentsFetched(new FBEvent(CommentCache.COMMENTS_FETCHED,
+            CommentCache.commentCache[data.post_id]));
+        // Fetch more!
+        else
+          fetchComments();
+      }
     }
 
     // Called when a comment has been deleted by the user inside ourselves

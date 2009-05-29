@@ -60,7 +60,7 @@
 
 .commentRenderer {
   horizontalGap: 5;
-  paddingBottom: 6;
+  paddingBottom: 4;
 }
 
 .commentText {
@@ -218,11 +218,6 @@ AttachmentRenderer {
 
 CommentBox {
   horizontalGap: 5;
-}
-
-CommentRenderer {
-  borderSkin: ClassReference('fbair.gui.skins.FBAIRSkin');
-  bottomBorderColor: #ffffff;
 }
 
 LikesRenderer {
