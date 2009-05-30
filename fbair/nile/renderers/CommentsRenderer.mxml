@@ -37,16 +37,11 @@
                        visible="false"
                        animateOut="true"
                        animateOnce="true">
-    <mx:HBox width="100%"
-             styleName="allComments" >
-      <mx:Image source="@Embed('../../assets/comment.png')" />
-
-      <!-- Sentence of how many people have commented on this -->
-      <mx:Text id="allCommentsText"
-               htmlText="{StringUtil.linkify('View All ' + data.comments.count
-                          + ' comments', data.permalink, false)}"
-               width="100%" />
-    </mx:HBox>
+    <!-- Sentence of how many people have commented on this -->
+    <util:LinkLabel id="allCommentsText"
+                    styleName="allCommentsText"
+                    text="{'See all ' + data.comments.count + ' comments'}"
+                    url="{data.permalink}" />
   </util:AnimatedCanvas>
 
   <!-- This holds the CommentRenderers themselves -->

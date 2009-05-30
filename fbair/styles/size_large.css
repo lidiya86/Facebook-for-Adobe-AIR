@@ -6,7 +6,7 @@ UFI, .actionButtonLabel, .commentInput, .contentBox, .commentButtonDisabled, .co
   font-size: 11;
 }
 
-.itemSource, .targetArrow, .commentTimeStamp {
+.itemSource, .targetArrow, .commentTimeStamp, .allCommentsText {
   font-size: 9;
 }
 

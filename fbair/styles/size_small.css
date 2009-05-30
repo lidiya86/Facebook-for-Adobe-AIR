@@ -2,7 +2,7 @@
   font-size: 11;
 }
 
-.targetArrow, .actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase {
+.targetArrow, .actionButtonLabel, .commentTimeStamp, .itemSource, .timePhrase, .allCommentsText {
   font-size: 9;
 }
 
