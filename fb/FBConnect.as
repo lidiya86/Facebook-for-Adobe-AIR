@@ -212,7 +212,7 @@ package fb {
       dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
         "Validating Session Key"));
       var loggedIn:JSONLoader =
-        FBAPI.callMethod("users.getLoggedInUser");
+        FBAPI.callMethod("users.isAppUser");
       loggedIn.retry = false; // Only try once here, we're watching failure...
       loggedIn.addEventListener(FBEvent.SUCCESS, gotLoggedInUser);
       loggedIn.addEventListener(FBEvent.FAILURE, noLoggedInUser);
@@ -241,8 +241,7 @@ package fb {
 
     // Callback from restserver of whether session key is valid
     private static function gotLoggedInUser(event:FBEvent):void {
-      var logged_in_user_id:Number = event.data as Number;
-      if (logged_in_user_id == session.uid) status = Connected;
+      if (event.data) status = Connected;
       else noLoggedInUser();
     }
 

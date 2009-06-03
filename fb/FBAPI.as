@@ -136,6 +136,7 @@ package fb {
       urlArgs['method'] = method;
       urlArgs['api_key'] = FBConnect.api_key;
       urlArgs['call_id'] = datePrefix + callCount;
+      urlArgs['ss'] = true;
       urlArgs['session_key'] = FBConnect.session.key;
 
       var argsArray:Array = new Array();
