@@ -32,7 +32,7 @@ package fb {
   import flash.net.URLRequest;
   import flash.net.URLRequestMethod;
   import flash.net.URLVariables;
-
+  import mx.utils.ObjectUtil;
   import mx.controls.HTML;
 
   public class FBAPI {
@@ -121,15 +121,14 @@ package fb {
       callCount++;
 
       var urlArgs:URLVariables = new URLVariables();
-      if (callArgs) {
-        for (var key:String in callArgs) {
-          if (callArgs[key] is Array) {
+      if (callArgs)
+        for (var key:String in callArgs)
+          if (!ObjectUtil.isSimple(callArgs[key]))
+            urlArgs[key] = JSON.encode(callArgs[key]);
+          else if (callArgs[key] is Array)
             urlArgs[key] = callArgs[key].join(",");
-          } else {
+          else
             urlArgs[key] = callArgs[key];
-          }
-        }
-      }
 
       urlArgs['v'] = '1.0';
       urlArgs['format'] = 'JSON';

@@ -190,12 +190,11 @@
       // Now lets bind to the count to see when to refetch
       commentCount = data.comments.count;
       if (countWatcher) countWatcher.unwatch();
-      countWatcher = BindingUtils.bindSetter(function(new_count:int):void {
-        callLater(updatedCommentCount, [new_count]);
-      }, data, ["comments", "count"]);
+      countWatcher = BindingUtils.bindSetter(updateCommentCount,
+        data, ["comments", "count"]);
     }
 
-    private function updatedCommentCount(new_count:int):void {
+    private function updateCommentCount(new_count:int):void {
       // If we have more than max, then display link
       allCommentsContainer.visible = (new_count > MaxComments);
 

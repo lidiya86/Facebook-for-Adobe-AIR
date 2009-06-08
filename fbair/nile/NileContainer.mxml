@@ -210,13 +210,14 @@
       // We build our fql query here to call restserver.php.
       // {"order by time desc"} allows us to ensure we get the newest, in order.
       // {"and time > " + latestUpdate} allows us to just get deltas.
-      var query:JSONLoader = FBAPI.callMethod("fql.query", {
-        query:"select post_id, source_id, created_time, actor_id, " +
+      var query:JSONLoader = FBAPI.callMethod("fql.multiquery", {
+        queries:{stream:"select post_id, source_id, created_time, actor_id, " +
           "target_id, app_id, message, attachment, comments, likes, " +
           "permalink, attribution, type, filter_key " +
           "from stream where " +
           requested_filters.join(" or ") + " " +
-          "order by created_time desc"
+          "order by created_time desc",
+          comments:"select post_id, id, fromid, text, time, "}
       });
       query.addEventListener(FBEvent.SUCCESS, updatesReturned);
       query.addEventListener(FBEvent.RETRY, queryRetried);
@@ -230,7 +231,11 @@
 
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
-      data = event.data;
+      var resultsByKey:Object = new Object();
+      for each (var result:Object in event.data)
+        resultsByKey[result.name] = result.results;
+
+      data = resultsByKey.stream;
       if (dataCache[CurrentFilter])
         addEventListener(Event.ENTER_FRAME, afterUpdatesReturned);
     }
