@@ -216,8 +216,7 @@
           "permalink, attribution, type, filter_key " +
           "from stream where " +
           requested_filters.join(" or ") + " " +
-          "order by created_time desc",
-          comments:"select post_id, id, fromid, text, time, "}
+          "order by created_time desc"}
       });
       query.addEventListener(FBEvent.SUCCESS, updatesReturned);
       query.addEventListener(FBEvent.RETRY, queryRetried);
