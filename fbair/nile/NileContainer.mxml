@@ -232,7 +232,7 @@
     private function updatesReturned(event:FBEvent):void {
       var resultsByKey:Object = new Object();
       for each (var result:Object in event.data)
-        resultsByKey[result.name] = result.results;
+        resultsByKey[result.name] = result.fql_result_set;
 
       data = resultsByKey.stream;
       if (dataCache[CurrentFilter])
