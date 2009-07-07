@@ -53,9 +53,9 @@
                               data.actorURL)}" />
           <!-- Target of wall-post -->
           <mx:HBox styleName="nileStoryTarget"
-                   visible="{data.targetName != null}"
+                   visible="{data.targetName}"
                    horizontalGap="-4"
-                   includeInLayout="{data.targetName != null}">
+                   includeInLayout="{data.targetName}">
             <mx:Label styleName="targetArrow" text="►" />
 
             <mx:Label styleName="actorTitle"
@@ -228,13 +228,12 @@
         }
       }
 
-      // Ok NOW that everything is proxied, we set our data, by merging it
       super.data = FlexUtil.merge(data, new ObjectProxy(new_data));
       if (!data) return;
 
       // Get name of our actor, to build message text, if not already built
       // If this entry has a target, let's get that profile data too
-      if (!data.actors) {
+      if (!data.actorName || !data.actorURL) {
         if (data.target_id) {
           ProfileCache.getProfile(data.target_id).addEventListener(
             ProfileCache.PROFILE_FETCHED, profileFetched);
@@ -276,7 +275,7 @@
     private function profileFetched(event:FBEvent):void {
       if (!data) return;
 
-      // Make sure the profile cach has what we need
+      // Make sure the profile cache has what we need
       if (!ProfileCache.hasProfile(data.actor_id)) return;
       if (data.target_id && !ProfileCache.hasProfile(data.target_id)) return;
 

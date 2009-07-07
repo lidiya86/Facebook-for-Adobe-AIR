@@ -69,6 +69,8 @@
     <renderer:LikesRenderer id="likesRenderer"
                             styleName="likeText"
                             width="100%"
+                            minHeight="{StringUtil.empty(data.likeText) ? 0
+                                                                        : 16}"
                             data="{data}" />
   </util:FlowBox>
 

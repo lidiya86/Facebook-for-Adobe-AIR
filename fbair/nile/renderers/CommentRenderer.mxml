@@ -89,12 +89,14 @@
 
       // Fetch the profile data for this user.
       ProfileCache.getProfile(data.fromid).addEventListener(
-        ProfileCache.PROFILE_FETCHED,
-        function(event:FBEvent):void {
-          if (!data) return;
-          data.name = event.data.name;
-          data.url = event.data.url;
-        });
+        ProfileCache.PROFILE_FETCHED, profileFetched);
+    }
+
+    // Called when we've fetched profile data
+    private function profileFetched(event:FBEvent):void {
+      if (!data) return;
+      data.name = event.data.name;
+      data.url = event.data.url;
     }
 
     // Called when user has clicked delete button

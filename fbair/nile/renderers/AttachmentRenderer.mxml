@@ -83,8 +83,9 @@
     import fbair.nile.renderers.MediaItem;
     import fbair.util.HashArray;
 
-    import mx.events.FlexEvent;
     import mx.collections.ArrayCollection;
+    import mx.events.FlexEvent;
+    import mx.utils.ObjectProxy;
 
     public static const MaxImageWidth:int = 117;
     public static const MaxImageHeight:int = 160;
@@ -139,8 +140,11 @@
       if (mediaItems) updateImageDimensions();
 
       // Create properties
-      if (data.properties is Array)
+      if (data.properties is Array) {
+        for (var i:int = 0; i < data.properties.length; i++)
+          data.properties[i] = new ObjectProxy(data.properties[i]);
         itemPropertyList = new ArrayCollection(data.properties);
+      }
     }
 
     // Fight global warming!

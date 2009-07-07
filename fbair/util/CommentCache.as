@@ -129,9 +129,6 @@ package fbair.util {
           "where " + requested_ids.join(" or ") + " " +
           "order by time desc"
       }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
-        // Mark our time for freshness
-        fetchTime = (new Date()).time;
-
         var results:Array = event.data as Array;
 
         // We need to break up the results by post_id
@@ -141,6 +138,9 @@ package fbair.util {
             commentCache[result.post_id] = new Array();
           commentCache[result.post_id].push(result);
         }
+
+        // Mark our time for freshness
+        fetchTime = (new Date()).time;
 
         // Now dispatch our groups to the listeners
         for (var post_id:String in commentCache)

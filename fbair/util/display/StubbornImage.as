@@ -52,19 +52,19 @@ package fbair.util.display {
     }
 
     private function statusChanged(event:StatusEvent):void {
-      Output.error("Image Status changed: " + urlMonitor.available +
+      Output.log("Image Status changed: " + urlMonitor.available +
         " for source: " + origSource);
       if (urlMonitor.available) reload();
     }
 
     private function reload():void {
-      Output.error("Reloading image: " + origSource);
+      Output.log("Reloading image: " + origSource);
       load(origSource);
     }
 
     override public function set source(new_source:Object):void {
       if (new_source.constructor == Class) {
-        Output.error("Image re-setting source to crap: " + new_source
+        Output.log("Image re-setting source to crap: " + new_source
           + " from " + source);
         super.source = null;
       } else {

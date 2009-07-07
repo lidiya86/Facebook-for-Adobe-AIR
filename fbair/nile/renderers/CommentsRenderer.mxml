@@ -140,9 +140,10 @@
       // Determine position of comment based on timestamp
       var entry_position:int = 0;
       while(entry_position < commentsHash.length &&
-            commentsHash.getAt(entry_position).data.time < renderer.data.time)
+            Number(commentsHash.getAt(entry_position).data.time) <
+              Number(renderer.data.time))
         entry_position++;
-
+      
       // Add comment renderer to the stage
       if (entry_position == commentsHash.length) {
         commentsBox.addChild(renderer);

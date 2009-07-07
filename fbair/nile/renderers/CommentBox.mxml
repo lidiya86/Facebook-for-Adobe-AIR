@@ -121,7 +121,7 @@
         fromid:FBConnect.session.uid,
         id:event.data,
         text:commentInput.text,
-        time:(new Date().time / 1000),
+        time:Math.round(new Date().time / 1000),
         post_id:data.post_id
       });
 
