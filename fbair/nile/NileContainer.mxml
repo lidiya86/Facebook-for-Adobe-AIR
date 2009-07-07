@@ -64,7 +64,7 @@
     import mx.events.ScrollEvent;
     import mx.utils.ObjectUtil;
 
-    private static const PollingDelay:int = 30000;
+    private static const PollingDelay:int = 10000;
     private static const MinAnimationDelay:int = 500;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
@@ -318,7 +318,7 @@
       // Get latestUpdates on these jonx filters
       for (var filterKey:String in dataCache) {
         var filterList:ArrayCollection = dataCache[filterKey];
-        latestUpdates[filterKey] = filterList.length > 0 ?
+        latestUpdates[filterKey] = filterList.length == MaxEntries ?
           filterList[filterList.length-1].created_time : 0;
       }
     }

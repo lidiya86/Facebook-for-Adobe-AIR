@@ -16,6 +16,7 @@
 package fbair.util {
   import fb.FBAPI;
   import fb.FBEvent;
+
   import flash.events.Event;
   import flash.events.EventDispatcher;
 

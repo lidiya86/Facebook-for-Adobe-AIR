@@ -63,7 +63,7 @@ package fb {
       'publish_stream',
       'auto_publish_short_feed'
     ];
-    private static var permissions:Array = new Array();;
+    private static var permissions:Array = new Array();
     private static var validating_permissions:Array;
 
     // Local filestorage (desktop "cookie")
@@ -119,7 +119,7 @@ package fb {
       if (validating_permissions) return;
 
       // Ask about all these first, to see if we're already auth'd
-      dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT, 
+      dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
         "Checking Extended Permissions"));
       validating_permissions = permission_names;
       FBAPI.callMethod("fql.query", {
@@ -266,9 +266,29 @@ package fb {
         sharedObject.data["secret"] = session.secret;
 
         status = Connected;
+
+        Output.log("Loaded session from login dialog: ",
+          session.key, session.uid, session.expires, session.secret);
       } else {
         status = NotLoggedIn;
       }
+    }
+
+    // This will log us out if we have a session
+    public static function logout():void {
+      if (!api_key) return;
+
+      if (status == Connected) {
+        var expiration:JSONLoader = FBAPI.callMethod("auth.expireSession");
+        expiration.addEventListener(FBEvent.SUCCESS, loggedOutUser);
+        expiration.addEventListener(FBEvent.FAILURE, loggedOutUser);
+      } else loggedOutUser();
+    }
+
+    // Callback from restserver of when session is dead
+    private static function loggedOutUser(event:FBEvent = null):void {
+      session = null;
+      status = NotLoggedIn;
     }
 
     // Called internally when we've discovered we're unauthenticated
