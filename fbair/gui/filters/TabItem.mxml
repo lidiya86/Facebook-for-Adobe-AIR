@@ -16,6 +16,7 @@
 <!-- This contains our filters tab bar at top of window. -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
+         xmlns:filters="fbair.gui.filters.*"
          implements="fbair.gc.Recyclable"
          styleName="{data.active ? 'filterTabActive' :
                     (hovering ? 'filterTabOver' : 'filterTabOut')}"
@@ -31,11 +32,8 @@
     [Event(name="tabClick", type="fb.FBEvent")]
   </mx:Metadata>
 
-  <util:SpritedImage source="{data.icon_url}"
-                     width="16"
-                     height="16"
-                     offsetX="16"
-                     alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}" />
+  <filters:FilterImage data="{data}"
+                       alpha="{MathUtil.or(data.active, hovering) ? 1 : 0.6}" />
 
   <mx:Label id="tabLabel"
             text="{data.name}"
@@ -91,7 +89,7 @@
     
     override public function set data(new_data:Object):void {
       Output.assert(new_data != null,
-        "Setting null data on FilterTab?: " + this);
+        "Setting null data on TabItem?: " + this);
 
       super.data = new ObjectProxy(new_data);
 

@@ -64,7 +64,7 @@
 
     import fbair.gc.Depot;
     import fbair.gui.FBTooltip;
-    import fbair.gui.filters.FilterTab;
+    import fbair.gui.filters.TabItem;
     import fbair.util.HashArray;
 
     import flash.events.Event;
@@ -105,7 +105,8 @@
           menu.x = width - menu.width - 2;
         });
       menu.visible = false;
-      menu.addEventListener("itemClick", menuItemClicked);
+      menu.addEventListener(FiltersMenu.FILTER_CLICK, menuFilterClicked);
+      menu.addEventListener(FiltersMenu.PAGE_CLICK, menuPageClicked);
       PopUpManager.addPopUp(menu, this);
     }
 
@@ -146,7 +147,7 @@
         if (tmpIndex >= tabsHash.length) tmpIndex = 0;
         else if (tmpIndex < 0) tmpIndex = tabsHash.length - 1;
         currentTab = tabsHash.keyAtIndex(tmpIndex);
-        var currentRenderer:FilterTab = tabsHash.getAtKey(currentTab);
+        var currentRenderer:TabItem = tabsHash.getAtKey(currentTab);
         if (currentRenderer.labelObscured)
           FBTooltip.flash(tabData[tmpIndex].name, currentRenderer);
         else
@@ -159,24 +160,53 @@
       fbLogo.visible = (width - 98) > filterTabs.measuredWidth;
     }
 
-    // Button click callbacks
-    private function menuItemClicked(event:FBEvent):void {
+    // Menu item click callbacks
+    private function menuFilterClicked(event:FBEvent):void {
       addTab(event.data);
       menu.hide();
     }
+    private function menuPageClicked(event:FBEvent):void {
+      addTab(event.data, true);
+      menu.hide();
+    }
 
+    // Button to show the menu
     private function menuButtonClicked(event:MouseEvent):void {
       menu.show();
     }
 
     // Filter fetching
     public function fetchFilters():void {
-      FBAPI.callMethod("fql.query", {
-        query:"select filter_key, name, rank, icon_url, is_visible, " +
-          "type, value from stream_filter where uid = " +
-          FBConnect.session.uid + " order by rank"
+      FBAPI.callMethod("fql.multiquery", {
+        queries:{
+          filters:"select filter_key, name, rank, icon_url, is_visible, " +
+            "type, value from stream_filter where uid = " +
+            FBConnect.session.uid + " order by rank",
+          page_admins:"select page_id from page_admin where uid = " +
+            FBConnect.session.uid,
+          pages:"select name, pic_square, page_id " +
+            "from page where page_id in " +
+            "(select page_id from #page_admins)"
+        }
       }).addEventListener(FBEvent.SUCCESS, function(event:FBEvent):void {
-        data = new HashArray(event.data, 'filter_key');
+        // Break out the results into a hash keyed by result name
+        var resultObject:Object = new Object();
+        for each (var result:Object in event.data)
+          resultObject[result.name] = result.fql_result_set;
+
+        // We're going to force our page objects into looking like filters,
+        //  but attach an extra flag to indicate they are in fact pages...
+        //  this way the FiltersBar can just treat them all as "Filters"
+        for each (var page:Object in resultObject.pages) {
+          resultObject.filters.unshift({
+            is_page:true,
+            name:page.name,
+            filter_key:page.page_id,
+            is_visible:true,
+            icon_url:page.pic_square
+          })
+        }
+        data = new HashArray(resultObject.filters, 'filter_key');
       });
     }
 
@@ -194,7 +224,7 @@
       // Add everything
       _tabData = new_tabData;
       for each (var tab:Object in tabData) {
-        var renderer:FilterTab = Depot.get(FilterTab);
+        var renderer:TabItem = Depot.get(TabItem);
         renderer.data = tab;
         tabsHash.push(tab.filter_key, renderer);
         filterTabs.addChild(renderer);
@@ -211,7 +241,7 @@
 
       // if this is your first launch, we'll give you default feed
       if (tabsHash.length == 0)
-        addTab(data.getAt(0).filter_key);
+        addTab('nf');
     }
 
     // Tab clicking
@@ -224,7 +254,7 @@
     }
 
     // Tab adding/removing
-    public function addTab(key:String):void {
+    public function addTab(key:String, is_page:Boolean = false):void {
       // if a tab already exists for this filter, focus it.
       if (tabsHash.hasKey(key)) {
         currentTab = key;
@@ -236,7 +266,7 @@
         removeTab(focusHistory.first(), false);
 
       // Create new tab
-      var renderer:FilterTab = Depot.get(FilterTab);
+      var renderer:TabItem = Depot.get(TabItem);
       renderer.data = data.getAtKey(key);
       tabData.addItem(data.getAtKey(key));
       tabsHash.push(key, renderer);
@@ -246,7 +276,10 @@
       TabCount = tabsHash.length;
 
       // Dispatch event of add
-      dispatchEvent(new FBEvent("tabAdded", key));
+      dispatchEvent(new FBEvent("tabAdded", {
+        key:key,
+        is_page:is_page
+      }));
 
       // Select current tab
       currentTab = key;
@@ -265,7 +298,7 @@
 
       // Remove tab
       tabData.removeItemAt(tabsHash.indexAtKey(key));
-      var deadRenderer:FilterTab = tabsHash.removeKey(key);
+      var deadRenderer:TabItem = tabsHash.removeKey(key);
       Depot.put(filterTabs.removeChild(deadRenderer));
 
       // Focus new tab if this was the current

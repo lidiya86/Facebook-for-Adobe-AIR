@@ -15,18 +15,15 @@
  -->
 <!-- A filter in the menu -->
 <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
-         xmlns:util="fbair.util.display.*"
+         xmlns:filters="fbair.gui.filters.*"
          styleName="{hovering ? 'filterItemOver' : 'filterItemOut'}"
          creationComplete="creationComplete(event)"
          buttonMode="true"
          mouseChildren="false" >
-  <util:SpritedImage source="{data.icon_url}"
-                     width="16"
-                     height="16"
-                     offsetX="{hovering ? 0 : 16}" />
-
+  <filters:FilterImage data="{data}" />
+  
   <mx:Label styleName="{hovering ?
-                       'filterItemLabelOver' : 'filterItemLabelOut'}"
+                       'menuItemLabelOver' : 'menuItemLabelOut'}"
             text="{data.name}" />
 
   <mx:Script><![CDATA[

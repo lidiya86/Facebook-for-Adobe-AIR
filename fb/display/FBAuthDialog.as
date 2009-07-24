@@ -25,12 +25,15 @@ package fb.display {
     private static const FailurePath:String = FBDialog.FacebookURL +
       "/connect/login_failure.html";
 
-    public function FBAuthDialog() {
+    public function FBAuthDialog(extra_params:Object) {
       title = "Facebook Connect Authorization";
       location = "/login.php";
       extraParams["next"] = NextPath;
       extraParams["return_session"] = true;
       extraParams["cancel_url"] = FailurePath;
+      for (var param:String in extra_params) {
+        extraParams[param] = extra_params[param];
+      }
     }
 
     override protected function htmlLocationChange(event:Event):void {
@@ -39,8 +42,8 @@ package fb.display {
       if (!htmlWindow || htmlWindow.location == '' ||
         htmlWindow.location == location || closed) return;
 
-      Output.log("Authorization location: " + htmlWindow.location);
-
+      Output.bug("Authorization location: " + htmlWindow.location);
+      
       if (htmlWindow.location.indexOf(NextPath) == 0)
         hide(true);
       else if (htmlWindow.location.indexOf(FailurePath) == 0)

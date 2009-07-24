@@ -49,7 +49,7 @@
                       styleName="nileStoryHeader" >
           <!-- Actor's name -->
           <mx:Label styleName="actorTitle"
-                   htmlText="{StringUtil.linkify(data.actorName,
+                    htmlText="{StringUtil.linkify(data.actorName,
                               data.actorURL)}" />
           <!-- Target of wall-post -->
           <mx:HBox styleName="nileStoryTarget"

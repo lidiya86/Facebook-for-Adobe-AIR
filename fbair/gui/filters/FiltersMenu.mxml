@@ -25,14 +25,25 @@
   <mx:VBox id="filterMenuItems"
            styleName="filterMenuItems" >
 
+    <mx:VBox id="pageMenuItems"
+             width="100%" >
+      <mx:Repeater id="pagerp"
+                   dataProvider="{pages}"
+                   recycleChildren="true" >
+        <filters:MenuItem data="{pagerp.currentItem}"
+                          width="100%"
+                          mouseUp="pageClicked(event)" />
+      </mx:Repeater>
+    </mx:VBox>
+
     <mx:VBox id="visibleFilterMenuItems"
              width="100%" >
       <mx:Repeater id="rp"
                    dataProvider="{visibleItems}"
                    recycleChildren="true" >
-        <filters:FiltersMenuItem data="{rp.currentItem}"
-                                 width="100%"
-                                 mouseUp="itemClicked(event)" />
+        <filters:MenuItem data="{rp.currentItem}"
+                          width="100%"
+                          mouseUp="filterClicked(event)" />
       </mx:Repeater>
     </mx:VBox>
 
@@ -50,9 +61,9 @@
       <mx:Repeater id="hiddenrp"
                    dataProvider="{invisibleItems}"
                    recycleChildren="true" >
-        <filters:FiltersMenuItem data="{hiddenrp.currentItem}"
-                                 width="100%"
-                                 mouseUp="itemClicked(event)" />
+        <filters:MenuItem data="{hiddenrp.currentItem}"
+                          width="100%"
+                          mouseUp="filterClicked(event)" />
       </mx:Repeater>
     </mx:VBox>
 
@@ -68,16 +79,23 @@
     import mx.collections.ArrayCollection;
     import mx.utils.ObjectProxy;
 
+    public static const FILTER_CLICK:String = "filterClick";
+    public static const PAGE_CLICK:String = "pageClick";
+    
     [Bindable] private var visibleItems:ArrayCollection;
     [Bindable] private var invisibleItems:ArrayCollection;
+    [Bindable] private var pages:ArrayCollection;
 
     [Bindable] public var showExtendedItems:Boolean = false;
 
     override public function set data(new_data:Object):void {
       visibleItems = new ArrayCollection();
       invisibleItems = new ArrayCollection();
+      pages = new ArrayCollection();
       for each (var item:Object in new_data) {
-        if (item.is_visible)
+        if (item.is_page)
+          pages.addItem(new ObjectProxy(item));
+        else if (item.is_visible)
           visibleItems.addItem(new ObjectProxy(item));
         else
           invisibleItems.addItem(new ObjectProxy(item));
@@ -103,8 +121,13 @@
       hide();
     }
 
-    private function itemClicked(event:Event):void {
-      dispatchEvent(new FBEvent("itemClick", event.target.data.filter_key));
+    private function filterClicked(event:Event):void {
+      dispatchEvent(new FBEvent(FILTER_CLICK, event.target.data.filter_key));
+    }
+    
+    private function pageClicked(event:Event):void {
+      // filter_key is really page_id here...
+      dispatchEvent(new FBEvent(PAGE_CLICK, event.target.data.filter_key));
     }
   ]]></mx:Script>
 </mx:Canvas>

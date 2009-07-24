@@ -46,23 +46,10 @@ package fb {
     public static var api_key:String;
     [Bindable] public static var session:FBSession;
 
+    // List of extra session params passed to requireSession()
+    private static var extraSessionParams:Object;
+    
     // Permissions
-    private static const allPermissions:Array = [
-      'email',
-      'offline_access',
-      'status_update',
-      'photo_upload',
-      'create_listing',
-      'create_event',
-      'rsvp_event',
-      'sms',
-      'video_upload',
-      'create_note',
-      'share_item',
-      'read_stream',
-      'publish_stream',
-      'auto_publish_short_feed'
-    ];
     private static var permissions:Array = new Array();
     private static var validating_permissions:Array;
 
@@ -113,9 +100,6 @@ package fb {
 
     // Call this to require/validate a permission
     public static function requirePermissions(permission_names:Array):void {
-      for each (var permission_name:String in permission_names) {
-        if (allPermissions.indexOf(permission_name) == -1) return;
-      }
       if (validating_permissions) return;
 
       // Ask about all these first, to see if we're already auth'd
@@ -220,13 +204,15 @@ package fb {
 
     // This will require we get a session key.
     // And validate if we already have one.
-    public static function requireSession():void {
+    public static function requireSession(extra_params:Object = null):void {
       if (!api_key) return;
 
+      extraSessionParams = extra_params;
+      
       if (session) {
         validateSession();
       } else {
-        var dialog:FBAuthDialog = new FBAuthDialog();
+        var dialog:FBAuthDialog = new FBAuthDialog(extraSessionParams);
         dialog.addEventListener(FBEvent.CLOSED, loginDialogClosed);
         dialog.show();
       }
@@ -236,7 +222,7 @@ package fb {
     private static function noLoggedInUser(event:FBEvent = null):void {
       session = null;
       SharedObject.getLocal(api_key).data["session_key"] = null;
-      requireSession();
+      requireSession(extraSessionParams);
     }
 
     // Callback from restserver of whether session key is valid
@@ -266,9 +252,6 @@ package fb {
         sharedObject.data["secret"] = session.secret;
 
         status = Connected;
-
-        Output.log("Loaded session from login dialog: ",
-          session.key, session.uid, session.expires, session.secret);
       } else {
         status = NotLoggedIn;
       }

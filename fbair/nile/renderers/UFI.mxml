@@ -69,8 +69,8 @@
     <renderer:LikesRenderer id="likesRenderer"
                             styleName="likeText"
                             width="100%"
-                            minHeight="{StringUtil.empty(data.likeText) ? 0
-                                                                        : 16}"
+                            minHeight="{StringUtil.empty(data.likeText)
+                                        ? 0 : MinLikeHeight}"
                             data="{data}" />
   </util:FlowBox>
 
@@ -115,6 +115,8 @@
 
     public static const UFI_PREVIEW:int = 1;
     public static const UFI_DETAIL:int = 2;
+
+    private static const MinLikeHeight:int = 16;
 
     [Bindable] public var ufiRevealed:Boolean = false;
 

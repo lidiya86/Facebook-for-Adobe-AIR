@@ -73,9 +73,10 @@
     private static const SlideDuration:int = 300; // Milliseconds per renderer
     private static var SlideSpeed:Number; // Pixels per millisecond
 
-    // Our current filter
+    // Our current filter, and whether we're on a page
     [Bindable] public static var CurrentFilter:String;
-
+    [Bindable] public static var FilterIsPage:Boolean = false;
+    
     // All our niles, keyed by filter_key
     private var niles:Object = new Object();
 
@@ -111,6 +112,9 @@
     // Our active filters, by filter_key
     public var streamFilters:Object = new Object();
 
+    // Our active pages, by page_id (but stored as filter_key)
+    public var pages:Object = new Object();
+
     // Sorter for anything based on created_time
     private var sort:Sort = new Sort();
 
@@ -139,16 +143,22 @@
 
     // We call this on launch to set up our initial set of filters, if cached
     // dataCache should already be set now as well
-    public function loadInitialFilters(stream_filters:Object):void {
+    public function loadInitialFilters(stream_filters:Object,
+                                       new_pages:Object):void {
       // Populate our filters and their niles
       streamFilters = stream_filters;
-      for (var streamFilter:String in streamFilters) {
-        niles[streamFilter] = Depot.get(Nile);
-        niles[streamFilter].visible = false;
-        if (dataCache[streamFilter])
-          niles[streamFilter].data = dataCache[streamFilter];
-        nileCanvas.addChild(niles[streamFilter]);
-      }
+      pages = new_pages;
+      for (var streamFilter:String in streamFilters)
+        createInitialNile(streamFilter);
+      for (var page:String in pages)
+        createInitialNile(page);
+    }
+    private function createInitialNile(key:String):void {
+      niles[key] = Depot.get(Nile);
+      niles[key].visible = false;
+      if (dataCache[key])
+        niles[key].data = dataCache[key];
+      nileCanvas.addChild(niles[key]);
     }
 
     // When we remove old items from the nile,
@@ -207,17 +217,32 @@
         requested_filters.push("(filter_key = '" + streamFilter + "' and " +
         "created_time >= " + getLatestUpdate(streamFilter) + ")");
 
+      // Build our page-id or statement
+      var requested_pages:Array = new Array();
+      for (var page:String in pages)
+        requested_pages.push("(source_id = '" + page + "' and " +
+        "created_time >= " + getLatestUpdate(streamFilter) + ")");
+
+      // Base string for selecting out of stream...
+      var stream_select:String = "select post_id, source_id, created_time, " +
+        "actor_id, target_id, app_id, message, attachment, comments, likes, " +
+        "permalink, attribution, type, filter_key from stream where ";
+      var stream_order:String = "order by created_time desc";
+
+      // Build our queries for filter or pages or both
+      var queries:Object = new Object();
+      if (requested_filters.length > 0)
+        queries.stream = stream_select + requested_filters.join(" or ") +
+                         " " + stream_order
+      if (requested_pages.length > 0)
+        queries.pages = stream_select + requested_pages.join(" or ") +
+                        " " + stream_order
+
       // We build our fql query here to call restserver.php.
       // {"order by time desc"} allows us to ensure we get the newest, in order.
       // {"and time > " + latestUpdate} allows us to just get deltas.
-      var query:JSONLoader = FBAPI.callMethod("fql.multiquery", {
-        queries:{stream:"select post_id, source_id, created_time, actor_id, " +
-          "target_id, app_id, message, attachment, comments, likes, " +
-          "permalink, attribution, type, filter_key " +
-          "from stream where " +
-          requested_filters.join(" or ") + " " +
-          "order by created_time desc"}
-      });
+      var query:JSONLoader = FBAPI.callMethod("fql.multiquery",
+                                              {queries:queries});
       query.addEventListener(FBEvent.SUCCESS, updatesReturned);
       query.addEventListener(FBEvent.RETRY, queryRetried);
     }
@@ -234,6 +259,19 @@
       for each (var result:Object in event.data)
         resultsByKey[result.name] = result.fql_result_set;
 
+      // Ok we're going to take our 'pages' results and rebrand them
+      // as filters but with an "is_page" flag. That way we can reuse
+      // and treat them as filters wherever possible...
+      if (!resultsByKey.stream)
+        resultsByKey.stream = new Array();
+      if (resultsByKey.pages)
+        for each (var page:Object in resultsByKey.pages) {
+          page.is_page = true;
+          page.filter_key = page.source_id;
+          resultsByKey.stream.push(page);
+        }
+
+      // Now set data to our new mega-list in .stream
       data = resultsByKey.stream;
       if (dataCache[CurrentFilter])
         addEventListener(Event.ENTER_FRAME, afterUpdatesReturned);
@@ -359,14 +397,19 @@
     }
 
     // Called when new filter has added to tab bar
-    public function filterAdded(filter_key:String):void {
-      Output.assert(streamFilters[filter_key] == null,
+    public function filterAdded(filter_key:String,
+                                is_page:Boolean = false):void {
+      Output.assert(streamFilters[filter_key] == null &&
+                    pages[filter_key] == null,
         "Adding filter_key that we already had?: " + filter_key);
       Output.assert(niles[filter_key] == null,
         "Adding filter_key with nile we had?:" + filter_key);
 
-      // Put in streamfilters
-      streamFilters[filter_key] = true;
+      // Store key in pages or streamFilters
+      if (is_page)
+        pages[filter_key] = true;
+      else
+        streamFilters[filter_key] = true;
 
       // Create a new nile, and add it
       niles[filter_key] = Depot.get(Nile);
@@ -383,8 +426,9 @@
 
     // Called when a filter has been removed
     public function filterRemoved(filter_key:String):void {
-      Output.assert(streamFilters[filter_key] != null,
-        "Removing filter not in streamFilters?: " + filter_key);
+      Output.assert(streamFilters[filter_key] != null ||
+                    pages[filter_key] != null,
+        "Removing filter not in streamFilters or pages?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Removing filter that had no nile?: " + filter_key);
 
@@ -396,13 +440,15 @@
       nileCanvas.removeChild(niles[filter_key]);
       delete niles[filter_key];
 
-      // Remove from filters
+      // Remove from filters and pages
       delete streamFilters[filter_key];
+      delete pages[filter_key];
     }
 
     // Called when a new filter is selected!
     public function filterSelected(filter_key:String):void {
-      Output.assert(streamFilters[filter_key] != null,
+      Output.assert(streamFilters[filter_key] != null ||
+                    pages[filter_key] != null,
         "Selecting filter we don't have?: " + filter_key);
       Output.assert(niles[filter_key] != null,
         "Selecting filter with no nile?: " + filter_key);
@@ -411,6 +457,7 @@
 
       // Select this filter only if not active, and show what we have
       CurrentFilter = filter_key;
+      FilterIsPage = (pages[filter_key] != null);
 
       // Remove old nile, and stop any sliding
       stopSliding();

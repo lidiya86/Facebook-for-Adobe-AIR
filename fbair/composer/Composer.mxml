@@ -77,9 +77,13 @@
       composerInput.editable = false;
       shareButton.enabled = false;
 
-      // Call the server with status.set to set our new status
-      FBAPI.callMethod("stream.publish", {message:submittedMessage}
-        ).addEventListener(FBEvent.SUCCESS, statusUpdated);
+      // Stream.publish mofo!
+      var publish_options:Object = {message:submittedMessage};
+      if (NileContainer.FilterIsPage)
+        publish_options.uid = NileContainer.CurrentFilter;
+        
+      FBAPI.callMethod("stream.publish", publish_options)
+        .addEventListener(FBEvent.SUCCESS, statusUpdated);
     }
 
     // Called when the server has verified status.set
@@ -95,6 +99,7 @@
         likes:{count:0, user_likes:false, can_like:true},
         comments:{count:0, posts:[], can_post:true, can_remove:true},
         created_time:(new Date().time / 1000),
+        is_page:NileContainer.FilterIsPage,
         filter_key:NileContainer.CurrentFilter,
         attachment:{}
       }));

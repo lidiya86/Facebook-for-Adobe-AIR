@@ -117,9 +117,12 @@
 
           // Set nile stuff first to prepare for events
           var stream_filters:Object = new Object();
-          for each (var tab:Object in filtersData.tabData)
-            stream_filters[tab.filter_key] = true;
-          nileContainer.loadInitialFilters(stream_filters);
+          var pages:Object = new Object();
+          for each (var tab:Object in filtersData.tabData) {
+            if (tab.is_page) pages[tab.filter_key] = true;
+            else stream_filters[tab.filter_key] = true;
+          }
+          nileContainer.loadInitialFilters(stream_filters, pages);
 
           // Now set filtersBar and we're off and running
           filtersBar.focusHistory = filtersData.focusHistory;
@@ -144,7 +147,7 @@
 
       // Now we call this to init our application.
       // Always call this only once, in the applicationComplete callback.
-      FBConnect.init('4b38d3e1a6df930669e13b82e3ba8974');//39f0aec9479177cddacef90da714b037');
+      FBConnect.init('39f0aec9479177cddacef90da714b037');
 
       // This function checks to see if we're already connected
       statusChanged();
@@ -163,7 +166,7 @@
       else if (FBConnect.status == FBConnect.NotLoggedIn) {
         requiredSession = true;
         requiredPermissions = false;
-        FBConnect.requireSession();
+        FBConnect.requireSession({"req_perms":"read_stream,publish_stream"});
       }
     }
 
@@ -232,7 +235,7 @@
 
     // Filter tab switching
     private function filterTabAdded(event:FBEvent):void {
-      nileContainer.filterAdded(event.data);
+      nileContainer.filterAdded(event.data.key, event.data.is_page);
     }
 
     private function filterTabRemoved(event:FBEvent):void {
