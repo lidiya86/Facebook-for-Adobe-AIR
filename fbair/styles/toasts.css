@@ -1,0 +1,31 @@
+/**
+ * CSS Declarations for Toast class
+ */
+.bodyText {
+  color: #FFFFFF;
+  font-size: 11;
+  padding-left: 5;
+  top: -5;
+  verticalCenter: 0;
+}
+.toastCanvas {
+  padding-top: 8;
+  padding-right: 8;
+  padding-bottom: 8;
+  padding-left: 8;
+  vertical-align: top;
+  min-height: 48;
+}
+.shelfItem {
+  padding-bottom: 3;
+  padding-top: 3;
+}
+.toastWindow {
+  showFlexChrome: false;
+}
+.moreLink {
+  padding-top: 6;
+  font-size: 11;
+  color: #EEEEEE;
+  text-align: right;
+}

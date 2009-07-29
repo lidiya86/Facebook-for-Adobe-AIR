@@ -60,10 +60,11 @@
     import fb.FBEvent;
     import fb.util.Output;
 
+    import fbair.notification.ToastManager;
+    import fbair.server.Fetcher;
     import fbair.util.FBUpdater;
     import fbair.util.Preferences;
     import fbair.util.ProfileCache;
-    import fbair.server.Fetcher;
 
     import flash.events.Event;
 
@@ -75,6 +76,9 @@
     private var requiredSession:Boolean = false;
     private var requiredPermissions:Boolean = false;
 
+    // Global instance of ToastManager
+    private var toaster:ToastManager = new ToastManager();
+    
     // Called when our app is initialized...
     // The first thing to do is authorize our application..
     private function applicationComplete(event:FlexEvent):void {
@@ -171,7 +175,8 @@
       else if (FBConnect.status == FBConnect.NotLoggedIn) {
         requiredSession = true;
         requiredPermissions = false;
-        FBConnect.requireSession({"req_perms":"read_stream,publish_stream"});
+        FBConnect.requireSession(
+          {"req_perms":"read_stream,publish_stream,manage_mailbox"});
       }
     }
 
@@ -185,14 +190,17 @@
     //   acquire extended permissions.
     private function permissionChanged(event:FBEvent = null):void {
       if (FBConnect.hasPermission("read_stream") &&
-          FBConnect.hasPermission("publish_stream"))
+          FBConnect.hasPermission("publish_stream") &&
+          FBConnect.hasPermission("manage_mailbox"))
         fullyAuthorized();
       else if (requiredPermissions)
         close();
       else {
         requiredSession = false;
         requiredPermissions = true;
-        FBConnect.requirePermissions(["read_stream", "publish_stream"]);
+        FBConnect.requirePermissions(["read_stream",
+                                      "publish_stream",
+                                      "manage_mailbox"]);
       }
     }
 

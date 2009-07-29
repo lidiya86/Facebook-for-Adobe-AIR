@@ -125,6 +125,9 @@
       // Listen for when fetcher is going to the server
       //   so we can feed it our request in fql
       Fetcher.steve.addEventListener(FBEvent.FETCHING_DATA, fetchingData);
+      
+      // Called by fetcher when it has our data
+      Fetcher.steve.addEventListener(FBEvent.DATA_RECEIVED, dataReceived);
 
       // Initialize created_time sorter
       sort.fields = [new SortField("created_time", false, true)];
@@ -189,8 +192,6 @@
 
     // Called by master when we're beginning things...
     public function beginning():void {
-      Fetcher.steve.addEventListener(FBEvent.DATA_RECEIVED, dataReceived);
-
       nile.visible = true;
     }
 

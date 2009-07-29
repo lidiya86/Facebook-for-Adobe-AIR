@@ -1,0 +1,409 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<mx:Window xmlns:mx="http://www.adobe.com/2006/mxml"
+           xmlns:gui="fbair.gui.*"
+           implements="fbair.gc.Recyclable"
+           transparent="true"
+           systemChrome="none"
+           type="lightweight"
+           alwaysInFront="true"
+           maximizable="false"
+           minimizable="false"
+           resizable="false"
+           width="{SHELF_WIDTH + SHADOW_THICKNESS}"
+           height="{shelf.height}"
+           creationComplete="creationComplete()"
+           minHeight="56"
+           styleName="toastWindow">
+  <mx:Style source="../styles/toasts.css" />
+  <mx:VBox id="shelf"
+           width="{SHELF_WIDTH}"
+           rollOut="rollOut(event)"
+           click="click(event)"
+           styleName="toastCanvas"
+           filters="{[shadow]}"
+           updateComplete="drawRoundedCorners()">
+    <mx:Repeater id="shelfRepeater"
+                 dataProvider="{toastItems}"
+                 recycleChildren="true">
+      <mx:HBox width="100%"
+               styleName="{toastItems.length > 1 ? 'shelfItem' : ''}"
+               id="shelfRow"
+               click="shelfItemClick(event)">
+        <gui:RoundedProfileImage
+                 size="{toastItems.length > 1 ? 25 : 35}"
+                 profileID="{shelfRepeater.currentItem.profileID}" />
+        <!-- This canvas and -5px hack necessary because the label seems to have
+             inherent space at the top, regardless of padding -->
+        <mx:Canvas width="100%">
+          <mx:Text htmlText="{shelfRepeater.currentItem.htmlText}"
+                   styleName="bodyText"
+                   width="100%"
+                   selectable="false" />
+        </mx:Canvas>
+      </mx:HBox>
+    </mx:Repeater>
+    <mx:Text id="moreLink"
+             styleName="moreLink"
+             width="100%"
+             visible="false"
+             includeInLayout="false"
+             htmlText="{MORE_LINK_TEXT}"
+             selectable="false" />
+  </mx:VBox>
+  <mx:Fade id="fadein"
+           target="{shelf}"
+           alphaFrom="0"
+           alphaTo="{MAX_FADEIN_ALPHA}"
+           duration="500"
+           effectStart="fadeInEffectStart(event)" />
+  <mx:Fade id="fadeout"
+           target="{shelf}"
+           alphaFrom="{MAX_FADEIN_ALPHA}"
+           alphaTo="0"
+           duration="800"
+           effectEnd="Depot.put(this)" />
+  <mx:Move id="landingEffect"
+           duration="250"
+           target="{this}" />
+  <mx:DropShadowFilter id="shadow"
+                       color="0x000000"
+                       distance="{SHADOW_THICKNESS}"
+                       alpha="0.2"
+                       blurX="5"
+                       blurY="5" />
+
+  <mx:Script><![CDATA[
+    import mx.controls.Alert;
+    import fb.util.Output;
+    import mx.utils.ObjectProxy;
+    import mx.collections.ArrayCollection;
+    import mx.containers.HBox;
+    import fb.FBEvent;
+    import fb.FBSession;
+    import fb.FBConnect;
+    import fb.FBAPI;
+
+    import fbair.gc.Depot;
+    import fbair.util.ProfileCache;
+
+    import flash.events.MouseEvent;
+    import flash.events.TimerEvent;
+    import flash.net.navigateToURL;
+    import flash.net.URLRequest;
+    import flash.system.Capabilities;
+    import flash.utils.Timer;
+    import flash.display.Graphics;
+
+    import mx.effects.Fade;
+    import mx.events.EffectEvent;
+
+    private static const BOTTOM_MARGIN:int = 10; // No. of pixels between boxes
+    private static const RIGHT_MARGIN:int = 10;  // Dist to right edge of screen
+    private static const TOP_MARGIN:int = 25;    // Dist to top edge of screen
+    private static const MOVE_BY:int = 10;       // How much to move in landing
+    private static const MAX_FADEIN_ALPHA:Number = 0.95;
+    private static const SHELF_WIDTH:int = 350;
+    private static const SHADOW_THICKNESS:int = 5;
+    private static const TOAST_HIDE_DELAY:int = 5000;
+    private static const TOAST_DISMISS_DELAY:int = 30;
+    private static const BODY_MAX_LEN:int = 60;
+    private static const NOTIFICATIONS_URL:String =
+                            "http://www.facebook.com/notifications.php";
+    private static const INBOX_THREAD_URL:String =
+                            "http://www.facebook.com/inbox/?tid=";
+    private static const MORE_LINK_TEXT:String =
+                            "See more notifications »";
+
+    private static var visibleToasts:Array = new Array();
+
+    private var reaper:Timer = new Timer(0);
+    private var isRead:Boolean = false;
+    private var href:String;
+    private var notificationIds:Array = new Array();
+    private var showMoreLinkVisible:Boolean = false;
+
+    [Bindable]
+    private var toastItems:ArrayCollection = new ArrayCollection();
+
+    /**
+     * Draws the rounded background on the shelf's canvas. Called every time
+     * the shelf's layout updates.
+     */
+    private function drawRoundedCorners(): void {
+      shelf.graphics.beginFill(0x202020);
+      shelf.graphics.drawRoundRect(0, 0, shelf.width, shelf.height, 10);
+      shelf.graphics.endFill();
+    }
+
+    /**
+     * Called when the toast is first created, or when it is reopened after
+     * recycling. Does some of the initialization for the toast.
+     */
+    private function creationComplete(): void {
+      // Initialize the timer
+      reaper.addEventListener(TimerEvent.TIMER, fadeOutToast);
+
+      // Set position
+      var nextSlot:int = getNextOpenSlot(nativeWindow.height
+                           - SHADOW_THICKNESS + BOTTOM_MARGIN);
+      visibleToasts.splice(nextSlot, 0, this);
+      nativeWindow.y = (nextSlot == 0) ? (TOP_MARGIN - MOVE_BY) :
+                       (visibleToasts[nextSlot - 1].nativeWindow.y +
+                       visibleToasts[nextSlot - 1].nativeWindow.height +
+                       SHADOW_THICKNESS + BOTTOM_MARGIN - MOVE_BY);
+      nativeWindow.x =
+        Capabilities.screenResolutionX - width - RIGHT_MARGIN;
+      landingEffect.yFrom = nativeWindow.y;
+      landingEffect.yTo = nativeWindow.y + MOVE_BY;
+      landingEffect.xFrom = landingEffect.xTo = nativeWindow.x;
+
+      // Set mouseover event of shelf (for reason, see handleToastAreaClick())
+      shelf.addEventListener(MouseEvent.ROLL_OVER, rollOver);
+
+      moreLink.visible = showMoreLinkVisible;
+      moreLink.includeInLayout = moreLink.visible;
+
+      // Fade in
+      fadein.play();
+    }
+
+    /**
+     * Gets the destination index of the next toast slot that fits a toast of
+     * the given height. Called by creationComplete().
+     */
+    private static function getNextOpenSlot(reqHeight:int): int {
+      var prevY:int = TOP_MARGIN;
+
+      for (var i:int = 0; i < visibleToasts.length; i++) {
+        if (reqHeight < visibleToasts[i].nativeWindow.y - prevY)
+          return i;
+
+        prevY = visibleToasts[i].nativeWindow.y;
+      }
+
+      return visibleToasts.length;
+    }
+
+    /**
+     * Called at the same time that the fade in effect starts.
+     */
+    private function fadeInEffectStart(event:EffectEvent): void {
+      reaper.delay = TOAST_HIDE_DELAY;
+      reaper.start();
+      landingEffect.play();
+    }
+
+    /**
+     * Call to start fading out the toast. Called when the toast is clicked or
+     * when the reaper timer times out.
+     */
+    private function fadeOutToast(event:TimerEvent = null): void {
+      reaper.stop();
+      fadein.stop();
+      fadeout.play();
+    }
+
+    /**
+     * Marks a notification as read, if it hasn't already and if the toast is
+     * associated with notifications. Called when the toast is rolled over.
+     */
+    private function markAsRead(): void {
+      if (isRead || (notificationIds.length == 0)) return;
+      isRead = true;
+
+      // Mark this notification as read
+      FBAPI.callMethod("notifications.markRead",
+        {"notification_ids": notificationIds});
+    }
+
+    /**
+     * Called when the toast is rolled over. Marks the notification as read
+     * and prevents the toast from fading out while the mouse is over the toast.
+     */
+    private function rollOver(event:MouseEvent): void {
+      // If it's the first time I've been rolled over, mark me as read
+      markAsRead();
+
+      // While the mouse is on the toast, don't hide it.
+      reaper.stop();
+
+      // Were we already in the middle of a fade?
+      if (fadeout.isPlaying) {
+        fadeout.stop();
+        shelf.alpha = MAX_FADEIN_ALPHA;
+      }
+    }
+
+    /**
+     * Called when the mouse rolls out of the toast. Makes the toast fade out
+     * after a very short while.
+     */
+    private function rollOut(event:MouseEvent): void {
+      // Restart the reap timer with shorter timeout
+      reaper.delay = TOAST_DISMISS_DELAY;
+      reaper.start();
+    }
+
+    /**
+     * Helper function to navigate to the specified area and close the toast
+     * immediately.
+     */
+    private function handleToastAreaClick(url:String): void {
+      navigateToURL(new URLRequest(url));
+
+      // Close the toast immediately, and ignore any attempts to revive it
+      shelf.removeEventListener(MouseEvent.ROLL_OVER, rollOver);
+      fadeOutToast();
+    }
+
+    /**
+     * Called when the toast is clicked on. Goes to the associated URL and fades
+     * out the toast.
+     */
+    private function click(event:MouseEvent): void {
+      handleToastAreaClick(href);
+    }
+
+    /**
+     * Called when a single item in the shelf is clicked on. Goes to the
+     * URL associated with the item (if there is one) and fades out the toast.
+     */
+    private function shelfItemClick(event:MouseEvent): void {
+      var clickedItem:Object = event.currentTarget.getRepeaterItem();
+      if (clickedItem.hasOwnProperty("itemURL")) {
+        event.stopPropagation();
+        handleToastAreaClick(clickedItem.itemURL);
+      }
+    }
+
+    /**
+     * Helper function for showSingleToast() and showShelf() that actually shows
+     * the toast using the toastItems that have been set.
+     */
+    private function showToast(link:String): void {
+      href = link;
+
+      for each (var ti:Object in toastItems)
+        if (ti.alertID) notificationIds.push(ti.alertID);
+
+      open();
+      visible = true;
+
+      // If this is a new toast instance, the creation complete handler would
+      // have called creationComplete(). If not, call it here explicitly.
+      if (initialized) creationComplete();
+    }
+
+    /**
+     * Shows a single toast with the given attributes.
+     */
+    public function showSingleToast(body_html:String, profileId:int,
+                         link:String, alertId:int = 0): void {
+      toastItems.addItem(new ObjectProxy({
+        profileID: profileId,
+        htmlText:  body_html,
+        alertID: alertId
+      }));
+
+      showToast(link);
+    }
+
+    /**
+     * Shows a shelf, or aggregate view, toast with the given objects.
+     */
+    public function showShelf(shelf:Array, link:String,
+                              showMoreLink:Boolean): void {
+      for each (var shelfItem:ObjectProxy in shelf)
+        toastItems.addItem(shelfItem);
+
+      showMoreLinkVisible = showMoreLink;
+
+      showToast(link);
+    }
+
+    /**
+     * Called by the garbage collector to reset the toast for reuse later.
+     */
+    public function recycle(): void {
+      visible = false;
+      shelf.removeEventListener(MouseEvent.ROLL_OVER, rollOver);
+      shelf.graphics.clear();
+      reaper.stop();
+      fadein.stop();
+      fadeout.stop();
+      landingEffect.stop();
+      toastItems.removeAll();
+      moreLink.visible = false;
+      showMoreLinkVisible = false;
+      moreLink.includeInLayout = false;
+      notificationIds = new Array();
+      visibleToasts.splice(visibleToasts.indexOf(this), 1);
+    }
+
+    /**
+     * Make a toast out of a single new notification
+     */
+    public static function makeNotificationToast(alert:Object): void {
+      var body_html:String = "<b>" + alert.title_text + "</b>";
+      if (alert.body_text != "") {
+        // Truncate body_text to BODY_MAX_LEN characters, like inbox snippets
+        if (alert.body_text.length > BODY_MAX_LEN) {
+          alert.body_text =
+            alert.body_text.substring(0, BODY_MAX_LEN - 3) + "...";
+        }
+        body_html += "<br />" + alert.body_text;
+      }
+      Depot.get(Toast).showSingleToast(body_html, alert.sender_id, alert.href,
+        alert.notification_id);
+    }
+
+    /**
+     * Make a toast out of a new inbox message
+     */
+    public static function makeInboxToast(thread:Object): void {
+      ProfileCache.getProfile(String(thread.snippet_author)).addEventListener(
+        ProfileCache.PROFILE_FETCHED,
+        function (event:FBEvent): void {
+          Depot.get(Toast).showSingleToast("<b>" + event.data.name +
+            " sent you a message</b><br />" + thread.snippet,
+            thread.snippet_author, INBOX_THREAD_URL + thread.thread_id);
+        });
+    }
+
+    /**
+     * Makes toast with a summary of currently unread notifications
+     */
+    public static function makeBatchToast(alerts:Array): void {
+      var numAlerts:int = 0;
+      var toastItemArr:Array = new Array();
+      var showMoreLink:Boolean = false;
+
+      for (var i:int = 0; i < alerts.length &&
+           i < ToastManager.MAX_DISPLAY_BATCH_ALERT_TOAST; i++) {
+        toastItemArr.push(new ObjectProxy({
+          profileID: alerts[i].sender_id,
+          htmlText:  alerts[i].title_text,
+          itemURL:   alerts[i].href,
+          alertID:   alerts[i].notification_id
+        }));
+      }
+
+      Depot.get(Toast).showShelf(toastItemArr, NOTIFICATIONS_URL,
+                    alerts.length > ToastManager.MAX_DISPLAY_BATCH_ALERT_TOAST);
+    }
+  ]]></mx:Script>
+</mx:Window>
