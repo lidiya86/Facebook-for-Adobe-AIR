@@ -156,7 +156,7 @@
 
       // Now we call this to init our application.
       // Always call this only once, in the applicationComplete callback.
-      FBConnect.init('39f0aec9479177cddacef90da714b037');
+      FBConnect.init('f280ddc63bb3bf30823518bdf62ffb94');//39f0aec9479177cddacef90da714b037');
 
       // This function checks to see if we're already connected
       statusChanged();

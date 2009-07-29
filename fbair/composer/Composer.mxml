@@ -106,6 +106,7 @@
     //   extended permission.
     private function pagePermissionChange(event:FBEvent):void {
       if (FBConnect.canAdminPage(Number(NileContainer.CurrentFilter))) {
+        Output.bug("can admin now!");
         FBAPI.callMethod("stream.publish", {
           message:submittedMessage,
           uid:NileContainer.CurrentFilter

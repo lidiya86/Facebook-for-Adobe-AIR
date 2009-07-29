@@ -25,7 +25,7 @@ package {
 
   public class ApplicationBase extends WindowedApplication {
     // Our app id
-    public static const AppID:Number = 75647677556;
+    public static const AppID:Number = 62972033868;//75647677556;
 
     public function ApplicationBase() {
       layout = "absolute";

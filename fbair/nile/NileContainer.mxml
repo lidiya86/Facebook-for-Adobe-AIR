@@ -192,7 +192,7 @@
 
     // Called by master when we're beginning things...
     public function beginning():void {
-      nile.visible = true;
+      if (nile) nile.visible = true;
     }
 
     // Called by Fetcher when it's about to get data
