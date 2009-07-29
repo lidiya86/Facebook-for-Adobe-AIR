@@ -37,7 +37,7 @@ package fb {
 
   public class FBAPI {
     private static const restURL:String =
-      "http://api.facebook.com/restserver.php";
+      "http://api.dev.facebook.com/restserver.php";
 
     private static var auth_token:String;
     private static var session_key:String;
@@ -111,6 +111,14 @@ package fb {
       loader.load(request);
 
       return loader;
+    }
+
+    // Utility function splits out fql.multiquery to it's parts
+    public static function multiqueryByKey(data:Object):Object {
+      var resultsByKey:Object = new Object();
+      for each (var result:Object in data)
+        resultsByKey[result.name] = result.fql_result_set;
+      return resultsByKey;
     }
 
     // Utility function takes the method and callArgs

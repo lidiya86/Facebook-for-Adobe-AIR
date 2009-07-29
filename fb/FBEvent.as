@@ -24,12 +24,18 @@ package fb {
     public static const SHOWN:String = "fb_shown";
     public static const CLOSED:String = "fb_closed";
     public static const CLOSING:String = "fb_closing";
-    public static const STATUS_CHANGED:String = "statusChanged";
-    public static const PERMISSION_CHANGED:String = "permissionChanged";
+    public static const STATUS_CHANGED:String = "fb_statusChanged";
+    public static const PERMISSION_CHANGED:String = "fb_permissionChanged";
+    public static const PAGE_PERMISSION_CHANGED:String =
+      "fb_pagePermissionChanged";
     public static const ALERT:String = "fb_alert";
     public static const ERROR:String = "fb_error";
     public static const RESOLVED:String = "fb_resolved";
-
+    public static const DISABLE:String = "fb_disable";
+    public static const ENABLE:String = "fb_enable";
+    public static const DATA_RECEIVED:String = "fb_dataReceived";
+    public static const FETCHING_DATA:String = "fb_fetchingData";
+    
     private var _data:*;
 
     public function FBEvent(type:String, new_data:*= null) {

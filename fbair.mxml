@@ -63,6 +63,7 @@
     import fbair.util.FBUpdater;
     import fbair.util.Preferences;
     import fbair.util.ProfileCache;
+    import fbair.server.Fetcher;
 
     import flash.events.Event;
 
@@ -144,6 +145,10 @@
         applicationError);
       FBConnect.dispatcher.addEventListener(FBEvent.RESOLVED,
         applicationResolved);
+      FBConnect.dispatcher.addEventListener(FBEvent.ENABLE,
+        applicationEnabled);
+      FBConnect.dispatcher.addEventListener(FBEvent.DISABLE,
+        applicationDisabled);
 
       // Now we call this to init our application.
       // Always call this only once, in the applicationComplete callback.
@@ -196,17 +201,20 @@
     // We'll also check for any updates to ourself
     private function fullyAuthorized():void {
       // Allow loader to display what we expect in the future
-      loader.loadStatus("Connecting to Facebook");
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
+        "Connecting to Facebook"));
 
       // Allow Composing
-      composer.enabled = true;
-      filtersBar.enabled = true;
+      applicationEnabled();
 
       // Fetch filters
       filtersBar.fetchFilters();
 
+      // Tell nile we're beginning
+      nileContainer.beginning();
+      
       // Begin polling
-      nileContainer.beginPolling();
+      Fetcher.steve.beginPolling();
 
       // Autoupdating ftw
       FBUpdater.saveVersionToFile();
@@ -226,6 +234,16 @@
 
     private function applicationResolved(event:FBEvent):void {
       loader.close();
+    }
+
+    private function applicationEnabled(event:FBEvent = null):void {
+      composer.enabled = true;
+      filtersBar.enabled = true;
+    }
+
+    private function applicationDisabled(event:FBEvent = null):void {
+      composer.enabled = false;
+      filtersBar.enabled = false;
     }
 
     // Called when the composer has added a status update!

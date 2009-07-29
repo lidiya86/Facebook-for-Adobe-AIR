@@ -34,7 +34,7 @@ package fb.net {
   // FBEvent.SUCCESS with the JSON data.
   public class JSONLoader extends URLLoader {
     public var retry:Boolean = true;
-    
+
     private static const MaxAttempts:int = 3;
     private var attempts:int = 0;
 
@@ -64,7 +64,7 @@ package fb.net {
       Output.error("JSON Status changed: " + urlMonitor.available);
       if (urlMonitor.available) reload();
     }
-    
+
     public function reload():void {
       if (!retry) return;
       Output.error("Reloading JSON: " + request.url);

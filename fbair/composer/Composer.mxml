@@ -28,7 +28,7 @@
                          width="100%"
                          focusOutText="What's on your mind?"
                          focusInHeight="{
-                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ? 
+                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
                              48 : 40}"
                          focusOutHeight="{
                            StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
@@ -71,19 +71,47 @@
       // Don't share a blank string!
       if (composerInput.text.length == 0) return;
 
-      // Disenable
+      // Disenable (more popularly known as disable)
       submittedMessage = composerInput.text;
       composerInput.active = false;
       composerInput.editable = false;
       shareButton.enabled = false;
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.DISABLE));
 
-      // Stream.publish mofo!
+      // Our basic set of stream_publish options...
       var publish_options:Object = {message:submittedMessage};
-      if (NileContainer.FilterIsPage)
-        publish_options.uid = NileContainer.CurrentFilter;
-        
-      FBAPI.callMethod("stream.publish", publish_options)
-        .addEventListener(FBEvent.SUCCESS, statusUpdated);
+
+      // If this is a page, then we need to do some special stuff...
+      if (NileContainer.FilterIsPage) {
+        // Check to make sure we can admin this page
+        if (!FBConnect.canAdminPage(Number(NileContainer.CurrentFilter))) {
+          // If not we need to pop-out the extended-perm dialog
+          FBConnect.dispatcher.addEventListener(FBEvent.PAGE_PERMISSION_CHANGED,
+            pagePermissionChange);
+          FBConnect.requestPageAdministration(NileContainer.CurrentFilter);
+        }
+        else {
+          publish_options.uid = NileContainer.CurrentFilter;
+          FBAPI.callMethod("stream.publish", publish_options)
+            .addEventListener(FBEvent.SUCCESS, statusUpdated);
+        }
+      }
+      else {
+        FBAPI.callMethod("stream.publish", publish_options)
+          .addEventListener(FBEvent.SUCCESS, statusUpdated);
+      }
+    }
+
+    // Called when the user is done hopefully validating our pages
+    //   extended permission.
+    private function pagePermissionChange(event:FBEvent):void {
+      if (FBConnect.canAdminPage(Number(NileContainer.CurrentFilter))) {
+        FBAPI.callMethod("stream.publish", {
+          message:submittedMessage,
+          uid:NileContainer.CurrentFilter
+        }).addEventListener(FBEvent.SUCCESS, statusUpdated);
+      }
+      else resetFields();
     }
 
     // Called when the server has verified status.set
@@ -93,7 +121,8 @@
       // Dispatch event that we've updated our status
       dispatchEvent(new FBEvent("statusUpdated", {
         post_id:event.data,
-        actor_id:FBConnect.session.uid,
+        actor_id:NileContainer.FilterIsPage ?
+          NileContainer.CurrentFilter : FBConnect.session.uid,
         app_id:ApplicationBase.AppID,
         message:submittedMessage,
         likes:{count:0, user_likes:false, can_like:true},
@@ -104,11 +133,16 @@
         attachment:{}
       }));
 
-      // Enable
+      resetFields();
+    }
+
+    // This just resets things to go
+    private function resetFields():void {
       submittedMessage = null;
       composerInput.text = "";
       composerInput.editable = true;
       shareButton.enabled = true;
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ENABLE));
     }
   ]]></mx:Script>
 </mx:HBox>

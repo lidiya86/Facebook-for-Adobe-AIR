@@ -37,15 +37,14 @@
   </mx:Box>
 
   <mx:Script><![CDATA[
-    import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
-    import fb.net.JSONLoader;
     import fb.util.Output;
 
     import fbair.gc.Depot;
     import fbair.nile.Nile;
     import fbair.nile.renderers.NileRenderer;
+    import fbair.server.Fetcher;
     import fbair.util.display.AnimatedCanvas;
 
     import flash.display.DisplayObjectContainer;
@@ -64,7 +63,6 @@
     import mx.events.ScrollEvent;
     import mx.utils.ObjectUtil;
 
-    private static const PollingDelay:int = 10000;
     private static const MinAnimationDelay:int = 500;
     private static const PageScrollSize:int = 512;
     private static const MouseWheelSize:int = 16;
@@ -76,15 +74,12 @@
     // Our current filter, and whether we're on a page
     [Bindable] public static var CurrentFilter:String;
     [Bindable] public static var FilterIsPage:Boolean = false;
-    
+
     // All our niles, keyed by filter_key
     private var niles:Object = new Object();
 
     // Our current nile
     [Bindable] private var nile:Nile;
-
-    // This timer determines how often to poll for new data
-    private var pollingTimer:Timer = new Timer(PollingDelay);
 
     // List of story-ids we have absolutely deleted
     //   We hold on to make sure a quick refresh doesn't revive them.
@@ -99,6 +94,18 @@
     private var destRenderer:NileRenderer;
     private var slideTime:int = 0;
 
+    // Cache of all nile renderer data
+    public var dataCache:Object = new Object();
+
+    // Our active filters, by filter_key
+    private static var streamFilters:Object = new Object();
+
+    // Our active pages, by page_id (but stored as filter_key)
+    private static var pages:Object = new Object();
+
+    // Sorter for anything based on created_time
+    private var sort:Sort = new Sort();
+
     // One per filter.  Key => FilterName, Value => latestUpdate
     private var latestUpdates:Object = new Object();
     private function getLatestUpdate(filter_key:String):int {
@@ -106,32 +113,18 @@
       else return 0;
     }
 
-    // Cache of all nile renderer data
-    public var dataCache:Object = new Object();
-
-    // Our active filters, by filter_key
-    public var streamFilters:Object = new Object();
-
-    // Our active pages, by page_id (but stored as filter_key)
-    public var pages:Object = new Object();
-
-    // Sorter for anything based on created_time
-    private var sort:Sort = new Sort();
-
-    // Time since our last update
-    private var updateTime:Number = 0;
-
     // Initializing..
     private function creationComplete(event:FlexEvent):void {
       // Pay attention to window resizing for the scrollbar
       Application.application.addEventListener(
         FlexNativeWindowBoundsEvent.WINDOW_RESIZE, boundNile);
 
-      // Listen to our polling timer
-      pollingTimer.addEventListener(TimerEvent.TIMER, poll);
-
       // Listen to bubbling story_deleted messages
       addEventListener(NileRenderer.STORY_REMOVED, storyRemoved);
+
+      // Listen for when fetcher is going to the server
+      //   so we can feed it our request in fql
+      Fetcher.steve.addEventListener(FBEvent.FETCHING_DATA, fetchingData);
 
       // Initialize created_time sorter
       sort.fields = [new SortField("created_time", false, true)];
@@ -194,23 +187,15 @@
           addMouseWheel(displayObject.getChildAt(i));
     }
 
-    // Called only once when initialization is complete.
-    public function beginPolling():void {
-      // We need to have a nile AND be authed
-      if (FBConnect.status != FBConnect.Connected) return;
-      if (!nile) return;
+    // Called by master when we're beginning things...
+    public function beginning():void {
+      Fetcher.steve.addEventListener(FBEvent.DATA_RECEIVED, dataReceived);
 
-      // Let's do this thing...
-      FBConnect.dispatcher.dispatchEvent(
-        new FBEvent(FBEvent.ALERT, "Loading Stream"));
-      poll();
       nile.visible = true;
     }
 
-    // Called on a loop to fetch new entries from the stream
-    private function poll(event:TimerEvent = null):void {
-      pollingTimer.reset();
-
+    // Called by Fetcher when it's about to get data
+    private function fetchingData(event:FBEvent):void {
       // Build our filter-key or statement
       var requested_filters:Array = new Array();
       for (var streamFilter:String in streamFilters)
@@ -230,49 +215,30 @@
       var stream_order:String = "order by created_time desc";
 
       // Build our queries for filter or pages or both
-      var queries:Object = new Object();
       if (requested_filters.length > 0)
-        queries.stream = stream_select + requested_filters.join(" or ") +
-                         " " + stream_order
+        Fetcher.queries.stream = stream_select +
+          requested_filters.join(" or ") + " " + stream_order
       if (requested_pages.length > 0)
-        queries.pages = stream_select + requested_pages.join(" or ") +
-                        " " + stream_order
-
-      // We build our fql query here to call restserver.php.
-      // {"order by time desc"} allows us to ensure we get the newest, in order.
-      // {"and time > " + latestUpdate} allows us to just get deltas.
-      var query:JSONLoader = FBAPI.callMethod("fql.multiquery",
-                                              {queries:queries});
-      query.addEventListener(FBEvent.SUCCESS, updatesReturned);
-      query.addEventListener(FBEvent.RETRY, queryRetried);
+        Fetcher.queries.pages = stream_select +
+          requested_pages.join(" or ") + " " + stream_order
     }
 
-    // Called when a net connection was flaky and the query is reattempted
-    private function queryRetried(event:FBEvent):void {
-      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
-        "Connecting to Facebook"));
-    }
-
-    // Called every time we have new updates from the server
-    private function updatesReturned(event:FBEvent):void {
-      var resultsByKey:Object = new Object();
-      for each (var result:Object in event.data)
-        resultsByKey[result.name] = result.fql_result_set;
-
+    // Called when data fetcher has new shit for us
+    private function dataReceived(event:FBEvent):void {
       // Ok we're going to take our 'pages' results and rebrand them
       // as filters but with an "is_page" flag. That way we can reuse
       // and treat them as filters wherever possible...
-      if (!resultsByKey.stream)
-        resultsByKey.stream = new Array();
-      if (resultsByKey.pages)
-        for each (var page:Object in resultsByKey.pages) {
+      if (!event.data.stream)
+        event.data.stream = new Array();
+      if (event.data.pages)
+        for each (var page:Object in event.data.pages) {
           page.is_page = true;
           page.filter_key = page.source_id;
-          resultsByKey.stream.push(page);
+          event.data.stream.push(page);
         }
 
       // Now set data to our new mega-list in .stream
-      data = resultsByKey.stream;
+      data = event.data.stream;
       if (dataCache[CurrentFilter])
         addEventListener(Event.ENTER_FRAME, afterUpdatesReturned);
     }
@@ -285,13 +251,9 @@
 
     // Setting our massive container data (massive, baby, that's what she said)
     override public function set data(new_data:Object):void {
-      // Reset polling
-      pollingTimer.reset();
-
       // Set LongDelay
-      var currentTime:Number = (new Date()).time;
-      var longDelay:Boolean = currentTime - updateTime > MinAnimationDelay;
-      updateTime = currentTime;
+      var longDelay:Boolean = (new Date()).time - Fetcher.updateTime >
+        MinAnimationDelay;
 
       // All our updates, wrapped in an array collection
       var updates:ArrayCollection = new ArrayCollection(new_data as Array);
@@ -346,9 +308,6 @@
       // If there's nothing in our current filter, then we need to clear it
       if (nile && !dataCache[CurrentFilter])
         nile.data = new Array();
-
-      // Begin timer for next run
-      pollingTimer.start();
     }
 
     // Called to update data built off dataCache
@@ -420,7 +379,7 @@
       if (FBConnect.status == FBConnect.Connected) {
         FBConnect.dispatcher.dispatchEvent(
           new FBEvent(FBEvent.ALERT, "Loading Stream"));
-        poll();
+        Fetcher.steve.poll();
       }
     }
 

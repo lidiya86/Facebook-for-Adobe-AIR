@@ -13,7 +13,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-// FBDialog extension specifically for authorize
+// FBDialog extension specifically for authorizing page adminning
 // Please see FBDialog for more details.
 package fb.display {
   import fb.display.FBDialog;

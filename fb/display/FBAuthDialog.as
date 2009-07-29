@@ -42,7 +42,7 @@ package fb.display {
       if (!htmlWindow || htmlWindow.location == '' ||
         htmlWindow.location == location || closed) return;
 
-      Output.bug("Authorization location: " + htmlWindow.location);
+      Output.log("Authorization location: " + htmlWindow.location);
       
       if (htmlWindow.location.indexOf(NextPath) == 0)
         hide(true);

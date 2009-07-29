@@ -22,6 +22,7 @@ package fb {
   import fb.display.FBAuthDialog;
   import fb.display.FBDialog;
   import fb.display.FBPermDialog;
+  import fb.display.FBPagePermDialog;
   import fb.net.JSONLoader;
   import fb.net.RedirectTester;
   import fb.util.Output;
@@ -48,10 +49,14 @@ package fb {
 
     // List of extra session params passed to requireSession()
     private static var extraSessionParams:Object;
-    
+
     // Permissions
     private static var permissions:Array = new Array();
     private static var validating_permissions:Array;
+
+    // Page Adminning
+    private static var adminnedPages:Array = new Array();
+    private static var requesting_page:String;
 
     // Local filestorage (desktop "cookie")
     private static var sharedObject:SharedObject;
@@ -91,6 +96,65 @@ package fb {
     }
 
     /**********************************
+     * PAGE ADMINISTRATION
+     **********************************/
+    // Can we admin the given page id?
+    public static function canAdminPage(page_id:Number):Boolean {
+      return (adminnedPages.indexOf(page_id) != -1);
+    }
+
+    // Call this to require that we admin a page
+    public static function requestPageAdministration(page_id:String):void {
+      if (!FBConnect.session.uid) return;
+      if (requesting_page) return;
+
+      // Check to see whether we already got these
+      dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
+        "Verifying Page Administration"));
+      requesting_page = page_id;
+      FBAPI.callMethod("fql.multiquery", {queries:{
+        allPages:"select page_id " +
+          "from page_admin where uid = " + FBConnect.session.uid,
+        grantedPages:"select uid, publish_stream " +
+          "from permissions where uid in (select page_id from #allPages)"
+      }}).addEventListener(FBEvent.SUCCESS, gotAdminInfo);
+    }
+
+    // Callback on page admin data
+    public static function gotAdminInfo(event:FBEvent):void {
+      var resultsByKey:Object = FBAPI.multiqueryByKey(event.data);
+
+      // Rebuild list of pages we know we can publish to
+      adminnedPages = new Array();
+      for each (var grantedPage:Object in resultsByKey.grantedPages)
+        if (grantedPage.publish_stream == 1)
+          adminnedPages.push(grantedPage.uid);
+
+      // If we found out we can in fact administer this page
+      //   then just fire the event to say so.
+      if (canAdminPage(Number(requesting_page))) {
+        dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
+        dispatcher.dispatchEvent(new FBEvent(FBEvent.PAGE_PERMISSION_CHANGED));
+      }
+      // Ok we're gonna need some dialog action to get this permission
+      else {
+        var dialog:FBPagePermDialog = new FBPagePermDialog();
+        dialog.ext_perm = "publish_stream";
+        dialog.page_id = requesting_page;
+        dialog.addEventListener(FBEvent.CLOSED, adminDialogClosed);
+        dialog.show();
+      }
+    }
+
+    private static function adminDialogClosed(event:FBEvent):void {
+      // Loop thru and add all those permissions we've gotten
+      if (event.data) adminnedPages.push(event.data);
+
+      requesting_page = null;
+      dispatcher.dispatchEvent(new FBEvent(FBEvent.PAGE_PERMISSION_CHANGED));
+    }
+
+    /**********************************
      * EXTENDED PERMISSIONS
      **********************************/
     // Simply informs if we have had this permission granted
@@ -100,15 +164,16 @@ package fb {
 
     // Call this to require/validate a permission
     public static function requirePermissions(permission_names:Array):void {
+      if (!FBConnect.session.uid) return;
       if (validating_permissions) return;
 
       // Ask about all these first, to see if we're already auth'd
       dispatcher.dispatchEvent(new FBEvent(FBEvent.ALERT,
         "Checking Extended Permissions"));
       validating_permissions = permission_names;
-      FBAPI.callMethod("fql.query", {
-        query:"select " + permission_names.join(", ") +
-          " from permissions where uid = " + FBConnect.session.uid
+      FBAPI.callMethod("fql.query", {query:
+        "select " + permission_names.join(", ") + " " +
+          "from permissions where uid = " + FBConnect.session.uid
       }).addEventListener(FBEvent.SUCCESS, gotPermissionInfo);
     }
 
@@ -208,7 +273,7 @@ package fb {
       if (!api_key) return;
 
       extraSessionParams = extra_params;
-      
+
       if (session) {
         validateSession();
       } else {
