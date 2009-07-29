@@ -82,6 +82,9 @@ package fbair.server {
 
     // Called every time we have new updates from the server
     private function updatesReturned(event:FBEvent):void {
+      // Dispatch that we're happy
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
+
       // Now dispatch all of it!
       dispatchEvent(new FBEvent(FBEvent.DATA_RECEIVED,
         FBAPI.multiqueryByKey(event.data)));
