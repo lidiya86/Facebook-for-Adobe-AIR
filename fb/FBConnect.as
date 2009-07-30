@@ -130,9 +130,6 @@ package fb {
         if (grantedPage.publish_stream == 1)
           adminnedPages.push(grantedPage.uid);
 
-      Output.bug(resultsByKey);
-      Output.bug("fql adminned pages:", adminnedPages);
-
       // If we found out we can in fact administer this page
       //   then just fire the event to say so.
       if (canAdminPage(Number(requesting_page))) {
@@ -150,11 +147,8 @@ package fb {
     }
 
     private static function adminDialogClosed(event:FBEvent):void {
-      Output.bug("admin dialog closed", event.data);
       // Loop thru and add all those permissions we've gotten
       if (event.data) adminnedPages.push(event.data);
-
-      Output.bug("adminned pages", adminnedPages);
 
       requesting_page = null;
       dispatcher.dispatchEvent(new FBEvent(FBEvent.PAGE_PERMISSION_CHANGED));
