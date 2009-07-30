@@ -37,7 +37,7 @@ package fb {
 
   public class FBAPI {
     private static const restURL:String =
-      "http://api.keito.devrs003.facebook.com/restserver.php";
+      "http://api.inyour.facebook.com/restserver.php";
 
     private static var auth_token:String;
     private static var session_key:String;

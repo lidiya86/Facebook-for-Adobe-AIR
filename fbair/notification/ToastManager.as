@@ -64,7 +64,7 @@ package fbair.notification {
           "recipient_id = " + FBConnect.session.uid + " " +
           "and is_unread = 1 " +
           "and sender_id != recipient_id " +
-          "and created_time > " + Math.round(Fetcher.updateTime / 1000) + " "
+          "and created_time > " + Math.round(Fetcher.updateTime / 1000) + " " +
           "limit " + int(ToastManager.MAX_DISPLAY_BATCH_ALERT_TOAST + 1);
 
       // If this isn't the first time on startup, also query for inboxes

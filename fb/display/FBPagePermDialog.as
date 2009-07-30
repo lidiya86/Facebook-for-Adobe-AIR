@@ -30,9 +30,10 @@ package fb.display {
     }
     
     override public function hide(a_result:* = false):void {
+      Output.bug("hide value", a_result);
       // If we're hiding with a value, override that
       //   value and insert our page_id
-      if (a_result) super.hide(page_id);
+      if (a_result) super.hide(Number(page_id));
       else super.hide(false);
     }
   }

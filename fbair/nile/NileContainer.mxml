@@ -327,8 +327,11 @@
       Output.assert(nile != null, "Adding status message with no nile?");
       // Into the newsfeed dataCache and currentfilter...
       dataCache["nf"].addItem(storyData);
-      if (CurrentFilter != "nf")
+      if (CurrentFilter != "nf") {
+        if (!dataCache[CurrentFilter])
+          dataCache[CurrentFilter] = new ArrayCollection();
         dataCache[CurrentFilter].addItem(storyData);
+      }
 
       // Mark immune, then give to NewsFeed and CurrentFilter
       // NileRenderers own their data with logic so each

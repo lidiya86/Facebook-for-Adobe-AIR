@@ -61,7 +61,7 @@
     private static const MINIMUM_HEIGHT:int = 8;
 
     public static const FacebookURL:String =
-      "http://www.keito.devrs003.facebook.com";
+      "http://www.inyour.facebook.com";
     public static const NextPath:String = FacebookURL +
       "/connect/login_success.html";
 
@@ -106,6 +106,8 @@
     }
 
     public function hide(a_result:* = false):void {
+      if (!visible) return;
+
       // If any listener to CLOSING calls preventDefault()
       // Then we don't close.
       var closingEvent:FBEvent = new FBEvent(FBEvent.CLOSING);

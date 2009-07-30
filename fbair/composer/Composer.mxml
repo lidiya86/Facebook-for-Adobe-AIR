@@ -105,6 +105,7 @@
     // Called when the user is done hopefully validating our pages
     //   extended permission.
     private function pagePermissionChange(event:FBEvent):void {
+      Output.bug("page permission change!", NileContainer.CurrentFilter);
       if (FBConnect.canAdminPage(Number(NileContainer.CurrentFilter))) {
         Output.bug("can admin now!");
         FBAPI.callMethod("stream.publish", {

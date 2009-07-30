@@ -105,13 +105,14 @@ package fbair.util {
       // Set an event listener to request these at end of frame
       Application.application.addEventListener(
         Event.ENTER_FRAME, fetchProfiles);
-
+      
       // We put all our requests into a queue to fire at end of frame
       if (! queuedRequests[profileID]) {
         var dispatcher:EventDispatcher = new EventDispatcher();
         queuedRequests[profileID] = dispatcher;
       }
 
+      // Return dispatcher for this specific profileID
       return queuedRequests[profileID];
     }
 
@@ -128,11 +129,14 @@ package fbair.util {
           cached_requests[request_id] = queuedRequests[request_id];
         else uncached_requests[request_id] = queuedRequests[request_id];
       }
-
+      
       var uncached_ids:Array = new Array();
       for (var uncached_request_id:String in uncached_requests)
         uncached_ids.push(uncached_request_id);
 
+      // Clear our list of queued requests, for next time
+      queuedRequests = new Object();
+      
       // If we have some uncached, then request them from the server.
       if (uncached_ids.length > 0) {
         var jsonLoader:JSONLoader = FBAPI.callMethod("fql.query", {
@@ -140,7 +144,10 @@ package fbair.util {
             "url from profile where id in " +
             "(" + uncached_ids.join(", ")  + ")"
         });
-        if (!jsonLoader) return;
+        if (!jsonLoader) {
+          Output.error("Call to profile table returned error!");
+          return;
+        }
         jsonLoader.addEventListener(FBEvent.SUCCESS,
           function(event:FBEvent):void {
             var results:Array = event.data as Array;
@@ -164,9 +171,6 @@ package fbair.util {
       for (var cached_id:String in cached_requests)
         cached_requests[cached_id].dispatchEvent(
           new FBEvent(PROFILE_FETCHED, cache[cached_id]));
-
-      // Clear our list of queued requests now that we're done
-      queuedRequests = new Object();
     }
 
     // Save preferences at end
