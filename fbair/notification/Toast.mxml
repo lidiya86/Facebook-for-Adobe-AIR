@@ -311,8 +311,10 @@
     /**
      * Shows a single toast with the given attributes.
      */
-    public function showSingleToast(body_html:String, profileId:int,
-                         link:String, alertId:int = 0): void {
+    public function showSingleToast(body_html:String,
+                                    profileId:Number,
+                                    link:String,
+                                    alertId:int = 0): void {
       toastItems.addItem(new ObjectProxy({
         profileID: profileId,
         htmlText:  body_html,
@@ -325,7 +327,8 @@
     /**
      * Shows a shelf, or aggregate view, toast with the given objects.
      */
-    public function showShelf(shelf:Array, link:String,
+    public function showShelf(shelf:Array,
+                              link:String,
                               showMoreLink:Boolean): void {
       for each (var shelfItem:ObjectProxy in shelf)
         toastItems.addItem(shelfItem);
@@ -403,7 +406,7 @@
       }
 
       Depot.get(Toast).showShelf(toastItemArr, NOTIFICATIONS_URL,
-                    alerts.length > ToastManager.MAX_DISPLAY_BATCH_ALERT_TOAST);
+        alerts.length > ToastManager.MAX_DISPLAY_BATCH_ALERT_TOAST);
     }
   ]]></mx:Script>
 </mx:Window>
