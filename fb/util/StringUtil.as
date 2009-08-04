@@ -81,18 +81,6 @@ package fb.util {
       return str;
     }
 
-    // pulls url out of shared.php crap
-    public static function extractURL(str:String):String {
-      if (empty(str)) return '';
-
-      var sliced:String = unescape(str);
-      while (sliced.indexOf("&src=") != -1)
-        sliced = sliced.substr(sliced.indexOf("&src=") + 5);
-      while (sliced.indexOf("&url=") != -1)
-        sliced = sliced.substr(sliced.indexOf("&url=") + 5);
-      return sliced;
-    }
-
     public static function empty(str:*):Boolean {
       return (!str || str == '');
     }

@@ -42,6 +42,7 @@ package fbair.server {
     // Time since our last update
     public static var updateTime:Number = 0;
 
+    
     public function Fetcher() {
       // Listen to our polling timer
       pollingTimer.addEventListener(TimerEvent.TIMER, poll);

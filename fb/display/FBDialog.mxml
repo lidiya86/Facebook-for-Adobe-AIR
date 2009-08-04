@@ -61,7 +61,7 @@
     private static const MINIMUM_HEIGHT:int = 8;
 
     public static const FacebookURL:String =
-      "http://www.inyour.facebook.com";
+      "http://www.facebook.com";
     public static const NextPath:String = FacebookURL +
       "/connect/login_success.html";
 

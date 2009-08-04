@@ -29,7 +29,8 @@
            height="100%"
            styleName="mediaItems"
            removed="itemRemoved(event)"
-           includeInLayout="{numMediaItems > 0}" />
+           includeInLayout="{numMediaItems > 0}"
+           creationComplete="mediaItemsCreated(event)" />
 
   <mx:VBox width="100%"
            styleName="{numMediaItems == 0 ?
@@ -97,14 +98,18 @@
 
     [Bindable] public var itemPropertyList:ArrayCollection;
 
-    // When we were created
-    private function creationComplete(event:FlexEvent):void {
+    // When mediaItems is created
+    private function mediaItemsCreated(event:FlexEvent):void {
       // Add any items to display tree that were already set in data
       for each (var item:MediaItem in itemsHash)
         mediaItems.addChild(item);
 
       // Update our dimensions
       updateImageDimensions();
+    }
+
+    // When we were created
+    private function creationComplete(event:FlexEvent):void {
     }
 
     // When we remove old items from the attachment renderer

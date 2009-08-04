@@ -24,14 +24,15 @@ package fb.util {
   import fb.util.FlexUtil;
 
   public class Output {
-    private static var verbose:Boolean = true;
+    private static var prod:Boolean = false;
+    private static var verbose:Boolean = false;
     private static var debugFile:File = FlexUtil.getUserPath("air_debug.txt");
     private static var debugStream:FileStream = new FileStream();
     private static var loggedItems:Array = new Array();
 
     // Trace
     public static function log(... rest):void {
-      if (!verbose) return;
+      if (prod || !verbose) return;
       loggedItems.push("Log Time: " + getTimer());
       for each (var item:* in rest)
         loggedItems.push(item);
@@ -39,6 +40,7 @@ package fb.util {
 
     // Trace no matter what
     public static function bug(... rest):void {
+      if (prod) return;
       loggedItems.push("Bug Time: " + getTimer());
       for each (var item:* in rest) {
         loggedItems.push(item);
@@ -48,6 +50,7 @@ package fb.util {
 
     // Trace error no matter what
     public static function error(... rest):void {
+      if (prod) return;
       loggedItems.push("Error Time: " + getTimer());
       for each (var item:* in rest) {
         loggedItems.push(item);
@@ -57,6 +60,7 @@ package fb.util {
 
     // File shit
     public static function logDump():void {
+      if (prod) return;
       debugStream.open(debugFile, FileMode.WRITE);
       for each (var item:* in loggedItems)
         debugStream.writeUTFBytes(pretty(item));
@@ -65,16 +69,19 @@ package fb.util {
 
     // Assert the thing which is not profane
     public static function assert(assertion:Boolean, ... rest):void {
+      if (prod) return;
       if (!assertion) for each (var item:* in rest) error(item);
     }
 
     // Alert
     public static function alert(item:*):void {
+      if (prod) return;
       Alert.show(pretty(item));
     }
 
     // Take an object and turn it into a pretty json-encoded string
     public static function pretty(item:*, preTab:String = ""):String {
+      if (prod) return '';
       if (item is Array) {
         var i:int = 0;
         var a:String = "[\n";

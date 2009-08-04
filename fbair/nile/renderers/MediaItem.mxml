@@ -22,7 +22,7 @@
 
   <util:LinkImage id="linkImage"
                   styleName="mediaImage"
-                  source="{imageSrc}"
+                  source="{data.src}"
                   url="{data.href}"
                   maxWidth="{maxImageWidth}"
                   maxHeight="{maxImageHeight}" />
@@ -53,14 +53,10 @@
     [Bindable] public var maxImageWidth:Number;
     [Bindable] public var maxImageHeight:Number;
 
-    [Bindable] public var imageSrc:String;
-
     override public function set data(new_data:Object):void {
       Output.assert(data == null,
         "Setting media item data that's not already null?:" + this)
       super.data = new_data;
-
-      imageSrc = StringUtil.extractURL(data.src);
     }
 
     public function recycle():void {
