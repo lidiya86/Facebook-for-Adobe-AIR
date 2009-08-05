@@ -78,7 +78,7 @@
 
     // Global instance of ToastManager
     private var toaster:ToastManager = new ToastManager();
-    
+
     // Called when our app is initialized...
     // The first thing to do is authorize our application..
     private function applicationComplete(event:FlexEvent):void {
@@ -176,7 +176,7 @@
         requiredSession = true;
         requiredPermissions = false;
         FBConnect.requireSession(
-          {"req_perms":"read_stream,publish_stream,manage_mailbox"});
+          {"req_perms":"read_stream,publish_stream,read_mailbox"});
       }
     }
 
@@ -191,7 +191,7 @@
     private function permissionChanged(event:FBEvent = null):void {
       if (FBConnect.hasPermission("read_stream") &&
           FBConnect.hasPermission("publish_stream") &&
-          FBConnect.hasPermission("manage_mailbox"))
+          FBConnect.hasPermission("read_mailbox"))
         fullyAuthorized();
       else if (requiredPermissions)
         close();
@@ -200,7 +200,7 @@
         requiredPermissions = true;
         FBConnect.requirePermissions(["read_stream",
                                       "publish_stream",
-                                      "manage_mailbox"]);
+                                      "read_mailbox"]);
       }
     }
 
@@ -220,7 +220,7 @@
 
       // Tell nile we're beginning
       nileContainer.beginning();
-      
+
       // Begin polling
       Fetcher.steve.beginPolling();
 
