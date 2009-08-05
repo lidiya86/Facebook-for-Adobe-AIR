@@ -34,7 +34,7 @@ package fbair.server {
     public static var queries:Object = new Object();
 
     // Polling delay
-    private static const PollingDelay:int = 10000;
+    private static const PollingDelay:int = 120000;
 
     // Our polling timer
     private var pollingTimer:Timer = new Timer(PollingDelay);

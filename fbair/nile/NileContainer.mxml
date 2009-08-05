@@ -224,7 +224,7 @@
           requested_pages.join(" or ") + " " + stream_order
     }
 
-    // Called when data fetcher has new shit for us
+    // Called when data fetcher has new stuff for us
     private function dataReceived(event:FBEvent):void {
       // Ok we're going to take our 'pages' results and rebrand them
       // as filters but with an "is_page" flag. That way we can reuse
@@ -439,7 +439,7 @@
     // Called when the nile scrollbar has moved, and we need to move
     //   the nile itself to keep pace.
     private function scrollNile(event:ScrollEvent = null):void {
-      // No fucking sliding now
+      // No sliding now
       stopSliding();
 
       // Move the nile position

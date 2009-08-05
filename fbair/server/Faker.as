@@ -15,8 +15,7 @@
  */
 package fbair.server {
   public class Faker {
-    private static realUserIds:Array = [665215028, 688626964, 4, 1340940008,
-      1825658323, 100000035297420, 4842, 7901103, 214707, 201418, 9418141];
+    private static realUserIds:Array = [4];
 
     public static function getFakeNotification():Object {
       var uid:int = realUserIds[Math.floor(Math.random() *

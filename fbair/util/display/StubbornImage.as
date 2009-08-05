@@ -64,7 +64,7 @@ package fbair.util.display {
 
     override public function set source(new_source:Object):void {
       if (new_source.constructor == Class) {
-        Output.log("Image re-setting source to crap: " + new_source
+        Output.log("Image re-setting source to poop: " + new_source
           + " from " + source);
         super.source = null;
       } else {

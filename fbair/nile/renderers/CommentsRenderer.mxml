@@ -200,7 +200,7 @@
       allCommentsContainer.visible = (new_count > MaxComments);
 
       // If we didn't really change our number, then screw it
-      // If we're doing shit RIGHT NOW, then nevermind, also
+      // If we're doing stuff RIGHT NOW, then nevermind, also
       if (commentCount == new_count || fetchingComments) return;
       commentCount = new_count;
 
