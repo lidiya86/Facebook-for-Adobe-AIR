@@ -58,7 +58,7 @@ package fb.util {
       }
     }
 
-    // File stuff     public static function logDump():void {
+    public static function logDump():void {
       if (prod) return;
       debugStream.open(debugFile, FileMode.WRITE);
       for each (var item:* in loggedItems)
