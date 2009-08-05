@@ -30,7 +30,7 @@ package fb.util {
     private static var debugStream:FileStream = new FileStream();
     private static var loggedItems:Array = new Array();
 
-    // Trace stuff
+    // Trace
     public static function log(... rest):void {
       if (prod || !verbose) return;
       loggedItems.push("Log Time: " + getTimer());
