@@ -16,13 +16,12 @@
 // Animating Canvas
 package fbair.util.display {
   import fb.util.Output;
-
+  
   import flash.display.DisplayObject;
   import flash.events.Event;
-
+  
   import mx.containers.Canvas;
   import mx.core.UIComponent;
-  import mx.events.FlexEvent;
 
   [Event(name="tweenComplete", type="flash.events.Event")]
   [Event(name="tweenStarting", type="flash.events.Event")]    
@@ -51,6 +50,9 @@ package fbair.util.display {
     // animate speed. 0 is stopped and 1 is immediate
     [Bindable] public var gain:Number = 0.30;
 
+    // are we currently playing effects?
+    [Bindable] public var isAnimating:Boolean = false;
+
     // epsilon is a very small value, we use it in this case when we're
     //   'close enough' to the target value to end the animation
     private var epsilon:Number = 0.1;
@@ -62,7 +64,6 @@ package fbair.util.display {
     //   in case we accelerate past our target, we still know when to stop
     private var isGrowing:Boolean;
 
-    private var isAnimating:Boolean = false;
     private var velocity:Number = 0;
     private var _visible:Boolean = true;
     private var managedHeight:Number = 0;

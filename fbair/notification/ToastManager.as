@@ -27,7 +27,7 @@ package fbair.notification {
    */
   public class ToastManager {
     // Seconds to wait without mouse/keyboard activity to consider user idle
-    private static const IDLE_THRESHOLD:int = 30;
+    private static const IDLE_THRESHOLD:int = 120;
 
     // Maximum number of notifications to display singly
     private static const MAX_DISPLAY_SINGLE_ALERT_TOAST:int = 3;

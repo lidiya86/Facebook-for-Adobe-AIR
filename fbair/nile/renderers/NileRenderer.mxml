@@ -48,9 +48,12 @@
         <util:FlowBox width="100%"
                       styleName="nileStoryHeader" >
           <!-- Actor's name -->
-          <mx:Label styleName="actorTitle"
+          <mx:Label id="actorName"
+                    styleName="actorTitle"
                     htmlText="{StringUtil.linkify(data.actorName,
-                              data.actorURL)}" />
+                              data.actorURL)}"
+                    click="{navigateToURL(new URLRequest(data.actorURL))}"
+                    buttonMode="true" />
           <!-- Target of wall-post -->
           <mx:HBox styleName="nileStoryTarget"
                    visible="{data.targetName}"
@@ -59,8 +62,10 @@
             <mx:Label styleName="targetArrow" text="►" />
 
             <mx:Label styleName="actorTitle"
-                     htmlText="{StringUtil.linkify(data.targetName,
-                                 data.targetURL)}" />
+                      htmlText="{StringUtil.linkify(data.targetName,
+                                 data.targetURL)}"
+                      click="{navigateToURL(new URLRequest(data.targetURL))}"
+                      buttonMode="true" />
           </mx:HBox>
 
           <!-- Tells us the time ago since it happened -->

@@ -196,7 +196,7 @@
     [Bindable]
     public function get ufiMode():int { return _ufiMode; }
     public function set ufiMode(to:int):void {
-      if (_ufiMode == to) return;
+      if (_ufiMode == to || ufiDetail.isAnimating) return;
       _ufiMode = to;
 
       switch (ufiMode) {

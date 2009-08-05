@@ -15,8 +15,6 @@
  */
 // Simple TextArea extension grows with text size
 package fbair.util.display {
-  import fb.util.Output;
-
   import flash.events.Event;
   import flash.events.FocusEvent;
   import flash.events.KeyboardEvent;
@@ -71,11 +69,19 @@ package fbair.util.display {
       stage.addEventListener(MouseEvent.MOUSE_UP, prepareUp, true);
     }
 
-
     private function focusOut(event:FocusEvent = null):void {
       stage.removeEventListener(MouseEvent.MOUSE_DOWN, stageDown, true);
       stage.removeEventListener(MouseEvent.MOUSE_UP, stageUp, true);
       active = (text.length > 0);
+    }
+    
+    // Override text property so that it only returns user-entered values
+    [Bindable] override public function get text():String {
+      if (getStyle("color") == disabledColor) return '';
+      return super.text;
+    }
+    public function set text(to:String):void {
+      super.text = to;
     }
 
     // Stage up and down

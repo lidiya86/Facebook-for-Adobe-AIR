@@ -69,7 +69,8 @@
            alphaFrom="0"
            alphaTo="{MAX_FADEIN_ALPHA}"
            duration="500"
-           effectStart="fadeInEffectStart(event)" />
+           effectStart="landingEffect.play()"
+           effectEnd="fadeInEffectEnd(event)" />
   <mx:Fade id="fadeout"
            target="{shelf}"
            alphaFrom="{MAX_FADEIN_ALPHA}"
@@ -199,12 +200,11 @@
     }
 
     /**
-     * Called at the same time that the fade in effect starts.
+     * Called at the same time that the fade in effect ends.
      */
-    private function fadeInEffectStart(event:EffectEvent): void {
+    private function fadeInEffectEnd(event:EffectEvent): void {
       reaper.delay = TOAST_HIDE_DELAY;
       reaper.start();
-      landingEffect.play();
     }
 
     /**
