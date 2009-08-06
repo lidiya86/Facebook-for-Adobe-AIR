@@ -16,16 +16,16 @@
 <mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
   <mx:Image id="photo"
             source="{data.source}"
-            maxHeight="{this.height}"
-            maxWidth="{this.width - 10}"
+            maxHeight="{height}"
+            maxWidth="{width - 10}"
             left="5"
             updateComplete="updateComplete()" />
   <mx:Button id="closeButton"
              styleName="storyDeleteButton"
-             click="deleteFunction(event)" />
+             click="dispatchEvent(new FBEvent(FBEvent.DELETED))" />
   <mx:Script>
     <![CDATA[
-      public var deleteFunction:Function;
+      import fb.FBEvent;
 
       private static const CLOSE_BUTTON_PADDING:int = 4;
 

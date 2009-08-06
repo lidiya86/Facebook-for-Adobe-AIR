@@ -24,8 +24,8 @@ package fb.util {
   import fb.util.FlexUtil;
 
   public class Output {
-    private static var prod:Boolean = true;
-    private static var verbose:Boolean = false;
+    private static var prod:Boolean = false;
+    private static var verbose:Boolean = true;
     private static var debugFile:File = FlexUtil.getUserPath("air_debug.txt");
     private static var debugStream:FileStream = new FileStream();
     private static var loggedItems:Array = new Array();

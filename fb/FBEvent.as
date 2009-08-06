@@ -35,6 +35,7 @@ package fb {
     public static const ENABLE:String = "fb_enable";
     public static const DATA_RECEIVED:String = "fb_dataReceived";
     public static const FETCHING_DATA:String = "fb_fetchingData";
+    public static const DELETED:String = "fb_deleted";
     
     private var _data:*;
 

@@ -17,7 +17,6 @@
      Major container for letting the user share stuff! -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
-         initialize="init()"
          verticalGap="5">
   <mx:Metadata>
     [Event(name="statusUpdated", type="fb.FBEvent")]
@@ -60,7 +59,6 @@
                   width="100%"
                   styleName="albumFieldText" />
   </mx:HBox>
-
   <mx:TileList id="droppedPhotoList"
            width="100%"
            rowCount="1"
@@ -69,7 +67,9 @@
            includeInLayout="false"
            visible="false"
            styleName="droppedPhotoList"
-           updateComplete="repaintPhotoList()" />
+           updateComplete="repaintPhotoList()"
+           creationComplete="init()"
+           itemRenderer="fbair.composer.DroppedPhotosRenderer" />
   <!-- Adding the resize effect appears to add a weird unwanted width resizing,
        and the original 100% width designation ceases to have any effect during
        resizing. 12 is the exact pixel value of the composer's desired width-->
@@ -133,11 +133,7 @@
 
     // Called when the composer is initialized
     private function init():void {
-      droppedPhotosRendererFactory = new ClassFactory(DroppedPhotosRenderer);
-      droppedPhotosRendererFactory.properties = {
-        deleteFunction: deletePhoto
-      };
-      droppedPhotoList.itemRenderer = droppedPhotosRendererFactory;
+      droppedPhotoList.addEventListener(FBEvent.DELETED, deletePhoto);
     }
 
     // Called when the Share button has been clicked
@@ -339,6 +335,8 @@
         navigateToURL(new URLRequest(URL_EDIT_ALBUM +
           StringUtil.lowOrder64(event.data.aid)));
       }
+
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
     }
 
     // Called when the user drags something over the box
@@ -372,7 +370,7 @@
     }
 
     // Called when the delete button is pressed on a photo
-    private function deletePhoto(event:MouseEvent):void {
+    private function deletePhoto(event:FBEvent):void {
       if (droppedPhotoList.selectedIndex > -1) {
         droppedPhotos.removeItemAt(droppedPhotoList.selectedIndex);
       }
