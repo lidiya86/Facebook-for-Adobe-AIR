@@ -267,6 +267,14 @@
         // Add to content box
         if (contentBox) contentBox.addChild(content);
       }
+
+      // Disown photos that we uploaded, because stream.get doesn't let us
+      // delete stream items that have been created due to us calling
+      // photo.upload
+      if (data.app_id == ApplicationBase.AppID && data.attachment.media is Array
+          && data.attachment.media[0].type == 'photo') {
+        data.app_id = null;
+      }
     }
 
     private function get hasRealAttachment():Boolean {

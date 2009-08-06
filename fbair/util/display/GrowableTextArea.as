@@ -31,8 +31,8 @@ package fbair.util.display {
     [Bindable] public var disabledColor:uint = 0x808080;
     [Bindable] public var focusOutHeight:int = 25;
     [Bindable] public var focusInHeight:int = 40;
-    [Bindable] public var focusOutText:String = "Write a comment...";
 
+    private var _focusOutText:String = "Write a comment...";
     private var _active:Boolean = false;
 
     public function GrowableTextArea() {
@@ -53,6 +53,15 @@ package fbair.util.display {
     public function set active(to:Boolean):void {
       _active = to;
       updateState();
+    }
+
+    // Setting/getting focusOutText
+    [Bindable] public function get focusOutText():String {
+      return _focusOutText;
+    }
+    public function set focusOutText(to:String):void {
+      if (text == _focusOutText || text == '') text = to;
+      _focusOutText = to;
     }
 
     // Update our settings based on active and all our vars

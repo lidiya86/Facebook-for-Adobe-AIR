@@ -10,3 +10,22 @@ Composer {
   paddingTop: 5;
   verticalAlign: bottom;
 }
+.droppedPhotoList {
+  paddingTop: 5;
+  paddingLeft: 5;
+  paddingBottom: 5;
+  paddingRight: 5;
+  rollOverColor: #FFFFFF;
+  selectionColor: #FFFFFF;
+}
+.albumFieldLabel {
+  color: #333;
+  font-size: 11;
+}
+.albumFieldText {
+  color: #000;
+  font-size: 11;
+  borderSkin: Embed(source='../assets/composer_textarea.png',scaleGridTop='2',scaleGridLeft='2',scaleGridBottom='4',scaleGridRight='4');
+  focusAlpha: 0;
+  focusSkin: ClassReference('mx.skins.ProgrammaticSkin');
+}

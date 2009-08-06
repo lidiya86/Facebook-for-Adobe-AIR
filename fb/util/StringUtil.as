@@ -122,5 +122,23 @@ package fb.util {
 
       return output;
     }
+
+    // Gets the low-order bits of a 64-bit decimal number represented in the
+    // input string. Because ActionScript Numbers are only accurate up to 53
+    // bits when calculating, avoids dealing with any Numbers with more than
+    // 32 bits of significance.
+    public static function lowOrder64(input:String):int {
+      var j:Number = 1;
+      var result:int = 0;
+      for (var i:int = input.length - 1; i >= 0; i--) {
+        var digitValue:Number = int(input.charAt(i)) * j;
+        var digitBin:String = digitValue.toString(2);
+        if (digitBin.length > 32)
+          digitBin = digitBin.substr(digitBin.length - 32, 32);
+        result += parseInt(digitBin, 2);
+        j *= 10;
+      }
+      return result;
+    }
   }
 }

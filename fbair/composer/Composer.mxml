@@ -15,46 +15,130 @@
  -->
 <!-- There's one of these at the top-level.
      Major container for letting the user share stuff! -->
-<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
-         xmlns:util="fbair.util.display.*" >
-
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+         xmlns:util="fbair.util.display.*"
+         initialize="init()"
+         verticalGap="5">
   <mx:Metadata>
     [Event(name="statusUpdated", type="fb.FBEvent")]
   </mx:Metadata>
 
-  <!-- Text area for entering your status update -->
-  <util:GrowableTextArea id="composerInput"
-                         styleName="composerInput"
-                         width="100%"
-                         focusOutText="What's on your mind?"
-                         focusInHeight="{
-                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
-                             48 : 40}"
-                         focusOutHeight="{
-                           StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
-                             29 : 25}" />
+  <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
+           xmlns:util="fbair.util.display.*"
+           width="100%">
 
-  <util:FBButton id="shareButton"
-                 autoStyle="true"
-                 click="shareStatus(event)" >
-    <mx:Label styleName="fbButtonLabel"
-              text="Share" />
-  </util:FBButton>
+    <!-- Text area for entering your status update -->
+    <util:GrowableTextArea id="composerInput"
+                           styleName="composerInput"
+                           width="100%"
+                           focusOutText="{FOCUS_OUT_STATUS}"
+                           focusInHeight="{
+                             StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                               48 : 40}"
+                           focusOutHeight="{
+                             StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
+                               29 : 25}"
+                           nativeDragEnter="dragEnter(event)"
+                           nativeDragDrop="dragDrop(event)" />
+
+    <util:FBButton id="shareButton"
+                   autoStyle="true"
+                   click="shareStatus(event)" >
+      <mx:Label styleName="fbButtonLabel"
+                text="Share" />
+    </util:FBButton>
+  </mx:HBox>
+
+  <mx:HBox id="albumName"
+           horizontalGap="5"
+           width="100%"
+           visible="false"
+           includeInLayout="false">
+    <mx:Label text="Album name:"
+              styleName="albumFieldLabel" />
+    <mx:TextInput id="albumNameInput"
+                  width="100%"
+                  styleName="albumFieldText" />
+  </mx:HBox>
+
+  <mx:TileList id="droppedPhotoList"
+           width="100%"
+           rowCount="1"
+           columnCount="{3 > droppedPhotos.length ? droppedPhotos.length : 3}"
+           dataProvider="{droppedPhotos}"
+           includeInLayout="false"
+           visible="false"
+           styleName="droppedPhotoList"
+           updateComplete="repaintPhotoList()" />
+  <!-- Adding the resize effect appears to add a weird unwanted width resizing,
+       and the original 100% width designation ceases to have any effect during
+       resizing. 12 is the exact pixel value of the composer's desired width-->
+  <mx:Resize id="photosAppear"
+             widthFrom="{width - 12}"
+             widthTo="{width - 12}"
+             heightFrom="0"
+             heightTo="200"
+             target="{droppedPhotoList}"
+             effectEnd="addQueuedPhotosToGrid()" />
+  <mx:Resize id="photosDisappear"
+             heightFrom="200"
+             heightTo="0"
+             target="{droppedPhotoList}"
+             effectEnd="photosFinishedDisappearing()" />
 
   <mx:Script><![CDATA[
+    import mx.utils.ObjectProxy;
+    import mx.collections.ArrayCollection;
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
     import fb.util.Output;
+    import fb.util.StringUtil;
 
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
+    import fbair.composer.DroppedPhotosRenderer;
+
+    import flash.desktop.ClipboardFormats;
+    import flash.desktop.NativeDragManager;
 
     import flash.events.MouseEvent;
+    import flash.events.NativeDragEvent;
 
     import mx.core.Application;
 
+    import flash.net.navigateToURL;
+    import flash.net.URLRequest;
+
     private var submittedMessage:String;
+
+    private var droppedPhotosRendererFactory:ClassFactory;
+
+    [Bindable]
+    private var droppedPhotos:ArrayCollection = new ArrayCollection();
+
+    private var dropQueuedPhotos:Array = new Array();
+
+    private var remainingUploads:int = 0;
+
+    private static const FOCUS_OUT_STATUS:String = "What's on your mind?";
+    private static const FOCUS_OUT_CAPTION:String = "Describe your photo";
+    private static const FOCUS_OUT_CAPTIONS:String = "Describe your photos";
+
+    private static const APP_DEFAULT_ALBUM_NAME:String =
+      "Facebook for Adobe AIR Photos";
+
+    private static const URL_EDIT_ALBUM:String =
+      "http://www.facebook.com/editphoto.php?aid=";
+
+    // Called when the composer is initialized
+    private function init():void {
+      droppedPhotosRendererFactory = new ClassFactory(DroppedPhotosRenderer);
+      droppedPhotosRendererFactory.properties = {
+        deleteFunction: deletePhoto
+      };
+      droppedPhotoList.itemRenderer = droppedPhotosRendererFactory;
+    }
 
     // Called when the Share button has been clicked
     private function shareStatus(event:MouseEvent):void {
@@ -64,12 +148,16 @@
       }
 
       if (!composerInput.active) {
-        Application.application.focusManager.setFocus(composerInput);
-        return;
+        if (droppedPhotos.length == 0)
+          composerInput.text = '';
+        else {
+          Application.application.focusManager.setFocus(composerInput);
+          return;
+        }
       }
 
-      // Don't share a blank string!
-      if (composerInput.text.length == 0) return;
+      // Don't share a blank string! But only if it's a status update.
+      if (composerInput.text.length == 0 && droppedPhotos.length == 0) return;
 
       // Disenable (more popularly known as disable)
       submittedMessage = composerInput.text;
@@ -97,9 +185,64 @@
         }
       }
       else {
-        FBAPI.callMethod("stream.publish", publish_options)
-          .addEventListener(FBEvent.SUCCESS, statusUpdated);
+        // TODO (keito): At the moment, we only support pic uploading if we're
+        // a user, not a page
+        if (droppedPhotos.length > 0) {
+          FBConnect.dispatcher.dispatchEvent(
+            new FBEvent(FBEvent.ALERT, "Uploading Photos"));
+
+          if (droppedPhotos.length > 1) {
+            // If we are uploading multiple photos, create album first
+            if (albumNameInput.length == 0) {
+              // Enforce album name
+              Application.application.focusManager.setFocus(albumNameInput);
+              return;
+            }
+            FBAPI.callMethod("photos.createAlbum", {
+              name: albumNameInput.text,
+              description: submittedMessage
+            }).addEventListener(FBEvent.SUCCESS, uploadDroppedPhotos);
+          } else {
+            // Just one photo; dump it into the app album
+            var photoCallArgs:Object = {
+              caption: submittedMessage
+            };
+
+            // TODO (keito): Do some resizing logic (to reduce bandwidth. but
+            // that also reduces quality, since it'll be resized/recompressed
+            // first on the client, then on the server)
+            FBAPI.uploadPhoto(droppedPhotos[0].file, photoCallArgs)
+              .addEventListener(FBEvent.SUCCESS, photoUploadSuccess);
+            droppedPhotos.removeItemAt(0);
+          }
+        } else {
+          FBAPI.callMethod("stream.publish", publish_options)
+            .addEventListener(FBEvent.SUCCESS, statusUpdated);
+        }
       }
+    }
+
+    // Called when there are multiple photos to be uploaded and in response to
+    // a successful album creation.
+    private function uploadDroppedPhotos(event:FBEvent):void {
+      if (!event.data.hasOwnProperty('aid')) {
+        Output.bug("We didn't get back the album ID");
+        return;
+      }
+
+      var photoCallArgs:Object = {
+        aid: event.data.aid
+      };
+
+      for (var i:int = 0; i < droppedPhotos.length; i++) {
+        // TODO (keito): Do some resizing logic (to reduce bandwidth. but
+        // that also reduces quality, since it'll be resized/recompressed
+        // first on the client, then on the server)
+        FBAPI.uploadPhoto(droppedPhotos[i].file, photoCallArgs)
+          .addEventListener(FBEvent.SUCCESS, multiPhotoUploadSuccess);
+        remainingUploads++;
+      }
+      droppedPhotos.removeAll();
     }
 
     // Called when the user is done hopefully validating our pages
@@ -139,10 +282,150 @@
     // This just resets things to go
     private function resetFields():void {
       submittedMessage = null;
-      composerInput.text = "";
+      composerInput.text = composerInput.focusOutText;
       composerInput.editable = true;
       shareButton.enabled = true;
       FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ENABLE));
     }
+
+    /**
+     * Called when a photo in a single-photo upload operation succeeeds
+     */
+    private function photoUploadSuccess(event:FBEvent):void {
+      resetFields();
+
+      // Fake an addition to the stream
+      // TODO (keito): This is inherently sketchy, because we don't know how the
+      // albums will be aggregated in the stream. We should probably remove any
+      // existing mentions to the same album (app default album) in our Nile
+      dispatchEvent(new FBEvent("statusUpdated", {
+        post_id:null,
+        actor_id:NileContainer.FilterIsPage ?
+          NileContainer.CurrentFilter : FBConnect.session.uid,
+        app_id:null,
+        message:submittedMessage,
+        likes:{count:0, user_likes:false, can_like:true},
+        comments:{count:0, posts:[], can_post:true, can_remove:true},
+        created_time:(new Date().time / 1000),
+        is_page:NileContainer.FilterIsPage,
+        filter_key:NileContainer.CurrentFilter,
+        attachment:{
+          name:APP_DEFAULT_ALBUM_NAME,
+          media:[{
+              alt:submittedMessage,
+              href:event.data.href,
+              src:event.data.src,
+              type:"photo"}]
+        }
+      }));
+
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
+    }
+
+    /**
+     * Called when a photo in a multi-photo upload operation succeeds
+     */
+    private function multiPhotoUploadSuccess(event:FBEvent):void {
+      // Don't do anything until all photos have been uploaded
+      remainingUploads--;
+      if (remainingUploads > 0) return;
+
+      resetFields();
+
+      // Direct users to album edit screen
+      if (!event.data.hasOwnProperty("aid"))
+        Output.bug("Album ID was not returned by server");
+      else {
+        navigateToURL(new URLRequest(URL_EDIT_ALBUM +
+          StringUtil.lowOrder64(event.data.aid)));
+      }
+    }
+
+    // Called when the user drags something over the box
+    private function dragEnter(event:NativeDragEvent):void {
+      // Make sure files are being dragged over
+      // TODO (keito): At the moment, we don't support drag-drop on pages
+      if (event.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT) &&
+          !NileContainer.FilterIsPage) {
+        NativeDragManager.acceptDragDrop(composerInput);
+      }
+    }
+
+    // Called when the user drops something onto the box
+    private function dragDrop(event:NativeDragEvent):void {
+      var files:Array = event.clipboard.getData(
+        ClipboardFormats.FILE_LIST_FORMAT) as Array;
+
+      for each (var photo:File in files) dropQueuedPhotos.push(photo);
+
+      // Make the dropped photo list appear
+      if (droppedPhotos.length == 0) {
+        droppedPhotoList.includeInLayout = true;
+        droppedPhotoList.visible = true;
+        photosAppear.play();
+        composerInput.focusOutText = FOCUS_OUT_CAPTION;
+      } else
+        addQueuedPhotosToGrid();
+
+      if (dropQueuedPhotos.length + droppedPhotos.length > 1)
+        composerInput.focusOutText = FOCUS_OUT_CAPTIONS;
+    }
+
+    // Called when the delete button is pressed on a photo
+    private function deletePhoto(event:MouseEvent):void {
+      if (droppedPhotoList.selectedIndex > -1) {
+        droppedPhotos.removeItemAt(droppedPhotoList.selectedIndex);
+      }
+    }
+
+    /**
+     * Called after the photo grid has finished appearing or just after photos
+     * have been dropped to add the photos to the grid. This is so that we don't
+     * start rendering the ItemRenderers until after the appear effect has
+     * finished, to prevent ugliness.
+     */
+    private function addQueuedPhotosToGrid():void {
+      if (dropQueuedPhotos.length > 0) {
+        for each (var photo:File in dropQueuedPhotos) {
+          // We must preload the image sometime before the request
+          photo.load();
+          droppedPhotos.addItem(new ObjectProxy({
+            file:   photo,
+            source: photo.url
+            }));
+        }
+        dropQueuedPhotos = [];
+      }
+
+      if (droppedPhotos.length > 1) {
+        albumName.visible = true;
+        albumName.includeInLayout = true;
+      }
+    }
+
+    /**
+     * Called after the photo grid has finished disappearing
+     */
+    private function photosFinishedDisappearing():void {
+      droppedPhotoList.includeInLayout = false;
+      droppedPhotoList.visible = false;
+      albumName.visible = false;
+      albumName.includeInLayout = false;
+      albumNameInput.text = '';
+      composerInput.text = composerInput.focusOutText;
+      composerInput.focusOutText = FOCUS_OUT_STATUS;
+    }
+
+    /**
+     * Called when the photo grid is repainted. Hides it if appropriate.
+     */
+    private function repaintPhotoList():void {
+      if (droppedPhotoList.includeInLayout && droppedPhotos.length == 0
+          && dropQueuedPhotos.length == 0 && !photosDisappear.isPlaying) {
+        // Currently visible and need to disappear
+        photosDisappear.play();
+      }
+    }
   ]]></mx:Script>
-</mx:HBox>
+
+</mx:VBox>

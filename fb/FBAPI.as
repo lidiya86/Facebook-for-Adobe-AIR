@@ -107,7 +107,7 @@ package fb {
       request.method = URLRequestMethod.POST;
       request.contentType = "multipart/form-data; boundary="+FBPost.boundary;
       request.data = post.data;
-      loader.dataFormat = URLLoaderDataFormat.BINARY;
+      loader.dataFormat = URLLoaderDataFormat.TEXT;
       loader.load(request);
 
       return loader;
