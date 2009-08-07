@@ -26,6 +26,9 @@ package fbair.notification {
    * Receives toast data and shows toasts when appropriate.
    */
   public class ToastManager {
+    // Singleton instance
+    public static var justin:ToastManager = new ToastManager();
+
     // Seconds to wait without mouse/keyboard activity to consider user idle
     private static const IDLE_THRESHOLD:int = 120;
 
@@ -85,6 +88,19 @@ package fbair.notification {
 
       if (event.data.hasOwnProperty("inbox") && event.data.inbox.length > 0)
         feedNewMessages(event.data.inbox);
+    }
+
+    /**
+     * Feed one new toast into the toaster.
+     * Useful if you're using the notifications framework for anything other
+     * than pure Facebook notifications or messages. The bread should be an
+     * object with the same schema as a notification.
+     */
+    public function feedNewToast(bread:Object):void {
+      alertsQueue.push(bread);
+
+      // If we're not idle right now, release the toasts now
+      if (wentIdleTime == 0) triggerToastRelease();
     }
 
     /**

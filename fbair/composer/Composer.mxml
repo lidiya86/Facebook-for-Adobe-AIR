@@ -24,7 +24,8 @@
 
   <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
            xmlns:util="fbair.util.display.*"
-           width="100%">
+           width="100%"
+           verticalGap="4">
 
     <!-- Text area for entering your status update -->
     <util:GrowableTextArea id="composerInput"
@@ -49,7 +50,7 @@
   </mx:HBox>
 
   <mx:HBox id="albumName"
-           horizontalGap="5"
+           horizontalGap="4"
            width="100%"
            visible="false"
            includeInLayout="false">
@@ -87,6 +88,7 @@
              effectEnd="photosFinishedDisappearing()" />
 
   <mx:Script><![CDATA[
+    import fbair.notification.Toast;
     import mx.utils.ObjectProxy;
     import mx.collections.ArrayCollection;
     import fb.FBAPI;
@@ -98,6 +100,7 @@
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
     import fbair.composer.DroppedPhotosRenderer;
+    import fbair.notification.ToastManager;
 
     import flash.desktop.ClipboardFormats;
     import flash.desktop.NativeDragManager;
@@ -181,8 +184,7 @@
         }
       }
       else {
-        // TODO (keito): At the moment, we only support pic uploading if we're
-        // a user, not a page
+        // We only support pic uploading for users, not pages
         if (droppedPhotos.length > 0) {
           FBConnect.dispatcher.dispatchEvent(
             new FBEvent(FBEvent.ALERT, "Uploading Photos"));
@@ -290,30 +292,19 @@
     private function photoUploadSuccess(event:FBEvent):void {
       resetFields();
 
-      // Fake an addition to the stream
-      // TODO (keito): This is inherently sketchy, because we don't know how the
-      // albums will be aggregated in the stream. We should probably remove any
-      // existing mentions to the same album (app default album) in our Nile
-      dispatchEvent(new FBEvent("statusUpdated", {
-        post_id:null,
-        actor_id:NileContainer.FilterIsPage ?
-          NileContainer.CurrentFilter : FBConnect.session.uid,
-        app_id:null,
-        message:submittedMessage,
-        likes:{count:0, user_likes:false, can_like:true},
-        comments:{count:0, posts:[], can_post:true, can_remove:true},
-        created_time:(new Date().time / 1000),
-        is_page:NileContainer.FilterIsPage,
-        filter_key:NileContainer.CurrentFilter,
-        attachment:{
-          name:APP_DEFAULT_ALBUM_NAME,
-          media:[{
-              alt:submittedMessage,
-              href:event.data.href,
-              src:event.data.src,
-              type:"photo"}]
-        }
-      }));
+      if (!event.data.hasOwnProperty("link")) {
+        Output.bug("link to photo not returned by server");
+        return;
+      }
+
+      // Feed a fake photo upload finished notification into the toaster
+      ToastManager.justin.feedNewToast({
+        title_text:'Your photo is now uploaded',
+        body_text:'Click here to see the new photo',
+        sender_id:FBConnect.session.uid,
+        href:event.data.link,
+        notification_id:0
+      });
 
       FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
     }
@@ -331,10 +322,9 @@
       // Direct users to album edit screen
       if (!event.data.hasOwnProperty("aid"))
         Output.bug("Album ID was not returned by server");
-      else {
+      else
         navigateToURL(new URLRequest(URL_EDIT_ALBUM +
           StringUtil.lowOrder64(event.data.aid)));
-      }
 
       FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.RESOLVED));
     }
@@ -342,7 +332,7 @@
     // Called when the user drags something over the box
     private function dragEnter(event:NativeDragEvent):void {
       // Make sure files are being dragged over
-      // TODO (keito): At the moment, we don't support drag-drop on pages
+      // We only support photo uploading on users
       if (event.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT) &&
           !NileContainer.FilterIsPage) {
         NativeDragManager.acceptDragDrop(composerInput);

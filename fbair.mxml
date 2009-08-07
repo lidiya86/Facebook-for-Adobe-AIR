@@ -76,9 +76,6 @@
     private var requiredSession:Boolean = false;
     private var requiredPermissions:Boolean = false;
 
-    // Global instance of ToastManager
-    private var toaster:ToastManager = new ToastManager();
-
     // Called when our app is initialized...
     // The first thing to do is authorize our application..
     private function applicationComplete(event:FlexEvent):void {

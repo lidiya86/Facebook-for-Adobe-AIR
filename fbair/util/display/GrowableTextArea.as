@@ -60,7 +60,7 @@ package fbair.util.display {
       return _focusOutText;
     }
     public function set focusOutText(to:String):void {
-      if (text == _focusOutText || text == '') text = to;
+      if ((text == _focusOutText || text == '') && !active) text = to;
       _focusOutText = to;
     }
 
