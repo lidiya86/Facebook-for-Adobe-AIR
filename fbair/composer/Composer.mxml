@@ -88,30 +88,28 @@
              effectEnd="photosFinishedDisappearing()" />
 
   <mx:Script><![CDATA[
-    import fbair.notification.Toast;
-    import mx.utils.ObjectProxy;
-    import mx.collections.ArrayCollection;
     import fb.FBAPI;
     import fb.FBConnect;
     import fb.FBEvent;
     import fb.util.Output;
     import fb.util.StringUtil;
 
+    import fbair.composer.DroppedPhotosRenderer;
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
-    import fbair.composer.DroppedPhotosRenderer;
+    import fbair.notification.Toast;
     import fbair.notification.ToastManager;
 
     import flash.desktop.ClipboardFormats;
     import flash.desktop.NativeDragManager;
-
     import flash.events.MouseEvent;
     import flash.events.NativeDragEvent;
-
-    import mx.core.Application;
-
-    import flash.net.navigateToURL;
     import flash.net.URLRequest;
+    import flash.net.navigateToURL;
+
+    import mx.collections.ArrayCollection;
+    import mx.core.Application;
+    import mx.utils.ObjectProxy;
 
     private var submittedMessage:String;
 
