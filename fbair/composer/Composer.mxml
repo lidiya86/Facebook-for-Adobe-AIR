@@ -60,32 +60,15 @@
                   width="100%"
                   styleName="albumFieldText" />
   </mx:HBox>
+
   <mx:TileList id="droppedPhotoList"
            width="100%"
-           rowCount="1"
-           columnCount="{3 > droppedPhotos.length ? droppedPhotos.length : 3}"
            dataProvider="{droppedPhotos}"
            includeInLayout="false"
            visible="false"
            styleName="droppedPhotoList"
-           updateComplete="repaintPhotoList()"
-           creationComplete="init()"
+           creationComplete="photoListCreationComplete(event)"
            itemRenderer="fbair.composer.DroppedPhotosRenderer" />
-  <!-- Adding the resize effect appears to add a weird unwanted width resizing,
-       and the original 100% width designation ceases to have any effect during
-       resizing. 12 is the exact pixel value of the composer's desired width-->
-  <mx:Resize id="photosAppear"
-             widthFrom="{width - 12}"
-             widthTo="{width - 12}"
-             heightFrom="0"
-             heightTo="200"
-             target="{droppedPhotoList}"
-             effectEnd="addQueuedPhotosToGrid()" />
-  <mx:Resize id="photosDisappear"
-             heightFrom="200"
-             heightTo="0"
-             target="{droppedPhotoList}"
-             effectEnd="photosFinishedDisappearing()" />
 
   <mx:Script><![CDATA[
     import fb.FBAPI;
@@ -109,22 +92,20 @@
 
     import mx.collections.ArrayCollection;
     import mx.core.Application;
+    import mx.events.FlexEvent;
     import mx.utils.ObjectProxy;
 
     private var submittedMessage:String;
 
-    private var droppedPhotosRendererFactory:ClassFactory;
-
     [Bindable]
     private var droppedPhotos:ArrayCollection = new ArrayCollection();
 
-    private var dropQueuedPhotos:Array = new Array();
-
+    // When uploading photos, this counts how many more to get back success
+    //   before we know we've uploaded them all...
     private var remainingUploads:int = 0;
 
     private static const FOCUS_OUT_STATUS:String = "What's on your mind?";
     private static const FOCUS_OUT_CAPTION:String = "Describe your photo";
-    private static const FOCUS_OUT_CAPTIONS:String = "Describe your photos";
 
     private static const APP_DEFAULT_ALBUM_NAME:String =
       "Facebook for Adobe AIR Photos";
@@ -133,7 +114,7 @@
       "http://www.facebook.com/editphoto.php?aid=";
 
     // Called when the composer is initialized
-    private function init():void {
+    private function photoListCreationComplete(event:FlexEvent):void {
       droppedPhotoList.addEventListener(FBEvent.DELETED, deletePhoto);
     }
 
@@ -199,15 +180,7 @@
               description: submittedMessage
             }).addEventListener(FBEvent.SUCCESS, uploadDroppedPhotos);
           } else {
-            // Just one photo; dump it into the app album
-            var photoCallArgs:Object = {
-              caption: submittedMessage
-            };
-
-            // TODO (keito): Do some resizing logic (to reduce bandwidth. but
-            // that also reduces quality, since it'll be resized/recompressed
-            // first on the client, then on the server)
-            FBAPI.uploadPhoto(droppedPhotos[0].file, photoCallArgs)
+            FBAPI.uploadPhoto(droppedPhotos[0].file, {caption:submittedMessage})
               .addEventListener(FBEvent.SUCCESS, photoUploadSuccess);
             droppedPhotos.removeItemAt(0);
           }
@@ -226,18 +199,10 @@
         return;
       }
 
-      var photoCallArgs:Object = {
-        aid: event.data.aid
-      };
-
-      for (var i:int = 0; i < droppedPhotos.length; i++) {
-        // TODO (keito): Do some resizing logic (to reduce bandwidth. but
-        // that also reduces quality, since it'll be resized/recompressed
-        // first on the client, then on the server)
-        FBAPI.uploadPhoto(droppedPhotos[i].file, photoCallArgs)
+      remainingUploads = droppedPhotos.length;
+      for (var i:int = 0; i < droppedPhotos.length; i++)
+        FBAPI.uploadPhoto(droppedPhotos.getItemAt(i).file, {aid:event.data.aid})
           .addEventListener(FBEvent.SUCCESS, multiPhotoUploadSuccess);
-        remainingUploads++;
-      }
       droppedPhotos.removeAll();
     }
 
@@ -275,13 +240,14 @@
       resetFields();
     }
 
-    // This just resets things to go
+    // This just resets things to start
     private function resetFields():void {
       submittedMessage = null;
       composerInput.text = composerInput.focusOutText;
       composerInput.editable = true;
       shareButton.enabled = true;
       FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ENABLE));
+      hidePhotosPanel();
     }
 
     /**
@@ -342,19 +308,25 @@
       var files:Array = event.clipboard.getData(
         ClipboardFormats.FILE_LIST_FORMAT) as Array;
 
-      for each (var photo:File in files) dropQueuedPhotos.push(photo);
+
+      for each (var photo:File in files) {
+        photo.load();
+        droppedPhotos.addItem(new ObjectProxy({
+          file: photo,
+          source: photo.url
+        }));
+      }
 
       // Make the dropped photo list appear
-      if (droppedPhotos.length == 0) {
-        droppedPhotoList.includeInLayout = true;
-        droppedPhotoList.visible = true;
-        photosAppear.play();
-        composerInput.focusOutText = FOCUS_OUT_CAPTION;
-      } else
-        addQueuedPhotosToGrid();
+      droppedPhotoList.includeInLayout = true;
+      droppedPhotoList.visible = true;
+      composerInput.focusOutText = FOCUS_OUT_CAPTION;
 
-      if (dropQueuedPhotos.length + droppedPhotos.length > 1)
-        composerInput.focusOutText = FOCUS_OUT_CAPTIONS;
+      if (droppedPhotos.length > 1) {
+        composerInput.focusOutText += 's';
+        albumName.visible = true;
+        albumName.includeInLayout = true;
+      }
     }
 
     // Called when the delete button is pressed on a photo
@@ -362,37 +334,14 @@
       if (droppedPhotoList.selectedIndex > -1) {
         droppedPhotos.removeItemAt(droppedPhotoList.selectedIndex);
       }
-    }
-
-    /**
-     * Called after the photo grid has finished appearing or just after photos
-     * have been dropped to add the photos to the grid. This is so that we don't
-     * start rendering the ItemRenderers until after the appear effect has
-     * finished, to prevent ugliness.
-     */
-    private function addQueuedPhotosToGrid():void {
-      if (dropQueuedPhotos.length > 0) {
-        for each (var photo:File in dropQueuedPhotos) {
-          // We must preload the image sometime before the request
-          photo.load();
-          droppedPhotos.addItem(new ObjectProxy({
-            file:   photo,
-            source: photo.url
-            }));
-        }
-        dropQueuedPhotos = [];
-      }
-
-      if (droppedPhotos.length > 1) {
-        albumName.visible = true;
-        albumName.includeInLayout = true;
-      }
+      
+      if (droppedPhotos.length == 0) hidePhotosPanel();
     }
 
     /**
      * Called after the photo grid has finished disappearing
      */
-    private function photosFinishedDisappearing():void {
+    private function hidePhotosPanel():void {
       droppedPhotoList.includeInLayout = false;
       droppedPhotoList.visible = false;
       albumName.visible = false;
@@ -401,17 +350,5 @@
       composerInput.text = composerInput.focusOutText;
       composerInput.focusOutText = FOCUS_OUT_STATUS;
     }
-
-    /**
-     * Called when the photo grid is repainted. Hides it if appropriate.
-     */
-    private function repaintPhotoList():void {
-      if (droppedPhotoList.includeInLayout && droppedPhotos.length == 0
-          && dropQueuedPhotos.length == 0 && !photosDisappear.isPlaying) {
-        // Currently visible and need to disappear
-        photosDisappear.play();
-      }
-    }
   ]]></mx:Script>
-
 </mx:VBox>
