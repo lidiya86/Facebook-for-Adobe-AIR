@@ -1,0 +1,88 @@
+<!--
+  Copyright Facebook Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+ -->
+<!-- Loading indicator displays itself when we have trouble connecting
+     to Facebook for authentication or stream loading -->
+<util:AnimatedCanvas xmlns:mx="http://www.adobe.com/2006/mxml"
+                     xmlns:util="fbair.util.display.*"
+                     animateOut="true" >
+  <mx:Script><![CDATA[
+    import fb.util.Output;
+
+    import fbair.composer.DroppedPhotosRenderer;
+    import fbair.gc.Depot;
+
+    import mx.collections.ArrayCollection;
+    import mx.events.CollectionEvent;
+
+    private static const ITEM_PADDING:int = 6;
+
+    private var _dataProvider:ArrayCollection;
+
+    private var renderers:Array = new Array();
+
+    public function get dataProvider():ArrayCollection {
+      return _dataProvider;
+    }
+
+    public function set dataProvider(newProvider:ArrayCollection):void {
+      if (dataProvider)
+        dataProvider.removeEventListener(CollectionEvent.COLLECTION_CHANGE,
+                                         collectionChange);
+
+      _dataProvider = newProvider;
+      dataProvider.addEventListener(CollectionEvent.COLLECTION_CHANGE,
+                                    collectionChange);
+
+      invalidateDisplayList();
+    }
+
+    private function collectionChange(event:CollectionEvent):void {
+      invalidateDisplayList();
+    }
+
+    override protected function updateDisplayList(unscaledWidth:Number,
+                                                  unscaledHeight:Number):void {
+
+      while(renderers.length > dataProvider.length) {
+        var deadRenderer:DroppedPhotosRenderer = renderers.pop();
+        removeChild(deadRenderer);
+        Depot.put(deadRenderer);
+      }
+
+      while (renderers.length < dataProvider.length) {
+        var newRenderer:DroppedPhotosRenderer =
+          Depot.get(DroppedPhotosRenderer);
+        renderers.push(newRenderer);
+        addChild(newRenderer);
+      }
+
+      if (! dataProvider || dataProvider.length == 0) return;
+      
+      var columns:int = 1;
+      columns += Math.floor(
+        (unscaledWidth - DroppedPhotosRenderer.MAX_DIMENSION) /
+        (DroppedPhotosRenderer.MAX_DIMENSION + ITEM_PADDING));
+
+      for (var i:int = 0; i < dataProvider.length; i++) {
+        renderers[i].data = dataProvider.getItemAt(i);
+        renderers[i].x = ((i % columns) *
+          (DroppedPhotosRenderer.MAX_DIMENSION + ITEM_PADDING));
+        renderers[i].y = (Math.floor(i / columns) *
+          (DroppedPhotosRenderer.MAX_DIMENSION + ITEM_PADDING));
+      }
+    }
+  ]]></mx:Script>
+</util:AnimatedCanvas>

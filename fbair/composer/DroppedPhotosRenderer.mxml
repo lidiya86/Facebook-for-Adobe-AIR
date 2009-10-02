@@ -13,14 +13,39 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  -->
-<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml"
+           width="{MAX_DIMENSION}"
+           height="{MAX_DIMENSION}" >
+
   <mx:Image id="photo"
             source="{data.source}"
-            left="5" />
+            complete="imageLoadComplete(event)" />
+
   <mx:Button id="closeButton"
              styleName="storyDeleteButton"
+             left="2"
+             top="2"
              click="dispatchEvent(new FBEvent(FBEvent.DELETED))" />
+
   <mx:Script><![CDATA[
     import fb.FBEvent;
+
+    import flash.events.Event;
+
+    public static const MAX_DIMENSION:int = 112;
+
+    private function imageLoadComplete(event:Event):void {
+      var aspectRatio:Number = photo.contentWidth / photo.contentHeight;
+      if (aspectRatio > 1) {
+        photo.width = MAX_DIMENSION;
+        photo.height = photo.width / aspectRatio;
+      }
+      else {
+        photo.height = MAX_DIMENSION;
+        photo.width = photo.height * aspectRatio;
+      }
+      photo.y = (MAX_DIMENSION - photo.height) / 2;
+      photo.x = (MAX_DIMENSION - photo.width) / 2;
+    }
   ]]></mx:Script>
 </mx:Canvas>

@@ -17,6 +17,7 @@
      Major container for letting the user share stuff! -->
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
+         xmlns:composer="fbair.composer.*"
          verticalGap="5">
   <mx:Metadata>
     [Event(name="statusUpdated", type="fb.FBEvent")]
@@ -25,7 +26,7 @@
   <mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml"
            xmlns:util="fbair.util.display.*"
            width="100%"
-           verticalGap="4">
+           horizontalGap="6">
 
     <!-- Text area for entering your status update -->
     <util:GrowableTextArea id="composerInput"
@@ -61,14 +62,14 @@
                   styleName="albumFieldText" />
   </mx:HBox>
 
-  <mx:TileList id="droppedPhotoList"
-           width="100%"
-           dataProvider="{droppedPhotos}"
-           includeInLayout="false"
-           visible="false"
-           styleName="droppedPhotoList"
-           creationComplete="photoListCreationComplete(event)"
-           itemRenderer="fbair.composer.DroppedPhotosRenderer" />
+  <composer:DroppedPhotosList id="droppedPhotoList"
+                              width="100%"
+                              dataProvider="{droppedPhotos}"
+                              visible="false"
+                              styleName="droppedPhotoList"
+                              nativeDragEnter="dragEnter(event)"
+                              nativeDragDrop="dragDrop(event)"
+                              creationComplete="photoCreationComplete(event)" />
 
   <mx:Script><![CDATA[
     import fb.FBAPI;
@@ -95,6 +96,14 @@
     import mx.events.FlexEvent;
     import mx.utils.ObjectProxy;
 
+    private static const ValidPhotoTypes:Array = [
+      "jpg",
+      "jpeg",
+      "gif",
+      "png",
+      "bmp"
+    ];
+
     private var submittedMessage:String;
 
     [Bindable]
@@ -106,6 +115,7 @@
 
     private static const FOCUS_OUT_STATUS:String = "What's on your mind?";
     private static const FOCUS_OUT_CAPTION:String = "Describe your photo";
+    private static const FOCUS_OUT_ALBUM:String = "Describe your album";
 
     private static const APP_DEFAULT_ALBUM_NAME:String =
       "Facebook for Adobe AIR Photos";
@@ -114,7 +124,7 @@
       "http://www.facebook.com/editphoto.php?aid=";
 
     // Called when the composer is initialized
-    private function photoListCreationComplete(event:FlexEvent):void {
+    private function photoCreationComplete(event:FlexEvent):void {
       droppedPhotoList.addEventListener(FBEvent.DELETED, deletePhoto);
     }
 
@@ -240,16 +250,6 @@
       resetFields();
     }
 
-    // This just resets things to start
-    private function resetFields():void {
-      submittedMessage = null;
-      composerInput.text = composerInput.focusOutText;
-      composerInput.editable = true;
-      shareButton.enabled = true;
-      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ENABLE));
-      hidePhotosPanel();
-    }
-
     /**
      * Called when a photo in a single-photo upload operation succeeeds
      */
@@ -308,8 +308,20 @@
       var files:Array = event.clipboard.getData(
         ClipboardFormats.FILE_LIST_FORMAT) as Array;
 
+      // Inline functions are hot.
+      var hasPhoto:Function = function(url:String):Boolean {
+        for (var i:int = 0; i < droppedPhotos.length; i++)
+          if (droppedPhotos.getItemAt(i).source == url) return true;
+        return false;
+      }
 
+      var previousNumberOfPhotos:int = droppedPhotos.length;
+      
       for each (var photo:File in files) {
+        // Don't add dupes or invalid file types
+        if (hasPhoto(photo.url)) continue;
+        if (ValidPhotoTypes.indexOf(photo.extension) == -1) continue;
+
         photo.load();
         droppedPhotos.addItem(new ObjectProxy({
           file: photo,
@@ -317,13 +329,13 @@
         }));
       }
 
-      // Make the dropped photo list appear
-      droppedPhotoList.includeInLayout = true;
+      // If we didn't add any photos, then fuck it.
+      if (droppedPhotos.length == previousNumberOfPhotos) return;
+
       droppedPhotoList.visible = true;
       composerInput.focusOutText = FOCUS_OUT_CAPTION;
-
       if (droppedPhotos.length > 1) {
-        composerInput.focusOutText += 's';
+        composerInput.focusOutText = FOCUS_OUT_ALBUM;
         albumName.visible = true;
         albumName.includeInLayout = true;
       }
@@ -331,23 +343,42 @@
 
     // Called when the delete button is pressed on a photo
     private function deletePhoto(event:FBEvent):void {
-      if (droppedPhotoList.selectedIndex > -1) {
-        droppedPhotos.removeItemAt(droppedPhotoList.selectedIndex);
+      droppedPhotos.removeItemAt(droppedPhotos.getItemIndex(event.target.data));
+
+      if (droppedPhotos.length == 1) {
+        resetAlbumField();
+        composerInput.focusOutText = FOCUS_OUT_CAPTION;
       }
-      
-      if (droppedPhotos.length == 0) hidePhotosPanel();
+
+      if (droppedPhotos.length == 0) resetPhotosPanel();
     }
 
     /**
-     * Called after the photo grid has finished disappearing
+     * Reset composer fields
      */
-    private function hidePhotosPanel():void {
-      droppedPhotoList.includeInLayout = false;
-      droppedPhotoList.visible = false;
+    private function resetFields():void {
+      resetPhotosPanel();
+      submittedMessage = null;
+      composerInput.editable = true;
+      shareButton.enabled = true;
+      FBConnect.dispatcher.dispatchEvent(new FBEvent(FBEvent.ENABLE));
+    }
+
+    /**
+     * Hide album field
+     */
+    private function resetAlbumField():void {
       albumName.visible = false;
       albumName.includeInLayout = false;
       albumNameInput.text = '';
-      composerInput.text = composerInput.focusOutText;
+    }
+
+    /**
+     * Hide all photo stuff.
+     */
+    private function resetPhotosPanel():void {
+      resetAlbumField();
+      droppedPhotoList.visible = false;
       composerInput.focusOutText = FOCUS_OUT_STATUS;
     }
   ]]></mx:Script>

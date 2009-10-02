@@ -172,8 +172,8 @@
       else if (FBConnect.status == FBConnect.NotLoggedIn) {
         requiredSession = true;
         requiredPermissions = false;
-        FBConnect.requireSession(
-          {"req_perms":"read_stream,publish_stream,read_mailbox"});
+        FBConnect.requireSession({"req_perms":
+          "read_stream,publish_stream,read_mailbox,offline_access"});
       }
     }
 
@@ -188,7 +188,8 @@
     private function permissionChanged(event:FBEvent = null):void {
       if (FBConnect.hasPermission("read_stream") &&
           FBConnect.hasPermission("publish_stream") &&
-          FBConnect.hasPermission("read_mailbox"))
+          FBConnect.hasPermission("read_mailbox") &&
+          FBConnect.hasPermission("offline_access"))
         fullyAuthorized();
       else if (requiredPermissions)
         close();
@@ -197,7 +198,8 @@
         requiredPermissions = true;
         FBConnect.requirePermissions(["read_stream",
                                       "publish_stream",
-                                      "read_mailbox"]);
+                                      "read_mailbox",
+                                      "offline_access"]);
       }
     }
 
