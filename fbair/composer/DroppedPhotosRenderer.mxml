@@ -17,14 +17,22 @@
            width="{MAX_DIMENSION}"
            height="{MAX_DIMENSION}" >
 
+  <mx:Button id="photoFrame"
+             styleName="photoFrame"
+             buttonMode="false"
+             x="{photo.x - 2}"
+             y="{photo.y - 2}"
+             width="{photo.width + 4}"
+             height="{photo.height + 4}" />
+
   <mx:Image id="photo"
             source="{data.source}"
             complete="imageLoadComplete(event)" />
-
+            
   <mx:Button id="closeButton"
              styleName="storyDeleteButton"
-             left="2"
-             top="2"
+             x="{photo.x + 2}"
+             y="{photo.y + 2}"
              click="dispatchEvent(new FBEvent(FBEvent.DELETED))" />
 
   <mx:Script><![CDATA[

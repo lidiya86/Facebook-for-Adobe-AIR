@@ -18,7 +18,9 @@
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
          xmlns:util="fbair.util.display.*"
          xmlns:composer="fbair.composer.*"
-         verticalGap="5">
+         verticalGap="5"
+         nativeDragEnter="dragEnter(event)"
+         nativeDragDrop="dragDrop(event)" >
   <mx:Metadata>
     [Event(name="statusUpdated", type="fb.FBEvent")]
   </mx:Metadata>
@@ -38,9 +40,7 @@
                                48 : 40}"
                            focusOutHeight="{
                              StylePrefs.sizeStyle == StylePrefs.SIZE_LARGE ?
-                               29 : 25}"
-                           nativeDragEnter="dragEnter(event)"
-                           nativeDragDrop="dragDrop(event)" />
+                               29 : 25}" />
 
     <util:FBButton id="shareButton"
                    autoStyle="true"
@@ -67,8 +67,6 @@
                               dataProvider="{droppedPhotos}"
                               visible="false"
                               styleName="droppedPhotoList"
-                              nativeDragEnter="dragEnter(event)"
-                              nativeDragDrop="dragDrop(event)"
                               creationComplete="photoCreationComplete(event)" />
 
   <mx:Script><![CDATA[
@@ -78,7 +76,6 @@
     import fb.util.Output;
     import fb.util.StringUtil;
 
-    import fbair.composer.DroppedPhotosRenderer;
     import fbair.gui.StylePrefs;
     import fbair.nile.NileContainer;
     import fbair.notification.Toast;
@@ -298,9 +295,8 @@
       // Make sure files are being dragged over
       // We only support photo uploading on users
       if (event.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT) &&
-          !NileContainer.FilterIsPage) {
-        NativeDragManager.acceptDragDrop(composerInput);
-      }
+          !NileContainer.FilterIsPage)
+        NativeDragManager.acceptDragDrop(this);
     }
 
     // Called when the user drops something onto the box
