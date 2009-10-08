@@ -19,7 +19,7 @@
 
   <mx:Button id="photoFrame"
              styleName="photoFrame"
-             buttonMode="false"
+             enabled="false"
              x="{photo.x - 2}"
              y="{photo.y - 2}"
              width="{photo.width + 4}"

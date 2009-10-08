@@ -202,7 +202,7 @@
     // a successful album creation.
     private function uploadDroppedPhotos(event:FBEvent):void {
       if (!event.data.hasOwnProperty('aid')) {
-        Output.bug("We didn't get back the album ID");
+        Output.error("We didn't get back the album ID");
         return;
       }
 
@@ -254,7 +254,7 @@
       resetFields();
 
       if (!event.data.hasOwnProperty("link")) {
-        Output.bug("link to photo not returned by server");
+        Output.error("Link to photo not returned by server");
         return;
       }
 
@@ -282,7 +282,7 @@
 
       // Direct users to album edit screen
       if (!event.data.hasOwnProperty("aid"))
-        Output.bug("Album ID was not returned by server");
+        Output.error("Album ID was not returned by server");
       else
         navigateToURL(new URLRequest(URL_EDIT_ALBUM +
           StringUtil.lowOrder64(event.data.aid)));
@@ -304,26 +304,12 @@
       var files:Array = event.clipboard.getData(
         ClipboardFormats.FILE_LIST_FORMAT) as Array;
 
-      // Inline functions are hot.
-      var hasPhoto:Function = function(url:String):Boolean {
-        for (var i:int = 0; i < droppedPhotos.length; i++)
-          if (droppedPhotos.getItemAt(i).source == url) return true;
-        return false;
-      }
-
+      // Mark how many photos we have right now
       var previousNumberOfPhotos:int = droppedPhotos.length;
-      
-      for each (var photo:File in files) {
-        // Don't add dupes or invalid file types
-        if (hasPhoto(photo.url)) continue;
-        if (ValidPhotoTypes.indexOf(photo.extension) == -1) continue;
 
-        photo.load();
-        droppedPhotos.addItem(new ObjectProxy({
-          file: photo,
-          source: photo.url
-        }));
-      }
+      // Add all the photos to preview, recursively diving into dirs.
+      for each (var file:File in files)
+        addPhotoOrFolder(file);
 
       // If we didn't add any photos, then fuck it.
       if (droppedPhotos.length == previousNumberOfPhotos) return;
@@ -337,6 +323,38 @@
       }
     }
 
+    // Called to add a photo or folder of photos to droppedPhotos
+    private function addPhotoOrFolder(file:File):void {
+      // If this is a directory, then recurse
+      if (file.isDirectory) {
+        var files:Array = file.getDirectoryListing();
+        for each (var subFile:File in files)
+          addPhotoOrFolder(subFile);
+        return;
+      }
+
+      // Don't add if not a valid and new photo file.
+      if (!isValidNewPhoto(file)) return;
+
+      file.load();
+      droppedPhotos.addItem(new ObjectProxy({
+        file: file,
+        source: file.url
+      }));
+    }
+
+    // Called to ask if we already have a given photo, or it's valid
+    private function isValidNewPhoto(file:File):Boolean {
+      // Must be a valid photo type
+      if (ValidPhotoTypes.indexOf(file.extension) == -1) return false;
+
+      // Must not already exist in the list
+      for (var i:int = 0; i < droppedPhotos.length; i++)
+        if (droppedPhotos.getItemAt(i).source == file.url) return false;
+
+      return true;
+    }
+    
     // Called when the delete button is pressed on a photo
     private function deletePhoto(event:FBEvent):void {
       droppedPhotos.removeItemAt(droppedPhotos.getItemIndex(event.target.data));

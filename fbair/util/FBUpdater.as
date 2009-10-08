@@ -33,7 +33,7 @@ package fbair.util {
   import flash.utils.ByteArray;
 
   public class FBUpdater {
-    private static const version:Number = 0.9;
+    private static const version:Number = 0.91;
 
     private static const InfoURL:String = FBDialog.FacebookURL +
       "/fbair/fbair_version.php";
